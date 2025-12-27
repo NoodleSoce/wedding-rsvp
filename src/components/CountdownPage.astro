@@ -22,24 +22,34 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         <div class="content">
             <h1 class="anim anim-1">{t["countdown.title"]}</h1>
 
-            <div class="timer anim anim-2" id="timer">
+            <div
+                class="timer anim anim-2"
+                id="timer"
+                role="timer"
+                aria-live="polite"
+                aria-atomic="false"
+            >
                 <div class="unit">
-                    <span id="days">00</span>
+                    <span id="days" aria-label={t["countdown.days"]}>00</span>
                     <small>{t["countdown.days"]}</small>
                 </div>
-                <span class="sep">:</span>
+                <span class="sep" aria-hidden="true">:</span>
                 <div class="unit">
-                    <span id="hours">00</span>
+                    <span id="hours" aria-label={t["countdown.hours"]}>00</span>
                     <small>{t["countdown.hours"]}</small>
                 </div>
-                <span class="sep">:</span>
+                <span class="sep" aria-hidden="true">:</span>
                 <div class="unit">
-                    <span id="minutes">00</span>
+                    <span id="minutes" aria-label={t["countdown.minutes"]}
+                        >00</span
+                    >
                     <small>{t["countdown.minutes"]}</small>
                 </div>
-                <span class="sep">:</span>
+                <span class="sep" aria-hidden="true">:</span>
                 <div class="unit">
-                    <span id="seconds">00</span>
+                    <span id="seconds" aria-label={t["countdown.seconds"]}
+                        >00</span
+                    >
                     <small>{t["countdown.seconds"]}</small>
                 </div>
             </div>
@@ -51,7 +61,8 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
                     <iframe
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3610.178!2d55.2744!3d25.1972!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f43348a67e24b%3A0xff45e502e1ceb7e2!2sBurj%20Khalifa!5e0!3m2!1sen!2sae!4v1703634000000!5m2!1sen!2sae"
                         loading="lazy"
-                        title="Venue"></iframe>
+                        title={t["countdown.location"]}
+                        allow="fullscreen"></iframe>
                 </div>
             </div>
         </div>
@@ -59,65 +70,77 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
 </Layout>
 
 <script>
-    let interval: number;
+    let intervalId: number | undefined;
 
-    function init() {
+    function initCountdown() {
         const page = document.querySelector(
             ".page[data-target]",
         ) as HTMLElement;
         if (!page) return;
 
-        const target = Number(page.dataset.target);
-        const expired = page.dataset.expired || "EXPIRED";
-        const timer = document.getElementById("timer");
-        const d = document.getElementById("days");
-        const h = document.getElementById("hours");
-        const m = document.getElementById("minutes");
-        const s = document.getElementById("seconds");
+        const targetTime = Number(page.dataset.target);
+        const expiredText = page.dataset.expired || "Event Started!";
+        const timerEl = document.getElementById("timer");
 
-        let last = { d: -1, h: -1, m: -1, s: -1 };
+        const daysEl = document.getElementById("days");
+        const hoursEl = document.getElementById("hours");
+        const minutesEl = document.getElementById("minutes");
+        const secondsEl = document.getElementById("seconds");
 
-        function tick() {
-            const diff = target - Date.now();
-            if (diff < 0) {
-                if (timer) timer.innerHTML = expired;
-                clearInterval(interval);
+        // Cache previous values to avoid unnecessary DOM updates
+        let prev = { d: -1, h: -1, m: -1, s: -1 };
+
+        function updateTimer() {
+            const now = Date.now();
+            const diff = targetTime - now;
+
+            if (diff <= 0) {
+                if (timerEl)
+                    timerEl.innerHTML = `<span class="expired">${expiredText}</span>`;
+                if (intervalId) clearInterval(intervalId);
                 return;
             }
 
             const days = Math.floor(diff / 86400000);
             const hours = Math.floor((diff % 86400000) / 3600000);
-            const mins = Math.floor((diff % 3600000) / 60000);
-            const secs = Math.floor((diff % 60000) / 1000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
 
-            if (days !== last.d && d) {
-                d.textContent = String(days).padStart(2, "0");
-                last.d = days;
+            // Only update DOM if value changed
+            if (days !== prev.d && daysEl) {
+                daysEl.textContent = String(days).padStart(2, "0");
+                prev.d = days;
             }
-            if (hours !== last.h && h) {
-                h.textContent = String(hours).padStart(2, "0");
-                last.h = hours;
+            if (hours !== prev.h && hoursEl) {
+                hoursEl.textContent = String(hours).padStart(2, "0");
+                prev.h = hours;
             }
-            if (mins !== last.m && m) {
-                m.textContent = String(mins).padStart(2, "0");
-                last.m = mins;
+            if (minutes !== prev.m && minutesEl) {
+                minutesEl.textContent = String(minutes).padStart(2, "0");
+                prev.m = minutes;
             }
-            if (secs !== last.s && s) {
-                s.textContent = String(secs).padStart(2, "0");
-                last.s = secs;
+            if (seconds !== prev.s && secondsEl) {
+                secondsEl.textContent = String(seconds).padStart(2, "0");
+                prev.s = seconds;
             }
         }
 
-        tick();
-        clearInterval(interval);
-        interval = setInterval(tick, 1000) as unknown as number;
+        // Run immediately
+        updateTimer();
+
+        // Clear any existing interval
+        if (intervalId) clearInterval(intervalId);
+
+        // Start interval
+        intervalId = setInterval(updateTimer, 1000) as unknown as number;
     }
 
-    init();
-    document.addEventListener("astro:page-load", init);
-    document.addEventListener("astro:before-swap", () =>
-        clearInterval(interval),
-    );
+    // Initialize
+    initCountdown();
+    document.addEventListener("astro:page-load", initCountdown);
+    document.addEventListener("astro:before-swap", () => {
+        if (intervalId) clearInterval(intervalId);
+    });
 </script>
 
 <style>
@@ -128,28 +151,52 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
     h1 {
         font-size: var(--fs-xl);
         font-weight: 300;
-        max-width: 360px;
+        max-width: 320px;
         line-height: 1.35;
+    }
+
+    @media (min-width: 400px) {
+        h1 {
+            max-width: 380px;
+        }
     }
 
     .timer {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.375rem;
+    }
+
+    @media (min-width: 400px) {
+        .timer {
+            gap: 0.5rem;
+        }
     }
 
     .unit {
         display: flex;
         flex-direction: column;
         align-items: center;
-        min-width: 40px;
+        min-width: 36px;
+    }
+
+    @media (min-width: 400px) {
+        .unit {
+            min-width: 44px;
+        }
     }
 
     .unit span {
-        font-size: 1.75rem;
+        font-size: 1.5rem;
         font-weight: 700;
         font-variant-numeric: tabular-nums;
         line-height: 1;
+    }
+
+    @media (min-width: 400px) {
+        .unit span {
+            font-size: 1.875rem;
+        }
     }
 
     .unit small {
@@ -159,9 +206,15 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
     }
 
     .sep {
-        font-size: 1.25rem;
+        font-size: 1rem;
         color: var(--c-white-40);
         margin-bottom: 1rem;
+    }
+
+    @media (min-width: 400px) {
+        .sep {
+            font-size: 1.25rem;
+        }
     }
 
     .card {
@@ -183,8 +236,14 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
     .map {
         border-radius: var(--radius-sm);
         overflow: hidden;
-        height: 140px;
+        height: 130px;
         box-shadow: var(--shadow);
+    }
+
+    @media (min-width: 400px) {
+        .map {
+            height: 150px;
+        }
     }
 
     .map iframe {
@@ -193,9 +252,8 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         border: 0;
     }
 
-    @media (min-width: 400px) {
-        .map {
-            height: 160px;
-        }
+    .expired {
+        font-size: var(--fs-xl);
+        font-weight: 600;
     }
 </style>

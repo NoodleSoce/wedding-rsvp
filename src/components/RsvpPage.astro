@@ -19,7 +19,12 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                 <p class="sub anim anim-2">{t["rsvp.subtitle"]}</p>
 
                 <form id="form" class="anim anim-3" data-redirect={redirectUrl}>
-                    <a href={redirectUrl} data-astro-prefetch="load" hidden></a>
+                    <!-- Prefetch destination for faster navigation -->
+                    <a
+                        href={redirectUrl}
+                        data-astro-prefetch="load"
+                        hidden
+                        aria-hidden="true"></a>
 
                     <label class="field">
                         <span class="label">{t["rsvp.name"]}</span>
@@ -32,12 +37,17 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                             placeholder={t["rsvp.namePlaceholder"]}
                             autocomplete="name"
                             autocapitalize="words"
+                            enterkeyhint="next"
                         />
                     </label>
 
                     <div class="field">
                         <span class="label">{t["rsvp.attending"]}</span>
-                        <div class="opts">
+                        <div
+                            class="opts"
+                            role="radiogroup"
+                            aria-label={t["rsvp.attending"]}
+                        >
                             <label class="opt">
                                 <input
                                     type="radio"
@@ -62,7 +72,8 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                         </div>
                     </div>
 
-                    <div id="guests-wrap" class="guests">
+                    <!-- BUG FIX: Add 'show' class by default since 'yes' is checked -->
+                    <div id="guests-wrap" class="guests show">
                         <label class="field">
                             <span class="label">{t["rsvp.guests"]}</span>
                             <input
@@ -74,25 +85,31 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                                 max="9"
                                 value="0"
                                 inputmode="numeric"
+                                enterkeyhint="done"
                             />
                         </label>
                     </div>
 
-                    <button type="submit" class="btn">{t["rsvp.submit"]}</button
+                    <button type="submit" class="btn" id="submit"
+                        >{t["rsvp.submit"]}</button
                     >
-                    <p id="error" class="error hidden">{t["rsvp.error"]}</p>
+                    <p id="error" class="error hidden" role="alert">
+                        {t["rsvp.error"]}
+                    </p>
                 </form>
             </div>
         </div>
 
-        <div id="loader" class="loader hidden">
-            <div class="spin"></div>
+        <!-- Loading overlay -->
+        <div id="loader" class="loader hidden" aria-live="polite">
+            <div class="spin" aria-hidden="true"></div>
             <svg
                 class="check"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="3"
+                aria-hidden="true"
             >
                 <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
@@ -104,119 +121,160 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 <script>
     import { navigate } from "astro:transitions/client";
 
-    const URL =
+    const ENDPOINT =
         "https://script.google.com/macros/s/AKfycbwq4PjP3sAEj2YTMTge5tZkwDx447v4T-0ySATyf3GImmpnZTaop-NGoxFj-lSyGnTl/exec";
-    const KEY = "rsvp";
+    const STORAGE_KEY = "rsvp";
 
-    document.addEventListener("astro:page-load", () => {
+    function init() {
         const form = document.getElementById("form") as HTMLFormElement;
         if (!form) return;
 
-        const name = document.getElementById("name") as HTMLInputElement;
-        const guests = document.getElementById("guests") as HTMLInputElement;
+        // Elements
+        const nameInput = document.getElementById("name") as HTMLInputElement;
+        const guestsInput = document.getElementById(
+            "guests",
+        ) as HTMLInputElement;
         const guestsWrap = document.getElementById("guests-wrap");
-        const radios = document.getElementsByName("attending");
+        const radios = document.querySelectorAll<HTMLInputElement>(
+            'input[name="attending"]',
+        );
         const loader = document.getElementById("loader");
-        const status = document.getElementById("status");
-        const error = document.getElementById("error");
+        const statusEl = document.getElementById("status");
+        const errorEl = document.getElementById("error");
+        const submitBtn = document.getElementById(
+            "submit",
+        ) as HTMLButtonElement;
         const redirect = form.dataset.redirect || "/countdown";
 
-        // Reset loader
-        function reset() {
+        // Reset UI state on page load/restore
+        function resetUI() {
             loader?.classList.add("hidden");
             loader?.classList.remove("done");
-            error?.classList.add("hidden");
+            errorEl?.classList.add("hidden");
+            if (submitBtn) submitBtn.disabled = false;
         }
-        reset();
-        addEventListener("pageshow", reset);
+        resetUI();
+        window.addEventListener("pageshow", resetUI);
 
-        // Toggle guests
-        function toggleGuests(show: boolean) {
-            guestsWrap?.classList.toggle("show", show);
-        }
-
-        // Load saved
-        try {
-            const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
-            if (saved.name) name.value = saved.name;
-            if (saved.guests) guests.value = saved.guests;
-            if (saved.attending) {
-                const r = document.querySelector(
-                    `input[value="${saved.attending}"]`,
-                ) as HTMLInputElement;
-                if (r) {
-                    r.checked = true;
-                    toggleGuests(saved.attending === "yes");
-                }
-            }
-        } catch {}
-
-        // Save
-        let t: ReturnType<typeof setTimeout>;
-        function save() {
-            clearTimeout(t);
-            t = setTimeout(() => {
-                const r = document.querySelector(
-                    'input[name="attending"]:checked',
-                ) as HTMLInputElement;
-                localStorage.setItem(
-                    KEY,
-                    JSON.stringify({
-                        name: name.value,
-                        attending: r?.value,
-                        guests: guests.value,
-                    }),
-                );
-            }, 300);
-        }
-
-        name.addEventListener("input", save);
-        guests.addEventListener("input", () => {
-            if (guests.value.length > 1) guests.value = guests.value.slice(-1);
-            save();
-        });
-
-        radios.forEach((r) =>
-            r.addEventListener("change", (e) => {
-                toggleGuests((e.target as HTMLInputElement).value === "yes");
-                save();
-            }),
-        );
-
-        // Submit
-        form.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            loader?.classList.remove("hidden");
-            error?.classList.add("hidden");
-
-            const coming =
+        // Get selected attendance value
+        function getAttending(): string {
+            return (
                 (
                     document.querySelector(
                         'input[name="attending"]:checked',
                     ) as HTMLInputElement
-                )?.value === "yes";
+                )?.value || "yes"
+            );
+        }
+
+        // Toggle guests visibility based on attendance
+        function updateGuestsVisibility() {
+            const show = getAttending() === "yes";
+            guestsWrap?.classList.toggle("show", show);
+        }
+
+        // Restore saved form data
+        function restoreFormData() {
+            try {
+                const saved = JSON.parse(
+                    localStorage.getItem(STORAGE_KEY) || "{}",
+                );
+                if (saved.name && nameInput) nameInput.value = saved.name;
+                if (saved.guests && guestsInput)
+                    guestsInput.value = saved.guests;
+                if (saved.attending) {
+                    const radio = document.querySelector(
+                        `input[value="${saved.attending}"]`,
+                    ) as HTMLInputElement;
+                    if (radio) radio.checked = true;
+                }
+                updateGuestsVisibility();
+            } catch (e) {
+                // Ignore parse errors
+            }
+        }
+        restoreFormData();
+
+        // Save form data with debounce
+        let saveTimer: ReturnType<typeof setTimeout>;
+        function saveFormData() {
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(() => {
+                const data = {
+                    name: nameInput?.value || "",
+                    attending: getAttending(),
+                    guests: guestsInput?.value || "0",
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            }, 250);
+        }
+
+        // Event handlers
+        nameInput?.addEventListener("input", saveFormData);
+
+        guestsInput?.addEventListener("input", () => {
+            // Limit to single digit
+            if (guestsInput.value.length > 1) {
+                guestsInput.value = guestsInput.value.slice(-1);
+            }
+            // Ensure valid number
+            if (!/^[0-9]?$/.test(guestsInput.value)) {
+                guestsInput.value = "0";
+            }
+            saveFormData();
+        });
+
+        radios.forEach((radio) => {
+            radio.addEventListener("change", () => {
+                updateGuestsVisibility();
+                saveFormData();
+            });
+        });
+
+        // Form submission
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            // Show loader and disable button
+            loader?.classList.remove("hidden");
+            errorEl?.classList.add("hidden");
+            if (submitBtn) submitBtn.disabled = true;
+
+            const isAttending = getAttending() === "yes";
+            const formData = {
+                name: nameInput?.value.trim() || "",
+                attending: isAttending ? "Yes" : "No",
+                guests: isAttending ? Number(guestsInput?.value || 0) : 0,
+            };
 
             try {
-                await fetch(URL, {
+                await fetch(ENDPOINT, {
                     method: "POST",
                     mode: "no-cors",
-                    body: JSON.stringify({
-                        name: name.value.trim(),
-                        attending: coming ? "Yes" : "No",
-                        guests: coming ? +guests.value : 0,
-                    }),
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify(formData),
                 });
 
-                localStorage.removeItem(KEY);
+                // Success
+                localStorage.removeItem(STORAGE_KEY);
                 loader?.classList.add("done");
-                if (status) status.textContent = "✓";
-                setTimeout(() => navigate(redirect), 600);
-            } catch {
-                error?.classList.remove("hidden");
+                if (statusEl) statusEl.textContent = "✓";
+
+                // Navigate after brief delay
+                setTimeout(() => navigate(redirect), 500);
+            } catch (err) {
+                // Error
+                console.error("RSVP submission error:", err);
+                errorEl?.classList.remove("hidden");
                 loader?.classList.add("hidden");
+                if (submitBtn) submitBtn.disabled = false;
             }
         });
-    });
+    }
+
+    // Initialize on page load and Astro transitions
+    init();
+    document.addEventListener("astro:page-load", init);
 </script>
 
 <style>
@@ -263,6 +321,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
     .opt input {
         position: absolute;
         opacity: 0;
+        pointer-events: none;
     }
 
     .opt-btn {
@@ -273,7 +332,9 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         background: var(--c-white-10);
         border: 1px solid var(--c-white-20);
         border-radius: var(--radius-sm);
-        transition: all 0.15s var(--ease);
+        transition:
+            background 0.15s var(--ease),
+            border-color 0.15s var(--ease);
     }
 
     .opt input:checked + .yes {
@@ -288,6 +349,12 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         font-weight: 600;
     }
 
+    /* Touch feedback */
+    .opt:active .opt-btn {
+        opacity: 0.8;
+    }
+
+    /* Guests expandable section */
     .guests {
         display: grid;
         grid-template-rows: 0fr;
@@ -306,6 +373,11 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         margin-top: 0.5rem;
     }
 
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: wait;
+    }
+
     .error {
         text-align: center;
         color: #faa;
@@ -313,7 +385,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         margin-top: var(--gap);
     }
 
-    /* Loader */
+    /* Loader overlay */
     .loader {
         position: fixed;
         inset: 0;
@@ -324,7 +396,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         background: rgba(75, 1, 1, 0.96);
         z-index: 999;
         opacity: 1;
-        transition: opacity 0.15s;
+        transition: opacity 0.15s var(--ease);
     }
 
     .loader.hidden {

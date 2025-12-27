@@ -19,7 +19,7 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
             <h1 class="anim anim-1">{t["index.title"]}</h1>
             <p class="sub anim anim-2">{t["index.subtitle"]}</p>
 
-            <div class="hero anim anim-3">
+            <figure class="hero anim anim-3">
                 <Image
                     src={heroImg}
                     alt="Zaid & Haya"
@@ -28,7 +28,7 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
                     loading="eager"
                     fetchpriority="high"
                 />
-            </div>
+            </figure>
 
             <a href={rsvpLink} class="btn anim anim-4" data-astro-prefetch>
                 {t["index.cta"]}
@@ -55,11 +55,17 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
 
     .hero {
         width: 100%;
-        max-width: 220px;
+        max-width: 200px;
         margin: var(--gap) 0;
         border-radius: var(--radius);
         overflow: hidden;
         box-shadow: var(--shadow);
+    }
+
+    @media (min-width: 400px) {
+        .hero {
+            max-width: 240px;
+        }
     }
 
     .hero :global(img) {
@@ -69,6 +75,17 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
     }
 
     .btn {
-        max-width: 240px;
+        max-width: 220px;
+    }
+
+    @media (min-width: 400px) {
+        .btn {
+            max-width: 260px;
+        }
+    }
+
+    /* Touch active state */
+    .btn:active {
+        transform: scale(0.98);
     }
 </style>
