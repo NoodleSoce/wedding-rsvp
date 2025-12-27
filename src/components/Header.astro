@@ -49,6 +49,13 @@ const targetPath =
     pointer-events: none;
   }
 
+  /* Landscape: more padding */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .header {
+      padding: 0.75rem 1rem;
+    }
+  }
+
   .inner {
     position: relative;
     max-width: 600px;
@@ -67,19 +74,26 @@ const targetPath =
   }
 
   .logo {
-    height: 64px;
+    height: 60px;
     width: auto;
   }
 
   @media (min-width: 400px) {
     .logo {
-      height: 72px;
+      height: 68px;
     }
   }
 
   @media (min-width: 600px) {
     .logo {
-      height: 80px;
+      height: 76px;
+    }
+  }
+
+  /* Landscape: smaller logo */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .logo {
+      height: 48px;
     }
   }
 
@@ -121,7 +135,7 @@ const targetPath =
   }
 
   .header.animated .lang-btn {
-    animation: fadeSlideDown 0.5s ease both;
+    animation: fadeSlideDownBtn 0.5s ease both;
     animation-delay: 0.15s;
   }
 
@@ -136,11 +150,6 @@ const targetPath =
     }
   }
 
-  /* Fix lang-btn transform after animation */
-  .header.animated .lang-btn {
-    transform: translateY(-50%);
-  }
-
   @keyframes fadeSlideDownBtn {
     from {
       opacity: 0;
@@ -150,9 +159,5 @@ const targetPath =
       opacity: 1;
       transform: translateY(-50%);
     }
-  }
-
-  .header.animated .lang-btn {
-    animation-name: fadeSlideDownBtn;
   }
 </style>

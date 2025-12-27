@@ -1,5 +1,5 @@
 ---
-// Confetti - slower, optimized, respects reduced motion
+// Confetti - slower, content area only, respects reduced motion
 ---
 
 <script>
@@ -8,40 +8,60 @@
   let timer: number;
 
   function run() {
-    if (!document.querySelector(".page[data-target]")) return;
+    const page = document.querySelector(".page[data-target]");
+    if (!page) return;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    // Slower: 4 seconds duration, 350ms interval
-    const end = Date.now() + 4000;
+    // Get the content area bounds
+    const content = page.querySelector(".content");
+    const rect = content?.getBoundingClientRect();
+
+    // Calculate origin based on content position
+    const originY = rect
+      ? (rect.top + rect.height * 0.3) / window.innerHeight
+      : 0.2;
+    const leftX = rect ? rect.left / window.innerWidth : 0.2;
+    const rightX = rect ? rect.right / window.innerWidth : 0.8;
+
+    // Slower: 4.5 seconds duration, 400ms interval
+    const end = Date.now() + 4500;
 
     clearInterval(timer);
     timer = setInterval(() => {
       if (Date.now() > end) return clearInterval(timer);
 
+      // Left burst - within content area
       confetti({
-        particleCount: 20,
-        spread: 300,
-        startVelocity: 15,
-        ticks: 60,
-        gravity: 0.8,
-        origin: { x: Math.random() * 0.4 + 0.1, y: Math.random() * 0.2 },
+        particleCount: 15,
+        spread: 70,
+        startVelocity: 12,
+        ticks: 80,
+        gravity: 0.7,
+        origin: {
+          x: leftX + Math.random() * 0.15,
+          y: originY + Math.random() * 0.1,
+        },
         zIndex: 0,
       });
 
+      // Right burst - within content area
       confetti({
-        particleCount: 20,
-        spread: 300,
-        startVelocity: 15,
-        ticks: 60,
-        gravity: 0.8,
-        origin: { x: Math.random() * 0.4 + 0.5, y: Math.random() * 0.2 },
+        particleCount: 15,
+        spread: 70,
+        startVelocity: 12,
+        ticks: 80,
+        gravity: 0.7,
+        origin: {
+          x: rightX - Math.random() * 0.15,
+          y: originY + Math.random() * 0.1,
+        },
         zIndex: 0,
       });
-    }, 350) as unknown as number;
+    }, 400) as unknown as number;
   }
 
   document.addEventListener("astro:page-load", () => {
-    requestAnimationFrame(() => setTimeout(run, 200));
+    requestAnimationFrame(() => setTimeout(run, 300));
   });
 
   document.addEventListener("astro:before-swap", () => {

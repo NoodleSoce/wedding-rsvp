@@ -33,9 +33,9 @@
     --space-6: 1.5rem;
     --space-8: 2rem;
 
-    /* Layout */
+    /* Layout - more header space */
     --max-w: min(92vw, 480px);
-    --header-h: clamp(80px, 68px + 3vw, 100px);
+    --header-h: clamp(90px, 75px + 4vw, 120px);
     --page-pad: clamp(1rem, 0.75rem + 1.25vw, 1.75rem);
 
     /* Appearance */
@@ -101,7 +101,7 @@ h2 {
 }
 
 /* ========================================
-   PAGE LAYOUT - Centered content
+   PAGE LAYOUT
    ======================================== */
 .page {
     min-height: 100vh;
@@ -112,6 +112,14 @@ h2 {
     align-items: center;
     padding: var(--header-h) var(--page-pad) var(--page-pad);
     background: var(--bg);
+}
+
+/* Landscape mode: add more top padding */
+@media (orientation: landscape) and (max-height: 500px) {
+    .page {
+        padding-top: calc(var(--header-h) + var(--space-4));
+        align-items: flex-start;
+    }
 }
 
 .content {
@@ -192,7 +200,6 @@ h2 {
     padding: var(--space-4);
     font: inherit;
     font-size: 16px;
-    /* Prevents iOS zoom */
     color: var(--white);
     background: rgba(0, 0, 0, 0.15);
     border: 1px solid var(--white-20);
