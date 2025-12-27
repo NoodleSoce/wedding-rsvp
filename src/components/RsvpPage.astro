@@ -377,7 +377,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         padding-top: var(--header-height);
         display: flex;
         flex-direction: column;
-        justify-content: flex-start; /* Ensure padding is always respected */
+        justify-content: center;
         align-items: center;
         overflow: hidden;
         position: fixed;
@@ -386,7 +386,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         transform: translateZ(0);
     }
 
-    /* Use margin: auto on the child to achieve centering that respects top/bottom constraints (safe centering) */
     .content-wrapper {
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
@@ -394,20 +393,19 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         border-radius: var(--radius-lg);
         box-shadow: var(--shadow-lg);
         border: 1px solid rgba(255, 255, 255, 0.2);
-        width: calc(100% - 2rem); /* Full width minus margins */
+        width: calc(100% - 2rem);
         max-width: 600px;
-        margin: auto; /* This centers it vertically and respects boundaries */
-        max-height: 90vh;
-        overflow-y: auto;
-        scroll-behavior: smooth;
-        -webkit-overflow-scrolling: touch;
+        /* Prevent any resize/layout shift */
+        contain: layout style;
+        /* Remove auto scrolling that causes jitter */
+        overflow: visible;
     }
 
     h2 {
         color: var(--color-white);
         font-family: var(--font-body);
         font-size: var(--text-2xl);
-        margin-bottom: 2vh; /* Increased from 1vh for better spacing above subtitle */
+        margin-bottom: 0.25rem;
         text-align: center;
         font-weight: 400;
         font-style: italic;
@@ -416,7 +414,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
     .subtitle {
         text-align: center;
         color: rgba(255, 255, 255, 0.8);
-        margin-bottom: 1vh; /* Reduced from 2vh */
+        margin-bottom: 1.5rem;
         font-size: var(--text-sm);
         font-weight: 300;
     }
@@ -444,9 +442,8 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         font-family: inherit;
         font-size: var(--text-base);
         color: white;
-        transition:
-            border-color 0.2s ease,
-            background 0.2s ease;
+        /* Prevent layout shift on focus by keeping consistent box model */
+        box-sizing: border-box;
         -webkit-appearance: none;
         appearance: none;
     }
@@ -458,7 +455,9 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
     input:focus {
         outline: none;
         border-color: var(--color-white);
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.15);
+        /* Use box-shadow for visual feedback instead of anything that causes reflow */
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
     }
 
     .radio-group {
@@ -480,12 +479,15 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 
     .radio-label {
         display: block;
-        padding: 0.75rem; /* Reduced padding */
+        padding: 0.75rem;
         text-align: center;
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.3);
         border-radius: 0.5rem;
-        transition: all 0.2s;
+        transition:
+            background-color 0.2s ease,
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
         font-size: 1rem;
         color: white;
     }
