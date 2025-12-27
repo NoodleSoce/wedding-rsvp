@@ -1,0 +1,51 @@
+---
+---
+<script>
+  import confetti from 'canvas-confetti';
+
+  // Store interval ID in a way that persists across re-runs but is module-scoped
+  let confettiInterval: number | undefined;
+
+  function runConfetti() {
+    // Only run on countdown page
+    if (!document.querySelector('.countdown-page')) return;
+
+    // Respect reduced motion preferences
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 50, zIndex: 0 };
+
+    function randomInRange(min: number, max: number) {
+      return Math.random() * (max - min) + min;
+    }
+
+    // Clear any existing interval to prevent stacking
+    if (confettiInterval) clearInterval(confettiInterval);
+
+    // Fire confetti
+    confettiInterval = setInterval(function() {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        if (confettiInterval) clearInterval(confettiInterval);
+        return;
+      }
+
+      const particleCount = 40 * (timeLeft / duration);
+      
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+    }, 250) as unknown as number;
+  }
+
+  // Run on initial load and View Transitions
+  document.addEventListener("astro:page-load", runConfetti);
+  document.addEventListener("astro:before-swap", () => {
+     if (confettiInterval) clearInterval(confettiInterval);
+     // Reset canvas-confetti if possible/needed, but it handles its own canvas usually
+     try { (confetti as any).reset(); } catch(e){}
+  });
+</script>

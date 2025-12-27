@@ -1,0 +1,253 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Confetti from "../components/Confetti.astro";
+
+// Target Date: Saturday March 21, 2026 at 7:00 PM Dubai Time (UTC+4)
+// ISO string with offset ensures correct absolute time regardless of user location
+const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
+---
+
+<Layout title="Countdown">
+	<Confetti />
+	<main class="countdown-page fade-in" data-target-date={targetDate}>
+		<div class="content block">
+			<h1 class="stagger-1">
+				We cannot wait to celebrate <em>our big day</em> with <em
+					>you</em
+				>
+			</h1>
+			<div id="countdown" class="timer stagger-2">
+				<div class="time-unit">
+					<span id="days">00</span>
+					<label>Days</label>
+				</div>
+				<div class="separator">:</div>
+				<div class="time-unit">
+					<span id="hours">00</span>
+					<label>Hours</label>
+				</div>
+				<div class="separator">:</div>
+				<div class="time-unit">
+					<span id="minutes">00</span>
+					<label>Minutes</label>
+				</div>
+				<div class="separator">:</div>
+				<div class="time-unit">
+					<span id="seconds">00</span>
+					<label>Seconds</label>
+				</div>
+			</div>
+			<div class="location-section stagger-3">
+				<h2>Location</h2>
+				<p>Dubai, UAE</p>
+				<div class="map-container stagger-4">
+					<iframe
+						src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3610.178!2d55.2744!3d25.1972!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f43348a67e24b%3A0xff45e502e1ceb7e2!2sBurj%20Khalifa!5e0!3m2!1sen!2sae!4v1703634000000!5m2!1sen!2sae"
+						width="100%"
+						height="100%"
+						style="border:0;"
+						allowfullscreen=""
+						loading="lazy"
+						fetchpriority="low"
+						referrerpolicy="no-referrer-when-downgrade"
+						title="Wedding venue location on Google Maps"></iframe>
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<script>
+		let countdownInterval: number | undefined;
+
+		function initCountdown() {
+			const container = document.querySelector(
+				".countdown-page",
+			) as HTMLElement;
+			if (!container || !container.dataset.targetDate) return;
+
+			const targetDate = Number(container.dataset.targetDate);
+			const daysEl = document.getElementById("days");
+			const hoursEl = document.getElementById("hours");
+			const minutesEl = document.getElementById("minutes");
+			const secondsEl = document.getElementById("seconds");
+			const countdownEl = document.getElementById("countdown");
+
+			function updateCountdown() {
+				const now = Date.now();
+				const distance = targetDate - now;
+
+				if (distance < 0) {
+					if (countdownEl) countdownEl.innerHTML = "EXPIRED";
+					if (countdownInterval) clearInterval(countdownInterval);
+					return;
+				}
+
+				const days = Math.floor(distance / 86400000);
+				const hours = Math.floor((distance % 86400000) / 3600000);
+				const minutes = Math.floor((distance % 3600000) / 60000);
+				const seconds = Math.floor((distance % 60000) / 1000);
+
+				if (daysEl) daysEl.textContent = String(days).padStart(2, "0");
+				if (hoursEl)
+					hoursEl.textContent = String(hours).padStart(2, "0");
+				if (minutesEl)
+					minutesEl.textContent = String(minutes).padStart(2, "0");
+				if (secondsEl)
+					secondsEl.textContent = String(seconds).padStart(2, "0");
+			}
+
+			// Start immediately
+			updateCountdown();
+
+			// Clear any existing interval
+			if (countdownInterval) clearInterval(countdownInterval);
+
+			// Start new interval
+			countdownInterval = setInterval(
+				updateCountdown,
+				1000,
+			) as unknown as number;
+		}
+
+		// Initial run
+		initCountdown();
+
+		// View Transitions Support
+		document.addEventListener("astro:page-load", initCountdown);
+		document.addEventListener("astro:before-swap", () => {
+			if (countdownInterval) clearInterval(countdownInterval);
+		});
+	</script>
+
+	<style>
+		.countdown-page {
+			height: 100vh;
+			height: 100dvh;
+			background: var(--color-bg);
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-start;
+			padding: 0;
+			padding-top: var(--header-height);
+			overflow: hidden;
+		}
+		/* Grouping: Content container spacing */
+		.content {
+			height: 100%;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			text-align: center;
+			padding: 1rem;
+			padding-top: 5rem; /* Shifted down for optical centering */
+			padding-bottom: calc(var(--header-height) - 1rem);
+			gap: 2rem;
+			content-visibility: auto;
+		}
+
+		@media (min-width: 768px) {
+			.content {
+				padding-bottom: var(--header-height);
+				gap: 3.5rem;
+			}
+		}
+
+		.content h1 {
+			margin-bottom: 0.5rem;
+		}
+
+		h1 {
+			color: var(--color-white);
+			margin-bottom: 0.5rem;
+			font-size: clamp(1.58rem, 4.6vw, 2.58rem);
+			line-height: 1.15;
+			text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+			padding: 0 0.5rem;
+			font-weight: 300;
+			max-width: 740px;
+			width: 100%;
+		}
+
+		h1 em {
+			font-style: italic;
+		}
+
+		.timer {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			margin: 0 auto;
+			gap: 0.5rem;
+			width: fit-content;
+			max-width: 100%;
+		}
+
+		.time-unit {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			width: auto;
+			min-width: 40px;
+			padding: 0 0.25rem;
+		}
+
+		.time-unit span {
+			font-size: clamp(1.48rem, 4.3vw, 2.68rem);
+			font-weight: 700;
+			color: var(--color-white);
+			line-height: 1;
+			text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+			font-variant-numeric: tabular-nums; /* Stable number widths */
+			contain: content; /* Isolate repaints */
+		}
+
+		.separator {
+			font-size: clamp(1.3rem, 3.5vw, 2.3rem);
+			margin: 0;
+			padding-bottom: 1.5rem;
+			color: rgba(255, 255, 255, 0.3);
+		}
+
+		.location-section {
+			width: 100%;
+			max-width: 600px;
+			text-align: center;
+			background: rgba(0, 0, 0, 0.2);
+			padding: 1rem;
+			border-radius: var(--radius-lg);
+			backdrop-filter: blur(10px);
+			margin: 0 auto;
+			contain: content;
+		}
+
+		.location-section h2 {
+			font-size: var(--text-lg);
+			margin-bottom: 0.25rem;
+			color: var(--color-white);
+			font-weight: 400;
+		}
+
+		.location-section p {
+			font-size: var(--text-base);
+			color: white;
+			margin-bottom: 0.5rem;
+			opacity: 0.9;
+		}
+
+		.map-container {
+			border-radius: 0.5rem;
+			overflow: hidden;
+			margin: 1rem auto 3%; /* 3% approximates the side gap ((100-94)/2) */
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			height: 25vh;
+			max-height: 200px;
+			width: 94%;
+		}
+
+		iframe {
+			height: 100% !important;
+		}
+	</style>
+</Layout>

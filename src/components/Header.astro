@@ -1,0 +1,36 @@
+---
+import { Image } from "astro:assets";
+import logoImg from "../assets/logo.webp";
+---
+
+<header class="app-header" transition:persist>
+  <Image
+    src={logoImg}
+    alt="Zaid & Haya Wedding Logo"
+    class="logo-img"
+    width={300}
+    height={100}
+    loading="eager"
+    fetchpriority="high"
+    decoding="async"
+  />
+</header>
+
+<style>
+  .app-header {
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    width: 100%;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo-img {
+    height: 84px;
+    width: auto;
+    object-fit: contain;
+  }
+</style>

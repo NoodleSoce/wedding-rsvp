@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://zaidandhaya.com/sitemap.xml

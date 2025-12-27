@@ -1,0 +1,17 @@
+{
+  "name": "zaidandhaya",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@fontsource/libre-baskerville": "^5.2.10",
+    "@types/canvas-confetti": "^1.9.0",
+    "astro": "^5.16.6",
+    "canvas-confetti": "^1.9.4"
+  }
+}
