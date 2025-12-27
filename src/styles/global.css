@@ -34,7 +34,7 @@
 
     /* Layout */
     --max-w: 560px;
-    --header-h: clamp(60px, 8vh, 80px);
+    --header-h: clamp(70px, 10vh, 90px);
 
     /* Effects */
     --shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
@@ -73,17 +73,36 @@ body {
     touch-action: manipulation;
 }
 
-/* Shared Page Layout */
+/* ========================================
+   SHARED PAGE LAYOUT
+   Content is always centered between 
+   header bottom and viewport bottom
+   ======================================== */
 .page {
     position: fixed;
     inset: 0;
+    /* Push content below header */
+    padding-top: var(--header-h);
+    /* Content area fills remaining space and centers children */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    /* Side padding */
+    padding-left: var(--s-4);
+    padding-right: var(--s-4);
+    overflow: hidden;
+    background: var(--c-bg);
+}
+
+/* The content wrapper centers everything */
+.page-content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: var(--s-4);
-    padding-top: calc(var(--header-h) + var(--s-8));
-    overflow: hidden;
-    background: var(--c-bg);
+    text-align: center;
+    width: 100%;
+    max-width: var(--max-w);
 }
 
 /* Shared Card */

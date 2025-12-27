@@ -14,16 +14,15 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
 ---
 
 <Layout title={lang === "ar" ? "الرئيسية" : "Welcome"} lang={lang}>
-    <main class="page landing">
-        <div class="content fade-in">
-            <h1 class="anim anim-1">{t["index.title"]}</h1>
+    <main class="page fade-in">
+        <div class="page-content">
+            <h1 class="title anim anim-1">{t["index.title"]}</h1>
             <p class="subtitle anim anim-2">{t["index.subtitle"]}</p>
 
-            <div class="hero-wrap anim anim-3">
+            <div class="hero anim anim-3">
                 <Image
                     src={heroImg}
                     alt="Zaid & Haya"
-                    class="hero-img"
                     width={600}
                     densities={[1.5, 2]}
                     loading="eager"
@@ -39,25 +38,13 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
 </Layout>
 
 <style>
-    .landing {
-        justify-content: center;
-        padding-top: calc(var(--header-h) + var(--s-12));
-    }
-
-    .content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+    .page-content {
         gap: var(--s-4);
-        width: 100%;
-        max-width: var(--max-w);
     }
 
-    h1 {
+    .title {
         font-size: var(--fs-2xl);
         font-style: italic;
-        padding: 0 var(--s-2);
     }
 
     .subtitle {
@@ -66,23 +53,22 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
         font-weight: 300;
     }
 
-    .hero-wrap {
+    .hero {
         width: 100%;
-        max-width: 260px;
-        margin: var(--s-4) 0;
+        max-width: 240px;
+        margin: var(--s-2) 0;
         border-radius: var(--radius);
         overflow: hidden;
         box-shadow: var(--shadow);
     }
 
-    .hero-img {
+    .hero :global(img) {
         width: 100%;
         height: auto;
         display: block;
     }
 
     .btn {
-        max-width: 300px;
-        margin-bottom: var(--s-12);
+        max-width: 280px;
     }
 </style>

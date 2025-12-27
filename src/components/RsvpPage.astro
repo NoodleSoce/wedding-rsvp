@@ -12,72 +12,79 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 ---
 
 <Layout title={lang === "ar" ? "تأكيد الحضور" : "RSVP"} lang={lang}>
-    <main class="page rsvp fade-in">
-        <div class="card">
-            <h2 class="anim anim-1">{t["rsvp.title"]}</h2>
-            <p class="subtitle anim anim-2">{t["rsvp.subtitle"]}</p>
+    <main class="page fade-in">
+        <div class="page-content">
+            <div class="card">
+                <h2 class="title anim anim-1">{t["rsvp.title"]}</h2>
+                <p class="subtitle anim anim-2">{t["rsvp.subtitle"]}</p>
 
-            <form id="form" class="anim anim-3" data-redirect={redirectUrl}>
-                <a href={redirectUrl} data-astro-prefetch="load" hidden></a>
+                <form id="form" class="anim anim-3" data-redirect={redirectUrl}>
+                    <a href={redirectUrl} data-astro-prefetch="load" hidden></a>
 
-                <div class="field">
-                    <label class="label" for="name">{t["rsvp.name"]}</label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        class="input"
-                        required
-                        placeholder={t["rsvp.namePlaceholder"]}
-                        autocomplete="name"
-                        autocapitalize="words"
-                    />
-                </div>
-
-                <div class="field">
-                    <label class="label">{t["rsvp.attending"]}</label>
-                    <div class="options">
-                        <label class="option">
-                            <input
-                                type="radio"
-                                name="attending"
-                                value="yes"
-                                checked
-                            />
-                            <span class="option-label accept"
-                                >{t["rsvp.accept"]}</span
-                            >
-                        </label>
-                        <label class="option">
-                            <input type="radio" name="attending" value="no" />
-                            <span class="option-label decline"
-                                >{t["rsvp.decline"]}</span
-                            >
-                        </label>
-                    </div>
-                </div>
-
-                <div id="guests-wrap" class="expand expanded">
                     <div class="field">
-                        <label class="label" for="guests"
-                            >{t["rsvp.guests"]}</label
-                        >
+                        <label class="label" for="name">{t["rsvp.name"]}</label>
                         <input
-                            type="number"
-                            id="guests"
-                            name="guests"
+                            type="text"
+                            id="name"
+                            name="name"
                             class="input"
-                            min="0"
-                            max="9"
-                            value="0"
-                            inputmode="numeric"
+                            required
+                            placeholder={t["rsvp.namePlaceholder"]}
+                            autocomplete="name"
+                            autocapitalize="words"
                         />
                     </div>
-                </div>
 
-                <button type="submit" class="btn">{t["rsvp.submit"]}</button>
-                <p id="error" class="error hidden">{t["rsvp.error"]}</p>
-            </form>
+                    <div class="field">
+                        <label class="label">{t["rsvp.attending"]}</label>
+                        <div class="options">
+                            <label class="option">
+                                <input
+                                    type="radio"
+                                    name="attending"
+                                    value="yes"
+                                    checked
+                                />
+                                <span class="option-label accept"
+                                    >{t["rsvp.accept"]}</span
+                                >
+                            </label>
+                            <label class="option">
+                                <input
+                                    type="radio"
+                                    name="attending"
+                                    value="no"
+                                />
+                                <span class="option-label decline"
+                                    >{t["rsvp.decline"]}</span
+                                >
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="guests-wrap" class="expand expanded">
+                        <div class="field">
+                            <label class="label" for="guests"
+                                >{t["rsvp.guests"]}</label
+                            >
+                            <input
+                                type="number"
+                                id="guests"
+                                name="guests"
+                                class="input"
+                                min="0"
+                                max="9"
+                                value="0"
+                                inputmode="numeric"
+                            />
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn">{t["rsvp.submit"]}</button
+                    >
+                    <p id="error" class="error hidden">{t["rsvp.error"]}</p>
+                </form>
+            </div>
         </div>
 
         <!-- Loader -->
@@ -222,12 +229,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 </script>
 
 <style>
-    .rsvp {
-        justify-content: flex-start;
-        padding-top: calc(var(--header-h) + 10vh);
-    }
-
-    h2 {
+    .title {
         font-size: var(--fs-2xl);
         font-style: italic;
         text-align: center;

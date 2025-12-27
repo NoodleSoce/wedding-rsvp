@@ -15,12 +15,12 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
 <Layout title={lang === "ar" ? "العد التنازلي" : "Countdown"} lang={lang}>
     <Confetti />
     <main
-        class="page countdown"
+        class="page fade-in"
         data-target={targetDate}
         data-expired={t["countdown.expired"]}
     >
-        <div class="content fade-in">
-            <h1 class="anim anim-1">{t["countdown.title"]}</h1>
+        <div class="page-content">
+            <h1 class="title anim anim-1">{t["countdown.title"]}</h1>
 
             <div class="timer anim anim-2" id="timer">
                 <div class="unit">
@@ -62,7 +62,9 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
     let interval: number;
 
     function init() {
-        const page = document.querySelector(".countdown") as HTMLElement;
+        const page = document.querySelector(
+            ".page[data-target]",
+        ) as HTMLElement;
         if (!page) return;
 
         const target = Number(page.dataset.target);
@@ -121,26 +123,15 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
 </script>
 
 <style>
-    .countdown {
-        justify-content: flex-start;
-        padding-top: calc(var(--header-h) + var(--s-8));
+    .page-content {
+        gap: var(--s-6);
     }
 
-    .content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: var(--s-8);
-        width: 100%;
-        max-width: 700px;
-    }
-
-    h1 {
-        font-size: clamp(1.5rem, 4.5vw, 2.25rem);
+    .title {
+        font-size: clamp(1.4rem, 4vw, 2rem);
         font-weight: 300;
-        line-height: 1.2;
-        padding: 0 var(--s-2);
+        line-height: 1.25;
+        max-width: 600px;
     }
 
     .timer {
@@ -157,7 +148,7 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
     }
 
     .unit span {
-        font-size: clamp(1.5rem, 4vw, 2.5rem);
+        font-size: clamp(1.4rem, 3.5vw, 2.25rem);
         font-weight: 700;
         font-variant-numeric: tabular-nums;
         line-height: 1;
@@ -170,14 +161,13 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
     }
 
     .sep {
-        font-size: clamp(1.25rem, 3vw, 2rem);
+        font-size: clamp(1.2rem, 2.5vw, 1.75rem);
         color: var(--c-white-50);
         padding-bottom: var(--s-6);
     }
 
     .location {
         width: 100%;
-        max-width: var(--max-w);
     }
 
     .location h2 {
@@ -193,8 +183,8 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
     .map {
         border-radius: var(--s-2);
         overflow: hidden;
-        height: 25vh;
-        max-height: 180px;
+        height: 22vh;
+        max-height: 160px;
         box-shadow: var(--shadow);
     }
 
