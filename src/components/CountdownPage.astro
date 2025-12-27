@@ -18,9 +18,13 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         class="page fade"
         data-target={targetDate}
         data-expired={t["countdown.expired"]}
+        data-title={t["countdown.title"]}
+        data-title-declined={t["countdown.titleDeclined"]}
     >
         <div class="content countdown">
-            <h1 class="title anim anim-1">{t["countdown.title"]}</h1>
+            <h1 class="title anim anim-1" id="countdown-title">
+                {t["countdown.title"]}
+            </h1>
 
             <div class="timer anim anim-2" id="timer" role="timer">
                 <div class="unit">
@@ -69,6 +73,16 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
 
         const target = Number(page.dataset.target);
         const expired = page.dataset.expired || "Started!";
+        const titleEl = document.getElementById("countdown-title");
+
+        // Check if user declined (stored in sessionStorage)
+        const declined = sessionStorage.getItem("rsvp_declined") === "true";
+
+        if (declined && titleEl) {
+            titleEl.textContent =
+                page.dataset.titleDeclined || titleEl.textContent;
+        }
+
         const el = {
             timer: document.getElementById("timer"),
             d: document.getElementById("days"),
@@ -163,9 +177,11 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         margin-top: var(--space-2);
     }
 
+    /* Bigger, more consistent colons */
     .sep {
-        font-size: clamp(1rem, 0.8rem + 0.5vw, 1.5rem);
-        color: var(--white-50);
+        font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+        font-weight: 700;
+        color: var(--white-70);
         margin-bottom: var(--space-6);
     }
 
@@ -182,7 +198,6 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         margin-bottom: var(--space-4);
     }
 
-    /* Map - consistent height in all orientations */
     .map {
         border-radius: var(--radius-sm);
         overflow: hidden;
@@ -191,7 +206,6 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         box-shadow: var(--shadow);
     }
 
-    /* Landscape: use more width-based sizing */
     @media (orientation: landscape) and (max-height: 500px) {
         .map {
             height: clamp(100px, 30vw, 160px);

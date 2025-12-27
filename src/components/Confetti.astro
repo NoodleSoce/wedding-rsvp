@@ -1,5 +1,5 @@
 ---
-// Confetti - random positions in content area
+// Confetti - only plays if user accepted (not declined)
 ---
 
 <script>
@@ -12,26 +12,26 @@
     if (!page) return;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
+    // Don't play confetti if user declined
+    if (sessionStorage.getItem("rsvp_declined") === "true") return;
+
     // Get content area bounds
     const content = page.querySelector(".content");
     const rect = content?.getBoundingClientRect();
 
     if (!rect) return;
 
-    // Calculate content area in viewport percentages
     const contentLeft = rect.left / window.innerWidth;
     const contentRight = rect.right / window.innerWidth;
     const contentWidth = contentRight - contentLeft;
     const contentTop = rect.top / window.innerHeight;
 
-    // Duration and interval
     const end = Date.now() + 4500;
 
     clearInterval(timer);
     timer = setInterval(() => {
       if (Date.now() > end) return clearInterval(timer);
 
-      // Random position within content area
       const randomX = contentLeft + Math.random() * contentWidth;
       const randomY = contentTop + Math.random() * 0.3;
 

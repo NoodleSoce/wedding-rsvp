@@ -89,7 +89,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             </div>
         </div>
 
-        <!-- Loading overlay with smooth transition -->
+        <!-- Loading overlay -->
         <div id="loading-overlay" class="loading-overlay">
             <div class="loading-content">
                 <div id="spinner" class="spinner"></div>
@@ -279,7 +279,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             (document.activeElement as HTMLElement)?.blur();
             keyboardOpen = false;
 
-            // Show loading with smooth transition
             if (loadingOverlay) loadingOverlay.classList.add("visible");
             if (spinner) {
                 spinner.style.display = "";
@@ -293,6 +292,12 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             if (submitBtn) submitBtn.disabled = true;
 
             const isAttending = getAttending() === "yes";
+
+            // Store decline status for countdown page
+            sessionStorage.setItem(
+                "rsvp_declined",
+                isAttending ? "false" : "true",
+            );
 
             try {
                 await fetch(API, {
@@ -331,9 +336,11 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 </script>
 
 <style>
+    /* RSVP page - scrollable, content doesn't overlap header */
     .rsvp-page {
-        position: fixed;
-        inset: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        width: 100%;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -500,7 +507,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         margin-top: var(--space-4);
     }
 
-    /* Loading overlay with smooth fade transition */
+    /* Loading overlay */
     .loading-overlay {
         position: fixed;
         inset: 0;
@@ -527,7 +534,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         align-items: center;
     }
 
-    /* Bigger spinner */
     .spinner {
         width: 52px;
         height: 52px;
@@ -549,7 +555,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         }
     }
 
-    /* Bigger checkmark */
     .checkmark {
         width: 52px;
         height: 52px;

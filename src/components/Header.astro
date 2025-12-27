@@ -15,6 +15,7 @@ const targetPath =
       ? "/ar"
       : `/ar${path}`
     : path.replace("/ar", "") || "/";
+const buttonText = lang === "en" ? "ع" : "EN";
 ---
 
 <header class:list={["header", { animated: showAnimation }]}>
@@ -33,9 +34,9 @@ const targetPath =
       href={targetPath}
       class="lang-btn"
       data-astro-prefetch
-      onclick="localStorage.setItem('preferred_lang', this.textContent.trim() === 'AR' ? 'ar' : 'en')"
+      onclick="localStorage.setItem('preferred_lang', this.textContent.trim() === 'ع' ? 'ar' : 'en')"
     >
-      {lang === "en" ? "AR" : "EN"}
+      {buttonText}
     </a>
   </div>
 </header>
@@ -60,6 +61,7 @@ const targetPath =
     pointer-events: auto;
     direction: ltr;
     position: relative;
+    padding: 0 1rem;
   }
 
   .logo-wrap {
@@ -95,20 +97,20 @@ const targetPath =
     }
   }
 
-  /* Language button - centered with logo */
+  /* Language button - right side, same spacing from top and right */
   .lang-btn {
     position: absolute;
     right: 0;
     top: 50%;
     transform: translateY(-50%);
     min-height: 40px;
-    min-width: 48px;
+    min-width: 40px;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 0.5rem 0.875rem;
+    padding: 0.5rem 0.75rem;
     font-family: "Libre Baskerville", "Amiri", Georgia, serif;
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #fff;
     background: rgba(255, 255, 255, 0.1);
