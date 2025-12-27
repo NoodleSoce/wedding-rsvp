@@ -116,8 +116,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 </Layout>
 
 <script>
-    import { navigate } from "astro:transitions/client";
-
     const API =
         "https://script.google.com/macros/s/AKfycbwq4PjP3sAEj2YTMTge5tZkwDx447v4T-0ySATyf3GImmpnZTaop-NGoxFj-lSyGnTl/exec";
     const KEY = "rsvp";
@@ -330,7 +328,17 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                     }
                 }, 300);
 
-                setTimeout(() => navigate(redirect), 900);
+                // Navigate using the prefetched link (more reliable than navigate())
+                setTimeout(() => {
+                    const link = form.querySelector(
+                        "a[data-astro-prefetch]",
+                    ) as HTMLAnchorElement;
+                    if (link) {
+                        link.click();
+                    } else {
+                        window.location.href = redirect;
+                    }
+                }, 900);
             } catch {
                 if (loadingOverlay) loadingOverlay.classList.remove("visible");
                 if (errorMsg) errorMsg.hidden = false;

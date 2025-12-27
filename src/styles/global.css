@@ -15,8 +15,8 @@
     --success: #2e7d32;
     --error: #c62828;
 
-    /* Typography - single font for consistency */
-    --font: 'Playfair Display', Georgia, serif;
+    /* Typography */
+    --font: 'Libre Baskerville', 'Amiri', Georgia, serif;
     --fs-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.85rem);
     --fs-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
     --fs-base: clamp(1rem, 0.9rem + 0.5vw, 1.15rem);

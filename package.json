@@ -9,7 +9,8 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@fontsource/playfair-display": "^5.2.8",
+    "@fontsource/amiri": "^5.2.8",
+    "@fontsource/libre-baskerville": "^5.2.10",
     "@types/canvas-confetti": "^1.9.0",
     "astro": "^5.16.6",
     "canvas-confetti": "^1.9.4"
