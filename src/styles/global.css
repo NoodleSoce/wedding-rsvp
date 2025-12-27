@@ -1,6 +1,6 @@
 /* ========================================
    WEDDING RSVP - Design System
-   Consistent, optimized, mobile-first
+   Adaptive sizing for all screen sizes
    ======================================== */
 
 :root {
@@ -15,44 +15,37 @@
     --success: #2e7d32;
     --error: #c62828;
 
-    /* Typography */
+    /* Typography - fluid scaling */
     --font: 'Libre Baskerville', 'Amiri', Georgia, serif;
-    --fs-xs: 0.75rem;
-    --fs-sm: 0.8125rem;
-    --fs-base: 0.9375rem;
-    --fs-lg: 1.0625rem;
-    --fs-xl: 1.375rem;
-    --fs-2xl: 1.625rem;
+    --fs-xs: clamp(0.7rem, 0.65rem + 0.25vw, 0.8rem);
+    --fs-sm: clamp(0.8rem, 0.75rem + 0.25vw, 0.9rem);
+    --fs-base: clamp(0.9rem, 0.85rem + 0.25vw, 1rem);
+    --fs-lg: clamp(1rem, 0.9rem + 0.5vw, 1.15rem);
+    --fs-xl: clamp(1.25rem, 1rem + 1.25vw, 1.75rem);
+    --fs-2xl: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
 
-    /* Spacing */
-    --space-1: 0.25rem;
-    --space-2: 0.5rem;
-    --space-3: 0.75rem;
-    --space-4: 1rem;
-    --space-5: 1.25rem;
-    --space-6: 1.5rem;
+    /* Spacing - fluid scaling */
+    --space-1: clamp(0.2rem, 0.15rem + 0.25vw, 0.3rem);
+    --space-2: clamp(0.4rem, 0.35rem + 0.25vw, 0.55rem);
+    --space-3: clamp(0.6rem, 0.5rem + 0.5vw, 0.85rem);
+    --space-4: clamp(0.85rem, 0.7rem + 0.75vw, 1.25rem);
+    --space-5: clamp(1.1rem, 0.9rem + 1vw, 1.6rem);
+    --space-6: clamp(1.4rem, 1.1rem + 1.5vw, 2.25rem);
 
-    /* Layout */
-    --max-w: 380px;
-    --header-h: 68px;
-    --page-pad: 1rem;
+    /* Layout - fluid scaling */
+    --max-w: clamp(320px, 85vw, 520px);
+    --header-h: clamp(60px, 50px + 2.5vw, 80px);
+    --page-pad: clamp(0.75rem, 0.5rem + 1.25vw, 1.5rem);
 
     /* Appearance */
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    --radius: 12px;
-    --radius-sm: 8px;
+    --shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    --radius: clamp(10px, 8px + 1vw, 16px);
+    --radius-sm: clamp(6px, 5px + 0.5vw, 10px);
     --radius-full: 100px;
 
     /* Motion */
     --ease: cubic-bezier(0.4, 0, 0.2, 1);
     --duration: 0.15s;
-}
-
-@media (min-width: 400px) {
-    :root {
-        --max-w: 420px;
-        --fs-2xl: 1.75rem;
-    }
 }
 
 /* ========================================
@@ -70,7 +63,6 @@ html {
     height: 100%;
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
 }
 
 body {
@@ -83,12 +75,9 @@ body {
     color: var(--white);
     background: var(--bg);
     overflow: hidden;
-    /* Smooth font rendering */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    font-feature-settings: "kern" 1;
-    /* Touch optimization */
     touch-action: manipulation;
     overscroll-behavior: none;
 }
@@ -96,8 +85,7 @@ body {
 h1,
 h2 {
     font-weight: 400;
-    line-height: 1.25;
-    letter-spacing: -0.01em;
+    line-height: 1.2;
 }
 
 /* ========================================
@@ -120,7 +108,7 @@ h2 {
     text-align: center;
     width: 100%;
     max-width: var(--max-w);
-    gap: var(--space-3);
+    gap: var(--space-4);
 }
 
 /* ========================================
@@ -138,14 +126,14 @@ h2 {
 }
 
 /* ========================================
-   BUTTON - Consistent everywhere
+   BUTTON
    ======================================== */
 .btn {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
-    min-height: 48px;
+    min-height: clamp(44px, 40px + 1vw, 52px);
     padding: var(--space-3) var(--space-5);
     font: inherit;
     font-size: var(--fs-base);
@@ -181,11 +169,11 @@ h2 {
 }
 
 /* ========================================
-   INPUT - Consistent everywhere
+   INPUT
    ======================================== */
 .input {
     width: 100%;
-    min-height: 48px;
+    min-height: clamp(44px, 40px + 1vw, 52px);
     padding: var(--space-3) var(--space-4);
     font: inherit;
     font-size: var(--fs-base);
@@ -193,10 +181,8 @@ h2 {
     background: rgba(0, 0, 0, 0.15);
     border: 1px solid var(--white-20);
     border-radius: var(--radius-sm);
-    transition: border-color var(--duration) var(--ease),
-        background var(--duration) var(--ease);
+    transition: border-color var(--duration) var(--ease);
     -webkit-appearance: none;
-    appearance: none;
 }
 
 .input::placeholder {
@@ -206,7 +192,6 @@ h2 {
 .input:focus {
     outline: none;
     border-color: var(--white-70);
-    background: rgba(0, 0, 0, 0.25);
 }
 
 /* ========================================
@@ -215,7 +200,7 @@ h2 {
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(6px);
+        transform: translateY(8px);
     }
 
     to {
@@ -227,7 +212,7 @@ h2 {
 @keyframes slideIn {
     from {
         opacity: 0;
-        transform: translateX(-8px);
+        transform: translateX(-10px);
     }
 
     to {
@@ -239,7 +224,7 @@ h2 {
 @keyframes slideInRTL {
     from {
         opacity: 0;
-        transform: translateX(8px);
+        transform: translateX(10px);
     }
 
     to {
@@ -249,12 +234,12 @@ h2 {
 }
 
 .fade {
-    animation: fadeIn 0.2s var(--ease) both;
+    animation: fadeIn 0.25s var(--ease) both;
 }
 
 .anim {
     opacity: 0;
-    animation: slideIn 0.2s var(--ease) forwards;
+    animation: slideIn 0.25s var(--ease) forwards;
 }
 
 [dir="rtl"] .anim {
@@ -262,25 +247,24 @@ h2 {
 }
 
 .anim-1 {
-    animation-delay: 0.02s;
+    animation-delay: 0.03s;
 }
 
 .anim-2 {
-    animation-delay: 0.04s;
-}
-
-.anim-3 {
     animation-delay: 0.06s;
 }
 
-.anim-4 {
-    animation-delay: 0.08s;
+.anim-3 {
+    animation-delay: 0.09s;
 }
 
-/* Fast page transitions */
+.anim-4 {
+    animation-delay: 0.12s;
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
-    animation-duration: 0.12s;
+    animation-duration: 0.15s;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -300,18 +284,6 @@ h2 {
     display: none !important;
 }
 
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    border: 0;
-}
-
-/* Prevent scroll-into-view on focus */
 input,
 textarea,
 select {

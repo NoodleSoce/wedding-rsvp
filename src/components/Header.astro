@@ -22,8 +22,8 @@ const targetPath =
       src={logoImg}
       alt="Z & H"
       class="logo"
-      width={240}
-      height={80}
+      width={280}
+      height={93}
       loading="eager"
     />
     <a
@@ -58,17 +58,16 @@ const targetPath =
   }
 
   .logo {
-    height: 48px;
+    height: clamp(44px, 38px + 1.5vw, 60px);
     width: auto;
   }
 
-  /* Consistent with .btn styling */
   .lang-btn {
     position: absolute;
     right: 0;
     top: 50%;
     transform: translateY(-50%);
-    min-height: 36px;
+    min-height: clamp(32px, 28px + 1vw, 40px);
     padding: var(--space-2) var(--space-4);
     font: 500 var(--fs-sm) var(--font);
     color: var(--white);

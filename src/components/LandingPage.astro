@@ -15,7 +15,7 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
 
 <Layout title={lang === "ar" ? "الرئيسية" : "Welcome"} lang={lang}>
     <main class="page fade">
-        <div class="content">
+        <div class="content landing-content">
             <h1 class="title anim anim-1">{t["index.title"]}</h1>
             <p class="subtitle anim anim-2">{t["index.subtitle"]}</p>
 
@@ -23,7 +23,7 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
                 <Image
                     src={heroImg}
                     alt="Zaid & Haya"
-                    width={400}
+                    width={500}
                     densities={[1.5, 2]}
                     loading="eager"
                     fetchpriority="high"
@@ -38,30 +38,29 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
 </Layout>
 
 <style>
+    .landing-content {
+        gap: var(--space-3);
+    }
+
     .title {
         font-size: var(--fs-2xl);
         font-style: italic;
+        padding: 0 var(--space-2);
     }
 
     .subtitle {
-        font-size: var(--fs-sm);
+        font-size: var(--fs-base);
         color: var(--white-70);
         margin-top: calc(var(--space-1) * -1);
+        padding: 0 var(--space-3);
     }
 
     .hero {
-        width: 100%;
-        max-width: 180px;
-        margin: var(--space-2) 0;
+        width: clamp(180px, 45vw, 280px);
+        margin: var(--space-3) 0;
         border-radius: var(--radius);
         overflow: hidden;
         box-shadow: var(--shadow);
-    }
-
-    @media (min-width: 400px) {
-        .hero {
-            max-width: 200px;
-        }
     }
 
     .hero :global(img) {
@@ -71,12 +70,6 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
     }
 
     .cta {
-        max-width: 200px;
-    }
-
-    @media (min-width: 400px) {
-        .cta {
-            max-width: 220px;
-        }
+        max-width: clamp(180px, 50vw, 260px);
     }
 </style>

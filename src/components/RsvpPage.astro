@@ -137,7 +137,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         ) as HTMLButtonElement;
         const redirect = form.dataset.redirect || "/countdown";
 
-        // Reset UI
         function reset() {
             loader?.classList.add("hidden");
             loader?.classList.remove("done");
@@ -147,7 +146,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         reset();
         addEventListener("pageshow", reset);
 
-        // Get attending value
         const getAttending = () =>
             (
                 document.querySelector(
@@ -155,12 +153,10 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                 ) as HTMLInputElement
             )?.value || "yes";
 
-        // Update guests visibility
         function updateGuests() {
             guestsWrap?.classList.toggle("show", getAttending() === "yes");
         }
 
-        // Load saved data
         try {
             const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
             if (saved.name) name.value = saved.name;
@@ -174,7 +170,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             updateGuests();
         } catch {}
 
-        // Save with debounce
         let saveTimer: ReturnType<typeof setTimeout>;
         function save() {
             clearTimeout(saveTimer);
@@ -190,7 +185,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             }, 200);
         }
 
-        // Events
         name.addEventListener("input", save);
         guests.addEventListener("input", () => {
             if (guests.value.length > 1) guests.value = guests.value.slice(-1);
@@ -203,7 +197,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             }),
         );
 
-        // Submit
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
             loader?.classList.remove("hidden");
@@ -270,10 +263,9 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         margin-bottom: var(--space-2);
     }
 
-    /* Radio buttons - consistent with global buttons */
     .radio-group {
         display: flex;
-        gap: var(--space-2);
+        gap: var(--space-3);
     }
 
     .radio {
@@ -291,7 +283,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         display: flex;
         justify-content: center;
         align-items: center;
-        min-height: 44px;
+        min-height: clamp(42px, 38px + 1vw, 50px);
         padding: var(--space-3);
         font-size: var(--fs-sm);
         font-weight: 500;
@@ -316,7 +308,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         border-color: var(--error);
     }
 
-    /* Guests expandable */
     .guests-wrap {
         display: grid;
         grid-template-rows: 0fr;
@@ -335,10 +326,9 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         text-align: center;
         color: #f99;
         font-size: var(--fs-sm);
-        margin-top: var(--space-3);
+        margin-top: var(--space-4);
     }
 
-    /* Loader */
     .loader {
         position: fixed;
         inset: 0;
@@ -358,20 +348,20 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
     }
 
     .spinner {
-        width: 1.75rem;
-        height: 1.75rem;
+        width: clamp(1.5rem, 1.25rem + 0.5vw, 2rem);
+        height: clamp(1.5rem, 1.25rem + 0.5vw, 2rem);
         border: 2px solid var(--white-20);
         border-top-color: var(--white);
         border-radius: 50%;
         animation: spin 0.5s linear infinite;
-        margin-bottom: var(--space-3);
+        margin-bottom: var(--space-4);
     }
 
     .checkmark {
-        width: 2rem;
-        height: 2rem;
+        width: clamp(1.75rem, 1.5rem + 0.5vw, 2.25rem);
+        height: clamp(1.75rem, 1.5rem + 0.5vw, 2.25rem);
         color: #4ade80;
-        margin-bottom: var(--space-3);
+        margin-bottom: var(--space-4);
         display: none;
     }
 
