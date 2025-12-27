@@ -144,15 +144,25 @@ import Layout from "../layouts/Layout.astro";
 			"guests",
 		) as HTMLInputElement;
 
-		// Select all text when focusing on guests input for easy typing
+		// Scroll name input into view when focused (scrolls up if needed)
+		nameInput?.addEventListener("focus", () => {
+			setTimeout(() => {
+				nameInput.scrollIntoView({
+					behavior: "smooth",
+					block: "nearest",
+				});
+			}, 100);
+		});
+
+		// Scroll guests input into view when focused
 		guestsInput?.addEventListener("focus", () => {
-			// Fix for mobile keyboard hiding input
+			// Faster delay and minimal scroll movement
 			setTimeout(() => {
 				guestsInput.scrollIntoView({
 					behavior: "smooth",
-					block: "center",
+					block: "nearest",
 				});
-			}, 300);
+			}, 100);
 		});
 
 		// Smart input logic: allow 0-9, single char only, replace on type
@@ -366,6 +376,8 @@ import Layout from "../layouts/Layout.astro";
 		margin: 0 auto;
 		max-height: 90vh;
 		overflow-y: auto;
+		scroll-behavior: smooth;
+		-webkit-overflow-scrolling: touch;
 	}
 
 	h2 {
