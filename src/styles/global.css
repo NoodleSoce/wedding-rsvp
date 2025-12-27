@@ -7,7 +7,7 @@
     --color-white: #FFFFFF;
 
     /* Fluid Typography */
-    --font-body: 'Libre Baskerville', serif;
+    --font-body: 'Libre Baskerville', 'Geeza Pro', 'Nadeem', 'Al Bayan', 'DecoType Naskh', 'Traditional Arabic', serif;
     --text-sm: clamp(0.75rem, 1.5vw, 0.9rem);
     --text-base: clamp(0.95rem, 2.5vw, 1.1rem);
     --text-lg: clamp(1.2rem, 3.5vw, 1.4rem);
@@ -34,6 +34,26 @@
         opacity: 1;
         transform: translateX(0);
     }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* RTL Animation Override */
+[dir="rtl"] .stagger-1,
+[dir="rtl"] .stagger-2,
+[dir="rtl"] .stagger-3,
+[dir="rtl"] .stagger-4 {
+    animation-name: slideInRight;
 }
 
 @keyframes fadeIn {

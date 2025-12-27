@@ -1,0 +1,655 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { ui } from "../i18n/ui";
+
+interface Props {
+    lang: "en" | "ar";
+}
+
+const { lang } = Astro.props;
+const t = ui[lang];
+const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
+---
+
+<Layout title={lang === "ar" ? "تأكيد الحضور" : "RSVP"} lang={lang}>
+    <main class="rsvp-page fade-in">
+        <div class="content-wrapper">
+            <h2 class="stagger-1">{t["rsvp.title"]}</h2>
+            <p class="subtitle stagger-2">
+                {t["rsvp.subtitle"]}
+            </p>
+
+            <form
+                id="rsvpForm"
+                class="rsvp-form stagger-3"
+                data-sending-text={t["rsvp.sending"]}
+                data-sent-text={t["rsvp.sent"]}
+                Note:
+                logic
+                previously
+                was
+                hardcoded
+                to
+                "RSVP
+                sent!"
+                data-error-text={t["rsvp.error"]}
+                data-redirect-url={redirectUrl}
+            >
+                <div class="form-group">
+                    <label for="name">{t["rsvp.name"]}</label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        required
+                        placeholder={t["rsvp.namePlaceholder"]}
+                        autocomplete="name"
+                        autocapitalize="words"
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label id="attending-label">{t["rsvp.attending"]}</label>
+                    <div
+                        class="radio-group"
+                        role="group"
+                        aria-labelledby="attending-label"
+                    >
+                        <label class="radio-card accept">
+                            <input
+                                type="radio"
+                                name="attending"
+                                value="yes"
+                                checked
+                            />
+                            <span class="radio-label">{t["rsvp.accept"]}</span>
+                        </label>
+                        <label class="radio-card decline">
+                            <input type="radio" name="attending" value="no" />
+                            <span class="radio-label">{t["rsvp.decline"]}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="expandable-wrapper expanded" id="guests-wrapper">
+                    <div class="expandable-content">
+                        <div class="form-group" id="guests-group">
+                            <label for="guests">{t["rsvp.guests"]}</label>
+                            <input
+                                type="number"
+                                id="guests"
+                                name="guests"
+                                min="0"
+                                max="10"
+                                value="0"
+                                inputmode="numeric"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" id="submitBtn">
+                    <span class="btn-text">{t["rsvp.submit"]}</span>
+                </button>
+
+                <p id="error-msg" class="error-message hidden" role="alert">
+                    {t["rsvp.error"]}
+                </p>
+            </form>
+        </div>
+
+        <!-- Full Page Loader Overlay -->
+        <div
+            id="full-page-loader"
+            class="loader-overlay hidden"
+            role="status"
+            aria-live="polite"
+        >
+            <div class="loader-spinner" aria-hidden="true"></div>
+            <svg
+                class="success-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <p id="loader-text">{t["rsvp.sending"]}</p>
+        </div>
+    </main>
+</Layout>
+
+<script>
+    import { navigate } from "astro:transitions/client";
+
+    document.addEventListener("astro:page-load", () => {
+        // REPLACE THIS WITH YOUR DEPLOYED GOOGLE APPS SCRIPT URL
+        const SCRIPT_URL =
+            "https://script.google.com/macros/s/AKfycbwq4PjP3sAEj2YTMTge5tZkwDx447v4T-0ySATyf3GImmpnZTaop-NGoxFj-lSyGnTl/exec";
+
+        const form = document.getElementById("rsvpForm") as HTMLFormElement;
+        // If form doesn't exist (we are on another page), exit
+        if (!form) return;
+
+        const guestsWrapper = document.getElementById("guests-wrapper");
+        const guestsGroup = document.getElementById("guests-group");
+        const attendingRadios = document.getElementsByName("attending");
+        const submitBtn = document.getElementById(
+            "submitBtn",
+        ) as HTMLButtonElement;
+        const errorMsg = document.getElementById("error-msg");
+        const fullPageLoader = document.getElementById("full-page-loader");
+        const loaderText = document.getElementById("loader-text");
+
+        // Localized strings
+        const sendingText = form.dataset.sendingText || "Sending RSVP...";
+        const sentText = form.dataset.sentText || "RSVP sent!";
+        const redirectUrl = form.dataset.redirectUrl || "/countdown";
+
+        // Helper to reset UI state
+        const resetUI = () => {
+            if (fullPageLoader) {
+                fullPageLoader.classList.add("hidden");
+                fullPageLoader.classList.remove("success");
+            }
+            if (submitBtn) submitBtn.disabled = false;
+            if (errorMsg) errorMsg.classList.add("hidden");
+
+            if (loaderText) loaderText.textContent = sendingText;
+        };
+
+        // Reset on load (ViewTransitions)
+        resetUI();
+
+        // Reset on page show (Browser Back/Forward Cache)
+        window.addEventListener("pageshow", () => {
+            resetUI();
+        });
+
+        const nameInput = document.getElementById("name") as HTMLInputElement;
+        const guestsInput = document.getElementById(
+            "guests",
+        ) as HTMLInputElement;
+
+        // Scroll name input into view when focused (scrolls up if needed)
+        nameInput?.addEventListener("focus", () => {
+            setTimeout(() => {
+                nameInput.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                });
+            }, 100);
+        });
+
+        // Scroll guests input into view when focused
+        guestsInput?.addEventListener("focus", () => {
+            // Faster delay and minimal scroll movement
+            setTimeout(() => {
+                guestsInput.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                });
+            }, 100);
+        });
+
+        // Smart input logic: allow 0-9, single char only, replace on type
+        guestsInput?.addEventListener("input", (e) => {
+            const val = guestsInput.value;
+
+            // If empty, allow (user deleting)
+            if (!val) return;
+
+            const num = parseInt(val);
+
+            // If not a number, clear or reset
+            if (isNaN(num)) {
+                guestsInput.value = "0";
+                return;
+            }
+
+            // If length > 1, take the last character entered
+            if (val.length > 1) {
+                const lastChar = val.slice(-1);
+                // If last char is valid digit, use it
+                if (/[0-9]/.test(lastChar)) {
+                    guestsInput.value = lastChar;
+                } else {
+                    // revert to previous char (essentially ignore non-digits)
+                    guestsInput.value = val.slice(0, -1);
+                }
+            }
+
+            // Force single digit 0-9
+            if (guestsInput.value.length > 1) {
+                guestsInput.value = guestsInput.value.slice(0, 1);
+            }
+
+            saveState();
+        });
+
+        // --- PERSISTENCE LOGIC ---
+        const STORAGE_KEY = "rsvp_form_data";
+
+        const saveState = () => {
+            const selectedRadio = document.querySelector(
+                'input[name="attending"]:checked',
+            ) as HTMLInputElement;
+
+            // Only save if elements exist
+            if (!nameInput || !selectedRadio) return;
+
+            const data = {
+                name: nameInput.value || "",
+                attending: selectedRadio.value || "yes",
+                guests: guestsInput?.value || "0",
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        };
+
+        const loadState = () => {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    if (nameInput) nameInput.value = data.name;
+                    if (guestsInput) guestsInput.value = data.guests;
+                    if (data.attending) {
+                        const radioToSelect = document.querySelector(
+                            `input[name="attending"][value="${data.attending}"]`,
+                        ) as HTMLInputElement;
+                        if (radioToSelect) {
+                            radioToSelect.checked = true;
+                            updateGuestVisibility(data.attending === "no");
+                        }
+                    }
+                } catch (e) {
+                    console.error("Failed to load saved state", e);
+                }
+            }
+        };
+
+        // --- VISIBILITY LOGIC ---
+        const updateGuestVisibility = (isDecline: boolean) => {
+            if (!guestsWrapper || !guestsGroup) return;
+            if (isDecline) {
+                guestsWrapper.classList.remove("expanded");
+                guestsGroup.classList.remove("slide-in-left");
+            } else {
+                guestsWrapper.classList.add("expanded");
+                void guestsGroup.offsetWidth;
+                guestsGroup.classList.add("slide-in-left");
+            }
+        };
+
+        // Event Listeners for Persistence & UI
+        nameInput?.addEventListener("input", saveState);
+        guestsInput?.addEventListener("input", saveState);
+
+        attendingRadios.forEach((radio) => {
+            (radio as HTMLInputElement).addEventListener(
+                "change",
+                (e: Event) => {
+                    const target = e.target as HTMLInputElement;
+                    updateGuestVisibility(target.value === "no");
+                    saveState();
+                },
+            );
+        });
+
+        // Initial Load
+        loadState();
+        // Double check visibility in case loadState didn't run (empty storage)
+        const currentRadio = document.querySelector(
+            'input[name="attending"]:checked',
+        ) as HTMLInputElement;
+        if (currentRadio) {
+            updateGuestVisibility(currentRadio.value === "no");
+        }
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (!submitBtn) return;
+            if (!fullPageLoader || !errorMsg) return;
+
+            // UI Loading State (Full Page)
+            fullPageLoader.classList.remove("hidden");
+            errorMsg.classList.add("hidden");
+            if (loaderText) loaderText.textContent = sendingText;
+
+            // Get values directly from elements to ensure accuracy
+            const nameValue = nameInput ? nameInput.value.trim() : "";
+
+            // Get selected radio by iterating through all radios (most reliable method)
+            let attendingValue = "no";
+            for (let i = 0; i < attendingRadios.length; i++) {
+                const radio = attendingRadios[i] as HTMLInputElement;
+                if (radio.checked) {
+                    attendingValue = radio.value;
+                    break;
+                }
+            }
+
+            const isAttending = attendingValue === "yes";
+            const guestsValue = guestsInput ? Number(guestsInput.value) : 0;
+
+            // Prepare data for Google Script
+            const data = {
+                name: nameValue,
+                attending: isAttending ? "Yes" : "No",
+                guests: isAttending ? guestsValue : 0,
+            };
+
+            // Log for debugging
+            console.log("Submitting RSVP:", data);
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: {
+                        "Content-Type": "text/plain",
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                // Clear localStorage after successful submission
+                localStorage.removeItem(STORAGE_KEY);
+
+                // Show Success Animation
+                fullPageLoader.classList.add("success");
+                if (loaderText) loaderText.textContent = sentText;
+
+                // Redirect after animation
+                setTimeout(() => {
+                    navigate(redirectUrl);
+                }, 1200);
+            } catch (error) {
+                console.error("Error:", error);
+                errorMsg.classList.remove("hidden");
+                fullPageLoader.classList.add("hidden"); // Hide loader on error
+            }
+        });
+    });
+</script>
+
+<style>
+    .rsvp-page {
+        height: 100vh;
+        height: 100dvh;
+        width: 100%;
+        background: var(--color-bg);
+        padding-top: var(--header-height);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        position: fixed;
+        inset: 0;
+        contain: layout style paint size;
+        transform: translateZ(0);
+        will-change: contents;
+    }
+
+    .content-wrapper {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        width: calc(100% - 2rem); /* Full width minus margins */
+        max-width: 600px;
+        margin: 0 auto;
+        max-height: 90vh;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    h2 {
+        color: var(--color-white);
+        font-family: var(--font-body);
+        font-size: var(--text-2xl);
+        margin-bottom: 1vh;
+        text-align: center;
+        font-weight: 400;
+        font-style: italic;
+    }
+
+    .subtitle {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 2vh;
+        font-size: var(--text-sm);
+        font-weight: 300;
+    }
+
+    .form-group {
+        margin-bottom: 2vh;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 0.25rem;
+        font-weight: 400;
+        color: var(--color-white);
+        font-size: var(--text-sm);
+        opacity: 0.9;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+        width: 100%;
+        padding: 0.8rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 0.5rem;
+        font-family: inherit;
+        font-size: var(--text-base);
+        color: white;
+        transition:
+            border-color 0.2s ease,
+            background 0.2s ease;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    input:focus {
+        outline: none;
+        border-color: var(--color-white);
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .radio-group {
+        display: flex;
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+
+    .radio-card {
+        flex: 1;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .radio-card input {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .radio-label {
+        display: block;
+        padding: 0.75rem; /* Reduced padding */
+        text-align: center;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+        font-size: 1rem;
+        color: white;
+    }
+
+    /* Logic for colors - Slightly Lighter than previous Dark but still elegant */
+    .radio-card.accept input:checked + .radio-label {
+        background-color: #2e7d32; /* Green 800 - Good balance */
+        color: white;
+        border-color: #2e7d32;
+        font-weight: 600;
+        box-shadow: 0 0 15px rgba(27, 94, 32, 0.4);
+    }
+
+    .radio-card.decline input:checked + .radio-label {
+        background-color: #c62828; /* Red 800 - Good balance */
+        color: white;
+        border-color: #c62828;
+        font-weight: 600;
+        box-shadow: 0 0 15px rgba(183, 28, 28, 0.4);
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    .error-message {
+        color: #ffcccc;
+        font-size: 0.9rem;
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    .btn-primary {
+        margin-top: 1.5rem;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: var(--color-white);
+        padding: 1rem;
+        font-size: 1.1rem;
+        border-radius: var(--radius-full);
+        font-weight: 500;
+        cursor: pointer;
+        transition:
+            background 0.2s,
+            border-color 0.2s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        will-change: background, border-color;
+    }
+
+    .btn-primary:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: white;
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    /* Loader Overlay - Optimized for performance */
+    .loader-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(75, 1, 1, 0.95);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        contain: layout style paint;
+        opacity: 1;
+        visibility: visible;
+        transition:
+            opacity 0.2s ease-out,
+            visibility 0.2s ease-out;
+    }
+
+    .loader-overlay.hidden {
+        opacity: 0;
+        visibility: hidden;
+        display: flex !important; /* Keep display for transition */
+    }
+
+    .loader-spinner {
+        width: 2.5rem;
+        height: 2.5rem;
+        border: 3px solid rgba(255, 255, 255, 0.2);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        margin-bottom: 1rem;
+        will-change: transform;
+    }
+
+    .success-icon {
+        width: 3rem;
+        height: 3rem;
+        color: #4ade80; /* bright green */
+        margin-bottom: 1rem;
+        display: none;
+        animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        shape-rendering: geometricPrecision;
+    }
+
+    .success .loader-spinner {
+        display: none;
+    }
+
+    .success .success-icon {
+        display: block;
+    }
+
+    @keyframes scaleIn {
+        from {
+            transform: scale(0);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .btn-text {
+        width: 100%;
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Form Expansion Logic */
+    .expandable-wrapper {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .expandable-wrapper.expanded {
+        grid-template-rows: 1fr;
+    }
+
+    .expandable-content {
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    .slide-in-left {
+        animation: slideInLeft 0.5s ease-out forwards;
+    }
+</style>

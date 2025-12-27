@@ -1,38 +1,103 @@
 ---
 import { Image } from "astro:assets";
 import logoImg from "../assets/logo.webp";
+
+interface Props {
+  lang?: "en" | "ar";
+}
+
+const { lang = "en" } = Astro.props;
+
+const currentPath = Astro.url.pathname;
+let targetPath = "/";
+const label = lang === "en" ? "AR" : "EN";
+
+if (lang === "en") {
+  // Switch to Arabic: prepend /ar
+  // Handle root specifically
+  if (currentPath === "/" || currentPath === "") {
+    targetPath = "/ar";
+  } else {
+    // avoid double slashes if any
+    targetPath = "/ar" + currentPath.replace(/\/$/, "");
+  }
+} else {
+  // Switch to English: remove /ar
+  targetPath = currentPath.replace("/ar", "") || "/";
+}
 ---
 
 <header class="app-header" transition:persist>
-  <Image
-    src={logoImg}
-    alt="Zaid & Haya Wedding Logo"
-    class="logo-img"
-    width={300}
-    height={100}
-    loading="eager"
-    fetchpriority="high"
-    decoding="async"
-  />
+  <div class="header-content">
+    <Image
+      src={logoImg}
+      alt="Zaid & Haya Wedding Logo"
+      class="logo-img"
+      width={300}
+      height={100}
+      loading="eager"
+      fetchpriority="high"
+      decoding="async"
+    />
+    <a
+      href={targetPath}
+      class="lang-btn"
+      aria-label={`Switch to ${label === "AR" ? "Arabic" : "English"}`}
+    >
+      {label}
+    </a>
+  </div>
 </header>
 
 <style>
   .app-header {
     padding: 1.5rem 1.5rem 1rem 1.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     position: absolute;
     width: 100%;
     top: 0;
     z-index: 100;
     contain: layout style;
     transform: translateZ(0);
+    pointer-events: none; /* Allow clicks pass through header area */
+  }
+
+  .header-content {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto; /* Re-enable clicks on content */
   }
 
   .logo-img {
     height: 84px;
     width: auto;
     object-fit: contain;
+  }
+
+  .lang-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-white);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+    font-family: var(--font-body);
+  }
+
+  .lang-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
   }
 </style>

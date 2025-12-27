@@ -1,0 +1,147 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { Image } from "astro:assets";
+import heroImg from "../assets/hero-image.webp";
+import { ui } from "../i18n/ui";
+
+interface Props {
+    lang: "en" | "ar";
+}
+
+const { lang } = Astro.props;
+const t = ui[lang];
+
+const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
+---
+
+<Layout title={lang === "ar" ? "الرئيسية" : "Welcome"} lang={lang}>
+    <main class="landing-page">
+        <div class="content fade-in">
+            <h1 class="stagger-1">{t["index.title"]}</h1>
+            <p class="subtitle stagger-2">{t["index.subtitle"]}</p>
+
+            <div class="hero-image-container stagger-3">
+                <Image
+                    src={heroImg}
+                    alt="Zaid & Haya"
+                    class="hero-img"
+                    width={600}
+                    densities={[1.5, 2]}
+                    loading="eager"
+                    fetchpriority="high"
+                />
+            </div>
+
+            <a
+                href={rsvpLink}
+                class="btn-primary stagger-4"
+                data-astro-prefetch
+            >
+                {t["index.cta"]}
+            </a>
+        </div>
+    </main>
+</Layout>
+
+<style is:global>
+    /* Animate header logo only on index page initial load */
+    body:has(.landing-page) > .app-header {
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+</style>
+
+<style>
+    .landing-page {
+        height: 100vh;
+        height: 100dvh; /* Ensure mobile friendly */
+        width: 100%; /* Force full width */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 1rem;
+        padding-top: 140px; /* Shifted down */
+        background: var(--color-bg);
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        contain: layout style paint size;
+        transform: translateZ(0);
+        will-change: contents;
+    }
+
+    .content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        height: 100%;
+        justify-content: center; /* Center vertically */
+        position: relative;
+        z-index: 1;
+        gap: 0.5rem; /* Drastically reduced gap for tighter text */
+        max-width: 600px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    h1 {
+        font-family: var(--font-body);
+        font-size: var(--text-2xl);
+        color: var(--color-white);
+        margin-bottom: 0.5rem;
+        font-weight: 400;
+        line-height: 1.1;
+        padding: 0 0.5rem;
+        font-style: italic;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0;
+        font-weight: 300;
+        letter-spacing: 0.5px;
+    }
+
+    .hero-image-container {
+        width: 100%;
+        max-width: 280px;
+        margin: 2rem 0;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+        flex-shrink: 0;
+    }
+
+    .hero-img {
+        width: 100%;
+        height: auto;
+        display: block;
+        object-fit: cover;
+    }
+
+    .btn-primary {
+        margin: 0 auto 4rem;
+        width: 100%;
+        max-width: 320px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: var(--color-white);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        font-weight: 500;
+        padding: 1rem;
+        font-size: 1.1rem;
+        border-radius: var(--radius-full);
+        transition:
+            background 0.2s,
+            border-color 0.2s;
+        display: block;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .btn-primary:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: white;
+    }
+</style>

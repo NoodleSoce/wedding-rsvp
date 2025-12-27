@@ -8,16 +8,18 @@ import "@fontsource/libre-baskerville/700.css";
 
 interface Props {
 	title: string;
+	lang?: "en" | "ar";
 }
 
-const { title } = Astro.props;
+const { title, lang = "en" } = Astro.props;
 const fullTitle = `${title} | Zaid & Haya`;
 const description =
 	"You're invited to celebrate the wedding of Zaid & Haya. Please RSVP to confirm your attendance.";
+const dir = lang === "ar" ? "rtl" : "ltr";
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang} dir={dir}>
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="description" content={description} />
@@ -60,7 +62,7 @@ const description =
 		<ClientRouter />
 	</head>
 	<body>
-		<Header />
+		<Header lang={lang} />
 		<slot />
 	</body>
 </html>
