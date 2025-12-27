@@ -15,7 +15,6 @@ const targetPath =
       ? "/ar"
       : `/ar${path}`
     : path.replace("/ar", "") || "/";
-const buttonText = lang === "en" ? "ع" : "EN";
 ---
 
 <header class:list={["header", { animated: showAnimation }]}>
@@ -32,11 +31,11 @@ const buttonText = lang === "en" ? "ع" : "EN";
     </div>
     <a
       href={targetPath}
-      class="lang-btn"
+      class:list={["lang-btn", { arabic: lang === "en" }]}
       data-astro-prefetch
-      onclick="localStorage.setItem('preferred_lang', this.textContent.trim() === 'ع' ? 'ar' : 'en')"
+      onclick="localStorage.setItem('preferred_lang', this.classList.contains('arabic') ? 'ar' : 'en')"
     >
-      {buttonText}
+      {lang === "en" ? "ع" : "EN"}
     </a>
   </div>
 </header>
@@ -70,7 +69,6 @@ const buttonText = lang === "en" ? "ع" : "EN";
     align-items: center;
   }
 
-  /* Bigger logo */
   .logo {
     height: 72px;
     width: auto;
@@ -97,28 +95,35 @@ const buttonText = lang === "en" ? "ع" : "EN";
     }
   }
 
-  /* Language button - right side, same spacing from top and right */
+  /* Language button */
   .lang-btn {
     position: absolute;
     right: 0;
     top: 50%;
     transform: translateY(-50%);
-    min-height: 40px;
-    min-width: 40px;
+    width: 44px;
+    height: 44px;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 0.5rem 0.75rem;
     font-family: "Libre Baskerville", "Amiri", Georgia, serif;
-    font-size: 1rem;
+    font-size: 0.875rem;
     font-weight: 600;
     color: #fff;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 100px;
+    border-radius: 50%;
     text-decoration: none;
     transition: background 0.15s ease;
     pointer-events: auto;
+  }
+
+  /* Arabic character needs different styling */
+  .lang-btn.arabic {
+    font-family: "Amiri", "Libre Baskerville", Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 400;
+    padding-top: 2px;
   }
 
   .lang-btn:active {
@@ -131,7 +136,7 @@ const buttonText = lang === "en" ? "ع" : "EN";
     }
   }
 
-  /* Animation only on landing page */
+  /* Animation */
   .header.animated .logo-wrap {
     animation: fadeSlideDown 0.5s ease both;
   }

@@ -192,6 +192,8 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         guestsEl?.addEventListener("focus", () => {
             keyboardOpen = true;
             scrollToShowForm();
+            // Select all so typing replaces the value
+            guestsEl.select();
         });
 
         function handleBlur() {
@@ -273,8 +275,14 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             saveData();
         });
 
+        let isSubmitting = false;
+
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
+
+            // Prevent double submit
+            if (isSubmitting) return;
+            isSubmitting = true;
 
             (document.activeElement as HTMLElement)?.blur();
             keyboardOpen = false;
