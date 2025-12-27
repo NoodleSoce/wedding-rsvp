@@ -177,14 +177,51 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         // --- MOBILE KEYBOARD & SCROLLING OPTIMIZATION ---
         const viewport = window.visualViewport;
 
+        // Custom fast smooth scroll helper
+        const animateScroll = (
+            element: HTMLElement,
+            to: number,
+            duration: number,
+        ) => {
+            const start = element.scrollTop;
+            const change = to - start;
+            const startTime = performance.now();
+
+            const animate = (currentTime: number) => {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                // Ease out cubic
+                const ease = 1 - Math.pow(1 - progress, 3);
+
+                element.scrollTop = start + change * ease;
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            };
+            requestAnimationFrame(animate);
+        };
+
         // Function to ensure the form is comfortable above the keyboard
         const scrollToKeyboardSafe = () => {
-            const wrapper = document.querySelector(".content-wrapper");
+            const wrapper = document.querySelector(
+                ".content-wrapper",
+            ) as HTMLElement;
             if (!wrapper) return;
 
+            // Scroll the wrapper's content to the bottom
+            const targetScroll = wrapper.scrollHeight - wrapper.clientHeight;
+            if (
+                targetScroll > 0 &&
+                Math.abs(wrapper.scrollTop - targetScroll) > 5
+            ) {
+                animateScroll(wrapper, targetScroll, 250); // 250ms fast smooth
+            }
+
+            // Also align the wrapper itself in the viewport instantly
             wrapper.scrollIntoView({
                 behavior: "auto",
-                block: "end", // Align bottom of wrapper to bottom of viewport (top of keyboard)
+                block: "end",
                 inline: "nearest",
             });
         };

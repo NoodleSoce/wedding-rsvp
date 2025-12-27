@@ -1,16 +1,22 @@
 ---
-
 ---
+
+<canvas id="confetti-canvas"></canvas>
 
 <script>
   import confetti from "canvas-confetti";
 
-  // Store interval ID in a way that persists across re-runs but is module-scoped
   let confettiInterval: number | undefined;
 
   function runConfetti() {
-    // Only run on countdown page
-    if (!document.querySelector(".countdown-page")) return;
+    const canvas = document.getElementById("confetti-canvas") as HTMLCanvasElement;
+    if (!canvas) return;
+
+    // Use a local instance on our canvas
+    const myConfetti = confetti.create(canvas, {
+      resize: true,
+      useWorker: true,
+    });
 
     // Respect reduced motion preferences
     const prefersReducedMotion = window.matchMedia(
@@ -20,13 +26,13 @@
 
     const duration = 3000;
     const animationEnd = Date.now() + duration;
-    const defaults = { startVelocity: 30, spread: 360, ticks: 50, zIndex: 100 };
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
 
     function randomInRange(min: number, max: number) {
       return Math.random() * (max - min) + min;
     }
 
-    // Clear any existing interval to prevent stacking
+    // Clear any existing interval
     if (confettiInterval) clearInterval(confettiInterval);
 
     // Fire confetti
@@ -40,12 +46,12 @@
 
       const particleCount = 40 * (timeLeft / duration);
 
-      confetti({
+      myConfetti({
         ...defaults,
         particleCount,
         origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
       });
-      confetti({
+      myConfetti({
         ...defaults,
         particleCount,
         origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
@@ -53,18 +59,25 @@
     }, 250) as unknown as number;
   }
 
-  // Run immediately on load with small delay to ensure DOM readiness
   function scheduleConfetti() {
-    setTimeout(runConfetti, 100);
+      // Run immediately
+      runConfetti();
   }
 
-  // Run on initial load and View Transitions
   document.addEventListener("astro:page-load", scheduleConfetti);
   document.addEventListener("astro:before-swap", () => {
     if (confettiInterval) clearInterval(confettiInterval);
-    // Reset canvas-confetti if possible/needed, but it handles its own canvas usually
-    try {
-      (confetti as any).reset();
-    } catch (e) {}
   });
 </script>
+
+<style>
+  #confetti-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999; /* Ensure it is on top of everything */
+  }
+</style>
