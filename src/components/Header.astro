@@ -22,13 +22,13 @@ const targetPath =
       src={logoImg}
       alt="Z & H"
       class="logo"
-      width={280}
-      height={93}
+      width={240}
+      height={80}
       loading="eager"
     />
     <a
       href={targetPath}
-      class="lang"
+      class="lang-btn"
       data-astro-prefetch
       onclick="localStorage.setItem('preferred_lang', this.textContent.trim() === 'AR' ? 'ar' : 'en')"
     >
@@ -41,7 +41,7 @@ const targetPath =
   .header {
     position: absolute;
     inset: 0 0 auto 0;
-    padding: 1rem;
+    padding: var(--space-4);
     z-index: 100;
     pointer-events: none;
   }
@@ -58,32 +58,34 @@ const targetPath =
   }
 
   .logo {
-    height: 56px;
+    height: 48px;
     width: auto;
   }
 
-  .lang {
+  /* Consistent with .btn styling */
+  .lang-btn {
     position: absolute;
     right: 0;
     top: 50%;
     transform: translateY(-50%);
-    padding: 0.375rem 0.75rem;
+    min-height: 36px;
+    padding: var(--space-2) var(--space-4);
     font: 500 var(--fs-sm) var(--font);
-    color: var(--c-white);
-    background: var(--c-white-10);
-    border: 1px solid var(--c-white-20);
-    border-radius: 999px;
+    color: var(--white);
+    background: var(--white-10);
+    border: 1px solid var(--white-20);
+    border-radius: var(--radius-full);
     text-decoration: none;
-    transition: background 0.15s var(--ease);
+    transition: background var(--duration) var(--ease);
   }
 
-  .lang:active {
-    background: var(--c-white-20);
+  .lang-btn:active {
+    background: var(--white-20);
   }
 
   @media (hover: hover) {
-    .lang:hover {
-      background: var(--c-white-20);
+    .lang-btn:hover {
+      background: var(--white-20);
     }
   }
 </style>

@@ -14,12 +14,15 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 <Layout title={lang === "ar" ? "تأكيد الحضور" : "RSVP"} lang={lang}>
     <main class="page fade">
         <div class="content">
-            <div class="card">
+            <div class="card form-card">
                 <h2 class="anim anim-1">{t["rsvp.title"]}</h2>
-                <p class="sub anim anim-2">{t["rsvp.subtitle"]}</p>
+                <p class="subtitle anim anim-2">{t["rsvp.subtitle"]}</p>
 
-                <form id="form" class="anim anim-3" data-redirect={redirectUrl}>
-                    <!-- Prefetch destination for faster navigation -->
+                <form
+                    id="form"
+                    class="form anim anim-3"
+                    data-redirect={redirectUrl}
+                >
                     <a
                         href={redirectUrl}
                         data-astro-prefetch="load"
@@ -43,37 +46,32 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 
                     <div class="field">
                         <span class="label">{t["rsvp.attending"]}</span>
-                        <div
-                            class="opts"
-                            role="radiogroup"
-                            aria-label={t["rsvp.attending"]}
-                        >
-                            <label class="opt">
+                        <div class="radio-group">
+                            <label class="radio">
                                 <input
                                     type="radio"
                                     name="attending"
                                     value="yes"
                                     checked
                                 />
-                                <span class="opt-btn yes"
+                                <span class="radio-btn yes"
                                     >{t["rsvp.accept"]}</span
                                 >
                             </label>
-                            <label class="opt">
+                            <label class="radio">
                                 <input
                                     type="radio"
                                     name="attending"
                                     value="no"
                                 />
-                                <span class="opt-btn no"
+                                <span class="radio-btn no"
                                     >{t["rsvp.decline"]}</span
                                 >
                             </label>
                         </div>
                     </div>
 
-                    <!-- BUG FIX: Add 'show' class by default since 'yes' is checked -->
-                    <div id="guests-wrap" class="guests show">
+                    <div id="guests-wrap" class="guests-wrap show">
                         <label class="field">
                             <span class="label">{t["rsvp.guests"]}</span>
                             <input
@@ -90,7 +88,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                         </label>
                     </div>
 
-                    <button type="submit" class="btn" id="submit"
+                    <button type="submit" class="btn" id="submit-btn"
                         >{t["rsvp.submit"]}</button
                     >
                     <p id="error" class="error hidden" role="alert">
@@ -100,20 +98,16 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             </div>
         </div>
 
-        <!-- Loading overlay -->
         <div id="loader" class="loader hidden" aria-live="polite">
-            <div class="spin" aria-hidden="true"></div>
-            <svg
-                class="check"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="3"
-                aria-hidden="true"
-            >
-                <polyline points="20 6 9 17 4 12"></polyline>
+            <div class="spinner" aria-hidden="true"></div>
+            <svg class="checkmark" viewBox="0 0 24 24" aria-hidden="true">
+                <polyline
+                    points="20 6 9 17 4 12"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"></polyline>
             </svg>
-            <span id="status">{t["rsvp.sending"]}</span>
+            <span id="loader-text">{t["rsvp.sending"]}</span>
         </div>
     </main>
 </Layout>
@@ -121,164 +115,132 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 <script>
     import { navigate } from "astro:transitions/client";
 
-    const ENDPOINT =
+    const API =
         "https://script.google.com/macros/s/AKfycbwq4PjP3sAEj2YTMTge5tZkwDx447v4T-0ySATyf3GImmpnZTaop-NGoxFj-lSyGnTl/exec";
-    const STORAGE_KEY = "rsvp";
+    const KEY = "rsvp";
 
     function init() {
         const form = document.getElementById("form") as HTMLFormElement;
         if (!form) return;
 
-        // Elements
-        const nameInput = document.getElementById("name") as HTMLInputElement;
-        const guestsInput = document.getElementById(
-            "guests",
-        ) as HTMLInputElement;
+        const name = document.getElementById("name") as HTMLInputElement;
+        const guests = document.getElementById("guests") as HTMLInputElement;
         const guestsWrap = document.getElementById("guests-wrap");
         const radios = document.querySelectorAll<HTMLInputElement>(
             'input[name="attending"]',
         );
         const loader = document.getElementById("loader");
-        const statusEl = document.getElementById("status");
-        const errorEl = document.getElementById("error");
+        const loaderText = document.getElementById("loader-text");
+        const error = document.getElementById("error");
         const submitBtn = document.getElementById(
-            "submit",
+            "submit-btn",
         ) as HTMLButtonElement;
         const redirect = form.dataset.redirect || "/countdown";
 
-        // Reset UI state on page load/restore
-        function resetUI() {
+        // Reset UI
+        function reset() {
             loader?.classList.add("hidden");
             loader?.classList.remove("done");
-            errorEl?.classList.add("hidden");
+            error?.classList.add("hidden");
             if (submitBtn) submitBtn.disabled = false;
         }
-        resetUI();
-        window.addEventListener("pageshow", resetUI);
+        reset();
+        addEventListener("pageshow", reset);
 
-        // Get selected attendance value
-        function getAttending(): string {
-            return (
-                (
-                    document.querySelector(
-                        'input[name="attending"]:checked',
-                    ) as HTMLInputElement
-                )?.value || "yes"
-            );
+        // Get attending value
+        const getAttending = () =>
+            (
+                document.querySelector(
+                    'input[name="attending"]:checked',
+                ) as HTMLInputElement
+            )?.value || "yes";
+
+        // Update guests visibility
+        function updateGuests() {
+            guestsWrap?.classList.toggle("show", getAttending() === "yes");
         }
 
-        // Toggle guests visibility based on attendance
-        function updateGuestsVisibility() {
-            const show = getAttending() === "yes";
-            guestsWrap?.classList.toggle("show", show);
-        }
-
-        // Restore saved form data
-        function restoreFormData() {
-            try {
-                const saved = JSON.parse(
-                    localStorage.getItem(STORAGE_KEY) || "{}",
-                );
-                if (saved.name && nameInput) nameInput.value = saved.name;
-                if (saved.guests && guestsInput)
-                    guestsInput.value = saved.guests;
-                if (saved.attending) {
-                    const radio = document.querySelector(
-                        `input[value="${saved.attending}"]`,
-                    ) as HTMLInputElement;
-                    if (radio) radio.checked = true;
-                }
-                updateGuestsVisibility();
-            } catch (e) {
-                // Ignore parse errors
+        // Load saved data
+        try {
+            const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
+            if (saved.name) name.value = saved.name;
+            if (saved.guests) guests.value = saved.guests;
+            if (saved.attending) {
+                const r = document.querySelector(
+                    `input[value="${saved.attending}"]`,
+                ) as HTMLInputElement;
+                if (r) r.checked = true;
             }
-        }
-        restoreFormData();
+            updateGuests();
+        } catch {}
 
-        // Save form data with debounce
+        // Save with debounce
         let saveTimer: ReturnType<typeof setTimeout>;
-        function saveFormData() {
+        function save() {
             clearTimeout(saveTimer);
             saveTimer = setTimeout(() => {
-                const data = {
-                    name: nameInput?.value || "",
-                    attending: getAttending(),
-                    guests: guestsInput?.value || "0",
-                };
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-            }, 250);
+                localStorage.setItem(
+                    KEY,
+                    JSON.stringify({
+                        name: name.value,
+                        attending: getAttending(),
+                        guests: guests.value,
+                    }),
+                );
+            }, 200);
         }
 
-        // Event handlers
-        nameInput?.addEventListener("input", saveFormData);
-
-        guestsInput?.addEventListener("input", () => {
-            // Limit to single digit
-            if (guestsInput.value.length > 1) {
-                guestsInput.value = guestsInput.value.slice(-1);
-            }
-            // Ensure valid number
-            if (!/^[0-9]?$/.test(guestsInput.value)) {
-                guestsInput.value = "0";
-            }
-            saveFormData();
+        // Events
+        name.addEventListener("input", save);
+        guests.addEventListener("input", () => {
+            if (guests.value.length > 1) guests.value = guests.value.slice(-1);
+            save();
         });
+        radios.forEach((r) =>
+            r.addEventListener("change", () => {
+                updateGuests();
+                save();
+            }),
+        );
 
-        radios.forEach((radio) => {
-            radio.addEventListener("change", () => {
-                updateGuestsVisibility();
-                saveFormData();
-            });
-        });
-
-        // Form submission
+        // Submit
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
-
-            // Show loader and disable button
             loader?.classList.remove("hidden");
-            errorEl?.classList.add("hidden");
+            error?.classList.add("hidden");
             if (submitBtn) submitBtn.disabled = true;
 
-            const isAttending = getAttending() === "yes";
-            const formData = {
-                name: nameInput?.value.trim() || "",
-                attending: isAttending ? "Yes" : "No",
-                guests: isAttending ? Number(guestsInput?.value || 0) : 0,
-            };
+            const coming = getAttending() === "yes";
 
             try {
-                await fetch(ENDPOINT, {
+                await fetch(API, {
                     method: "POST",
                     mode: "no-cors",
-                    headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify(formData),
+                    body: JSON.stringify({
+                        name: name.value.trim(),
+                        attending: coming ? "Yes" : "No",
+                        guests: coming ? +guests.value : 0,
+                    }),
                 });
 
-                // Success
-                localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem(KEY);
                 loader?.classList.add("done");
-                if (statusEl) statusEl.textContent = "✓";
-
-                // Navigate after brief delay
-                setTimeout(() => navigate(redirect), 500);
-            } catch (err) {
-                // Error
-                console.error("RSVP submission error:", err);
-                errorEl?.classList.remove("hidden");
+                if (loaderText) loaderText.textContent = "✓";
+                setTimeout(() => navigate(redirect), 400);
+            } catch {
+                error?.classList.remove("hidden");
                 loader?.classList.add("hidden");
                 if (submitBtn) submitBtn.disabled = false;
             }
         });
     }
 
-    // Initialize on page load and Astro transitions
     init();
     document.addEventListener("astro:page-load", init);
 </script>
 
 <style>
-    .card {
+    .form-card {
         text-align: left;
     }
 
@@ -286,106 +248,97 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         text-align: center;
         font-size: var(--fs-2xl);
         font-style: italic;
-        margin-bottom: 0.25rem;
+        margin-bottom: var(--space-1);
     }
 
-    .sub {
+    .subtitle {
         text-align: center;
         font-size: var(--fs-sm);
-        color: var(--c-white-70);
-        margin-bottom: var(--gap-lg);
+        color: var(--white-70);
+        margin-bottom: var(--space-5);
     }
 
     .field {
         display: block;
-        margin-bottom: var(--gap);
+        margin-bottom: var(--space-4);
     }
 
     .label {
         display: block;
         font-size: var(--fs-sm);
-        color: var(--c-white-90);
-        margin-bottom: 0.375rem;
+        color: var(--white-90);
+        margin-bottom: var(--space-2);
     }
 
-    .opts {
+    /* Radio buttons - consistent with global buttons */
+    .radio-group {
         display: flex;
-        gap: 0.5rem;
+        gap: var(--space-2);
     }
 
-    .opt {
+    .radio {
         flex: 1;
         cursor: pointer;
     }
 
-    .opt input {
+    .radio input {
         position: absolute;
         opacity: 0;
         pointer-events: none;
     }
 
-    .opt-btn {
-        display: block;
-        padding: 0.75rem;
-        text-align: center;
+    .radio-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 44px;
+        padding: var(--space-3);
         font-size: var(--fs-sm);
-        background: var(--c-white-10);
-        border: 1px solid var(--c-white-20);
+        font-weight: 500;
+        color: var(--white);
+        background: var(--white-10);
+        border: 1px solid var(--white-20);
         border-radius: var(--radius-sm);
-        transition:
-            background 0.15s var(--ease),
-            border-color 0.15s var(--ease);
+        transition: all var(--duration) var(--ease);
     }
 
-    .opt input:checked + .yes {
-        background: var(--c-success);
-        border-color: var(--c-success);
-        font-weight: 600;
+    .radio:active .radio-btn {
+        transform: scale(0.98);
     }
 
-    .opt input:checked + .no {
-        background: var(--c-error);
-        border-color: var(--c-error);
-        font-weight: 600;
+    .radio input:checked + .yes {
+        background: var(--success);
+        border-color: var(--success);
     }
 
-    /* Touch feedback */
-    .opt:active .opt-btn {
-        opacity: 0.8;
+    .radio input:checked + .no {
+        background: var(--error);
+        border-color: var(--error);
     }
 
-    /* Guests expandable section */
-    .guests {
+    /* Guests expandable */
+    .guests-wrap {
         display: grid;
         grid-template-rows: 0fr;
         transition: grid-template-rows 0.2s var(--ease);
     }
 
-    .guests.show {
+    .guests-wrap.show {
         grid-template-rows: 1fr;
     }
 
-    .guests > * {
+    .guests-wrap > * {
         overflow: hidden;
-    }
-
-    .btn {
-        margin-top: 0.5rem;
-    }
-
-    .btn:disabled {
-        opacity: 0.5;
-        cursor: wait;
     }
 
     .error {
         text-align: center;
-        color: #faa;
+        color: #f99;
         font-size: var(--fs-sm);
-        margin-top: var(--gap);
+        margin-top: var(--space-3);
     }
 
-    /* Loader overlay */
+    /* Loader */
     .loader {
         position: fixed;
         inset: 0;
@@ -396,7 +349,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         background: rgba(75, 1, 1, 0.96);
         z-index: 999;
         opacity: 1;
-        transition: opacity 0.15s var(--ease);
+        transition: opacity var(--duration) var(--ease);
     }
 
     .loader.hidden {
@@ -404,28 +357,28 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         pointer-events: none;
     }
 
-    .spin {
-        width: 2rem;
-        height: 2rem;
-        border: 2px solid var(--c-white-20);
-        border-top-color: var(--c-white);
+    .spinner {
+        width: 1.75rem;
+        height: 1.75rem;
+        border: 2px solid var(--white-20);
+        border-top-color: var(--white);
         border-radius: 50%;
         animation: spin 0.5s linear infinite;
-        margin-bottom: 0.75rem;
+        margin-bottom: var(--space-3);
     }
 
-    .check {
-        width: 2.5rem;
-        height: 2.5rem;
+    .checkmark {
+        width: 2rem;
+        height: 2rem;
         color: #4ade80;
-        margin-bottom: 0.75rem;
+        margin-bottom: var(--space-3);
         display: none;
     }
 
-    .loader.done .spin {
+    .loader.done .spinner {
         display: none;
     }
-    .loader.done .check {
+    .loader.done .checkmark {
         display: block;
     }
 
