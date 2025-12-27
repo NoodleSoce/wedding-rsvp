@@ -12,7 +12,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 ---
 
 <Layout title={lang === "ar" ? "تأكيد الحضور" : "RSVP"} lang={lang}>
-    <main class="page rsvp-page fade">
+    <main class="page fade">
         <div class="content">
             <div class="card form-card">
                 <h2 class="anim anim-1">{t["rsvp.title"]}</h2>
@@ -41,7 +41,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                             autocomplete="name"
                             autocapitalize="words"
                             enterkeyhint="next"
-                            spellcheck="false"
                         />
                     </label>
 
@@ -76,15 +75,15 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                         <label class="field">
                             <span class="label">{t["rsvp.guests"]}</span>
                             <input
-                                type="tel"
+                                type="number"
                                 id="guests"
                                 name="guests"
-                                class="input guests-input"
-                                maxlength="1"
-                                pattern="[0-9]"
+                                class="input"
+                                min="0"
+                                max="9"
+                                value="0"
                                 inputmode="numeric"
                                 enterkeyhint="done"
-                                value="0"
                             />
                         </label>
                     </div>
@@ -194,17 +193,20 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         // Input handlers
         name.addEventListener("input", save);
 
-        // Guests input - only allow single digit
+        // Guests input - simple logic: keep only last digit (0-9)
         guests.addEventListener("input", () => {
-            // Get only the last digit entered
-            const val = guests.value.replace(/[^0-9]/g, "");
-            guests.value = val.slice(-1) || "0";
+            // Remove non-digits
+            let val = guests.value.replace(/[^0-9]/g, "");
+            // If more than one digit, keep only the last one
+            if (val.length > 1) {
+                val = val.slice(-1);
+            }
+            // If empty, default to 0
+            if (val === "") {
+                val = "0";
+            }
+            guests.value = val;
             save();
-        });
-
-        // Select all on focus for easier editing
-        guests.addEventListener("focus", () => {
-            guests.select();
         });
 
         // Radio change handlers
@@ -215,19 +217,11 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             }),
         );
 
-        // Handle keyboard dismissal - blur on enter
-        guests.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                guests.blur();
-            }
-        });
-
         // Form submission
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
 
-            // Blur any focused input to dismiss keyboard
+            // Blur to dismiss keyboard
             (document.activeElement as HTMLElement)?.blur();
 
             loader?.classList.remove("hidden");
@@ -264,25 +258,10 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 </script>
 
 <style>
-    /* RSVP page specific - keyboard aware */
-    .rsvp-page {
-        /* Allow scroll when keyboard opens */
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .rsvp-page .content {
-        /* Remove auto margin so content stays in place */
-        margin: 0;
-        padding-top: var(--space-4);
-        padding-bottom: var(--space-8);
-    }
-
     .form-card {
         text-align: left;
     }
 
-    /* RTL form alignment */
     [dir="rtl"] .form-card {
         text-align: right;
     }
@@ -373,14 +352,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 
     .guests-wrap > * {
         overflow: hidden;
-    }
-
-    /* Guests input - centered number */
-    .guests-input {
-        text-align: center;
-        font-size: var(--fs-xl);
-        font-weight: 600;
-        letter-spacing: 0.05em;
     }
 
     .submit {

@@ -50,7 +50,7 @@
 }
 
 /* ========================================
-   RESET & BASE - Keyboard optimized
+   RESET & BASE
    ======================================== */
 *,
 *::before,
@@ -63,17 +63,14 @@
 html {
     height: 100%;
     height: -webkit-fill-available;
-    /* Disable smooth scroll to prevent jumping on focus */
     scroll-behavior: auto;
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    /* Prevent overscroll bounce */
     overscroll-behavior: none;
 }
 
 body {
-    /* Use min-height to allow content to expand */
     min-height: 100%;
     min-height: 100dvh;
     min-height: -webkit-fill-available;
@@ -83,20 +80,16 @@ body {
     line-height: 1.5;
     color: var(--white);
     background: var(--bg);
-    /* Allow scroll when needed (keyboard) */
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    /* Prevent pull-to-refresh */
     overscroll-behavior-y: none;
-    /* Important: allow normal touch scrolling */
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
 }
 
-/* RTL text rendering optimization */
 [dir="rtl"] body {
     font-feature-settings: "liga" 1, "calt" 1;
 }
@@ -108,17 +101,15 @@ h2 {
 }
 
 /* ========================================
-   PAGE LAYOUT - Keyboard aware
+   PAGE LAYOUT - Centered content
    ======================================== */
 .page {
-    /* Use min-height instead of fixed height for keyboard */
     min-height: 100vh;
     min-height: 100dvh;
     width: 100%;
     display: flex;
     justify-content: center;
-    /* Align to top so content stays stable when keyboard opens */
-    align-items: flex-start;
+    align-items: center;
     padding: var(--header-h) var(--page-pad) var(--page-pad);
     background: var(--bg);
 }
@@ -131,9 +122,6 @@ h2 {
     width: 100%;
     max-width: var(--max-w);
     gap: var(--space-4);
-    /* Add margin to vertically center when there's space */
-    margin: auto 0;
-    /* Padding at bottom for keyboard clearance */
     padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
@@ -175,7 +163,6 @@ h2 {
         transform var(--duration) var(--ease);
     -webkit-user-select: none;
     user-select: none;
-    /* Prevent zoom on double-tap */
     touch-action: manipulation;
 }
 
@@ -197,7 +184,7 @@ h2 {
 }
 
 /* ========================================
-   INPUT - Keyboard optimized
+   INPUT
    ======================================== */
 .input {
     width: 100%;
@@ -205,7 +192,7 @@ h2 {
     padding: var(--space-4);
     font: inherit;
     font-size: 16px;
-    /* Prevents iOS zoom on focus */
+    /* Prevents iOS zoom */
     color: var(--white);
     background: rgba(0, 0, 0, 0.15);
     border: 1px solid var(--white-20);
@@ -213,9 +200,6 @@ h2 {
     transition: border-color var(--duration) var(--ease);
     -webkit-appearance: none;
     appearance: none;
-    /* Prevent scroll into view jumping */
-    scroll-margin: 0;
-    scroll-margin-top: 100px;
 }
 
 .input::placeholder {
@@ -227,7 +211,6 @@ h2 {
     border-color: var(--white-70);
 }
 
-/* RTL input text alignment */
 [dir="rtl"] .input {
     text-align: right;
 }
@@ -236,7 +219,6 @@ h2 {
     text-align: right;
 }
 
-/* Number inputs stay LTR for numbers */
 .input[type="number"] {
     text-align: center;
 }
@@ -309,7 +291,6 @@ h2 {
     animation-delay: 0.16s;
 }
 
-/* View transitions */
 ::view-transition-old(root),
 ::view-transition-new(root) {
     animation-duration: 0.2s;
@@ -332,7 +313,6 @@ h2 {
     display: none !important;
 }
 
-/* Prevent automatic scroll-into-view on all form elements */
 input,
 textarea,
 select,
