@@ -12,24 +12,17 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 ---
 
 <Layout title={lang === "ar" ? "تأكيد الحضور" : "RSVP"} lang={lang}>
-    <main class="page fade">
+    <main class="page fade" id="rsvp-page">
         <div class="content">
-            <div class="card form-card">
-                <h2 class="anim anim-1">{t["rsvp.title"]}</h2>
-                <p class="subtitle anim anim-2">{t["rsvp.subtitle"]}</p>
-
-                <form
-                    id="form"
-                    class="form anim anim-3"
-                    data-redirect={redirectUrl}
-                >
+            <div class="card form-card" id="form-card">
+                <form id="form" data-redirect={redirectUrl}>
                     <a
                         href={redirectUrl}
                         data-astro-prefetch="load"
                         hidden
                         aria-hidden="true"></a>
 
-                    <label class="field">
+                    <label class="field" id="name-field">
                         <span class="label">{t["rsvp.name"]}</span>
                         <input
                             type="text"
@@ -44,7 +37,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                         />
                     </label>
 
-                    <div class="field">
+                    <div class="field" id="attending-field">
                         <span class="label">{t["rsvp.attending"]}</span>
                         <div class="radio-group">
                             <label class="radio">
@@ -72,7 +65,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                     </div>
 
                     <div id="guests-wrap" class="guests-wrap show">
-                        <label class="field">
+                        <label class="field" id="guests-field">
                             <span class="label">{t["rsvp.guests"]}</span>
                             <input
                                 type="number"
@@ -98,16 +91,10 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             </div>
         </div>
 
+        <!-- Loader overlay -->
         <div id="loader" class="loader hidden" aria-live="polite">
-            <div class="spinner" aria-hidden="true"></div>
-            <svg class="checkmark" viewBox="0 0 24 24" aria-hidden="true">
-                <polyline
-                    points="20 6 9 17 4 12"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="3"></polyline>
-            </svg>
-            <span id="loader-text">{t["rsvp.sending"]}</span>
+            <div class="spinner" id="spinner"></div>
+            <p class="sent-text" id="sent-text">{t["rsvp.sent"]}</p>
         </div>
     </main>
 </Layout>
@@ -123,19 +110,27 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         const form = document.getElementById("form") as HTMLFormElement;
         if (!form) return;
 
-        const name = document.getElementById("name") as HTMLInputElement;
-        const guests = document.getElementById("guests") as HTMLInputElement;
+        const page = document.getElementById("rsvp-page");
+        const formCard = document.getElementById("form-card");
+        const nameInput = document.getElementById("name") as HTMLInputElement;
+        const guestsInput = document.getElementById(
+            "guests",
+        ) as HTMLInputElement;
         const guestsWrap = document.getElementById("guests-wrap");
         const radios = document.querySelectorAll<HTMLInputElement>(
             'input[name="attending"]',
         );
         const loader = document.getElementById("loader");
-        const loaderText = document.getElementById("loader-text");
+        const spinner = document.getElementById("spinner");
+        const sentText = document.getElementById("sent-text");
         const error = document.getElementById("error");
         const submitBtn = document.getElementById(
             "submit-btn",
         ) as HTMLButtonElement;
         const redirect = form.dataset.redirect || "/countdown";
+
+        // Check if keyboard is likely open
+        let isKeyboardOpen = false;
 
         // Reset UI state
         function reset() {
@@ -143,9 +138,79 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             loader?.classList.remove("done");
             error?.classList.add("hidden");
             if (submitBtn) submitBtn.disabled = false;
+            if (spinner) spinner.style.display = "";
+            if (sentText) sentText.style.display = "none";
         }
         reset();
         addEventListener("pageshow", reset);
+
+        // Scroll form into view smoothly when keyboard opens
+        function scrollFormIntoView() {
+            if (!formCard) return;
+
+            // Small delay to let keyboard fully open
+            setTimeout(() => {
+                formCard.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                });
+            }, 100);
+        }
+
+        // Scroll back to center when keyboard closes
+        function scrollToCenter() {
+            if (!page) return;
+
+            setTimeout(() => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth",
+                });
+            }, 50);
+        }
+
+        // Name input focus - scroll to show form
+        nameInput?.addEventListener("focus", () => {
+            isKeyboardOpen = true;
+            scrollFormIntoView();
+        });
+
+        // Guests input focus - don't scroll, keyboard already open
+        guestsInput?.addEventListener("focus", () => {
+            isKeyboardOpen = true;
+            // Don't scroll - keep view as is
+        });
+
+        // Handle blur on both inputs
+        function handleBlur() {
+            // Small delay to check if focus moved to another input
+            setTimeout(() => {
+                const active = document.activeElement;
+                const isInputFocused =
+                    active === nameInput || active === guestsInput;
+
+                if (!isInputFocused) {
+                    isKeyboardOpen = false;
+                    scrollToCenter();
+                }
+            }, 100);
+        }
+
+        nameInput?.addEventListener("blur", handleBlur);
+        guestsInput?.addEventListener("blur", handleBlur);
+
+        // Handle visualViewport changes (keyboard show/hide)
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener("resize", () => {
+                // If viewport grew (keyboard closed), scroll to center
+                if (window.visualViewport!.height > window.innerHeight * 0.8) {
+                    if (isKeyboardOpen) {
+                        isKeyboardOpen = false;
+                        scrollToCenter();
+                    }
+                }
+            });
+        }
 
         // Get selected attendance
         const getAttending = () =>
@@ -163,8 +228,8 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         // Load saved form data
         try {
             const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
-            if (saved.name) name.value = saved.name;
-            if (saved.guests) guests.value = saved.guests;
+            if (saved.name) nameInput.value = saved.name;
+            if (saved.guests) guestsInput.value = saved.guests;
             if (saved.attending) {
                 const r = document.querySelector(
                     `input[value="${saved.attending}"]`,
@@ -182,38 +247,32 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                 localStorage.setItem(
                     KEY,
                     JSON.stringify({
-                        name: name.value,
+                        name: nameInput.value,
                         attending: getAttending(),
-                        guests: guests.value,
+                        guests: guestsInput.value,
                     }),
                 );
             }, 200);
         }
 
         // Input handlers
-        name.addEventListener("input", save);
+        nameInput?.addEventListener("input", save);
 
-        // Guests input - simple logic: keep only last digit (0-9)
-        guests.addEventListener("input", () => {
-            // Remove non-digits
-            let val = guests.value.replace(/[^0-9]/g, "");
-            // If more than one digit, keep only the last one
-            if (val.length > 1) {
-                val = val.slice(-1);
-            }
-            // If empty, default to 0
-            if (val === "") {
-                val = "0";
-            }
-            guests.value = val;
+        // Guests input - keep only last digit (0-9)
+        guestsInput?.addEventListener("input", () => {
+            let val = guestsInput.value.replace(/[^0-9]/g, "");
+            if (val.length > 1) val = val.slice(-1);
+            if (val === "") val = "0";
+            guestsInput.value = val;
             save();
         });
 
-        // Radio change handlers
+        // Radio change - don't affect keyboard
         radios.forEach((r) =>
             r.addEventListener("change", () => {
                 updateGuests();
                 save();
+                // Keep focus where it is, don't close keyboard
             }),
         );
 
@@ -224,7 +283,10 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             // Blur to dismiss keyboard
             (document.activeElement as HTMLElement)?.blur();
 
+            // Show loader with spinner
             loader?.classList.remove("hidden");
+            if (spinner) spinner.style.display = "";
+            if (sentText) sentText.style.display = "none";
             error?.classList.add("hidden");
             if (submitBtn) submitBtn.disabled = true;
 
@@ -235,16 +297,34 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                     method: "POST",
                     mode: "no-cors",
                     body: JSON.stringify({
-                        name: name.value.trim(),
+                        name: nameInput.value.trim(),
                         attending: coming ? "Yes" : "No",
-                        guests: coming ? +guests.value : 0,
+                        guests: coming ? +guestsInput.value : 0,
                     }),
                 });
 
                 localStorage.removeItem(KEY);
-                loader?.classList.add("done");
-                if (loaderText) loaderText.textContent = "✓";
-                setTimeout(() => navigate(redirect), 400);
+
+                // Smooth transition to "RSVP sent!"
+                if (spinner) {
+                    spinner.style.transition = "opacity 0.2s ease";
+                    spinner.style.opacity = "0";
+                }
+
+                setTimeout(() => {
+                    if (spinner) spinner.style.display = "none";
+                    if (sentText) {
+                        sentText.style.display = "";
+                        sentText.style.opacity = "0";
+                        sentText.style.transition = "opacity 0.3s ease";
+                        requestAnimationFrame(() => {
+                            sentText.style.opacity = "1";
+                        });
+                    }
+                }, 200);
+
+                // Navigate after showing success message
+                setTimeout(() => navigate(redirect), 1000);
             } catch {
                 error?.classList.remove("hidden");
                 loader?.classList.add("hidden");
@@ -258,26 +338,19 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 </script>
 
 <style>
+    /* Page scrollable */
+    .page {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
     .form-card {
         text-align: left;
+        scroll-margin-top: var(--space-4);
     }
 
     [dir="rtl"] .form-card {
         text-align: right;
-    }
-
-    h2 {
-        text-align: center;
-        font-size: var(--fs-2xl);
-        font-style: italic;
-        margin-bottom: var(--space-2);
-    }
-
-    .subtitle {
-        text-align: center;
-        font-size: var(--fs-base);
-        color: var(--white-70);
-        margin-bottom: var(--space-6);
     }
 
     .field {
@@ -377,7 +450,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         background: rgba(75, 1, 1, 0.96);
         z-index: 999;
         opacity: 1;
-        transition: opacity var(--duration) var(--ease);
+        transition: opacity 0.2s var(--ease);
     }
 
     .loader.hidden {
@@ -392,22 +465,13 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         border-top-color: var(--white);
         border-radius: 50%;
         animation: spin 0.5s linear infinite;
-        margin-bottom: var(--space-4);
     }
 
-    .checkmark {
-        width: 2.75rem;
-        height: 2.75rem;
+    .sent-text {
+        display: none;
+        font-size: var(--fs-xl);
+        font-weight: 500;
         color: #4ade80;
-        margin-bottom: var(--space-4);
-        display: none;
-    }
-
-    .loader.done .spinner {
-        display: none;
-    }
-    .loader.done .checkmark {
-        display: block;
     }
 
     @keyframes spin {
