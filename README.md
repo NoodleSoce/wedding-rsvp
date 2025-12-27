@@ -99,4 +99,4 @@ Private project - All rights reserved.
 
 ---
 
-Made with ❤️ for Zaid & Haya's special day
+Made for Zaid & Haya's special day

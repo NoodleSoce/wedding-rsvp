@@ -192,8 +192,8 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         guestsEl?.addEventListener("focus", () => {
             keyboardOpen = true;
             scrollToShowForm();
-            // Select all so typing replaces the value
-            guestsEl.select();
+            // Delay select to let keyboard fully open first
+            setTimeout(() => guestsEl.select(), 50);
         });
 
         function handleBlur() {

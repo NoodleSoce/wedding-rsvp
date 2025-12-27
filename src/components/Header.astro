@@ -95,7 +95,7 @@ const targetPath =
     }
   }
 
-  /* Language button */
+  /* Language button - consistent styling */
   .lang-btn {
     position: absolute;
     right: 0;
@@ -106,7 +106,7 @@ const targetPath =
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: "Libre Baskerville", "Amiri", Georgia, serif;
+    font-family: var(--font);
     font-size: 0.875rem;
     font-weight: 600;
     color: #fff;
@@ -118,12 +118,11 @@ const targetPath =
     pointer-events: auto;
   }
 
-  /* Arabic character needs different styling */
+  /* Arabic character styling */
   .lang-btn.arabic {
-    font-family: "Amiri", "Libre Baskerville", Georgia, serif;
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     font-weight: 400;
-    padding-top: 2px;
+    line-height: 1;
   }
 
   .lang-btn:active {
