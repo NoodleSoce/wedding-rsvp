@@ -58,13 +58,7 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
                 <p class="city">{t["countdown.city"]}</p>
                 <div class="map" id="map-container">
                     <div class="map-placeholder" id="map-placeholder">
-                        <button
-                            type="button"
-                            class="map-load-btn"
-                            id="map-load-btn"
-                        >
-                            📍 Load Map
-                        </button>
+                        Loading map...
                     </div>
                 </div>
             </div>
@@ -170,49 +164,30 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         if (timer) clearInterval(timer);
         timer = setInterval(tick, 1000) as unknown as number;
 
-        // Lazy load map on user interaction
-        const mapBtn = document.getElementById("map-load-btn");
+        // Auto-load map after page is interactive
         const mapContainer = document.getElementById("map-container");
         const placeholder = document.getElementById("map-placeholder");
 
-        if (mapBtn && mapContainer && placeholder) {
-            mapBtn.addEventListener("click", loadMap, {
-                once: true,
-                passive: true,
-            });
+        if (mapContainer && placeholder) {
+            // Use requestIdleCallback for non-blocking load, fallback to setTimeout
+            const loadMapDeferred = () => {
+                if (mapContainer.querySelector("iframe")) return; // Already loaded
 
-            // Also load on viewport visibility after delay
-            if ("IntersectionObserver" in window) {
-                const observer = new IntersectionObserver(
-                    (entries) => {
-                        if (entries[0].isIntersecting) {
-                            observer.disconnect();
-                            // Delay map load to prioritize above-fold content
-                            setTimeout(loadMap, 1500);
-                        }
-                    },
-                    { threshold: 0.1 },
-                );
-                observer.observe(mapContainer);
-            }
-        }
-
-        function loadMap() {
-            if (!mapContainer || !placeholder) return;
-            if (mapContainer.querySelector("iframe")) return; // Already loaded
-
-            const iframe = document.createElement("iframe");
-            iframe.src =
-                "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3610.178!2d55.2744!3d25.1972!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f43348a67e24b%3A0xff45e502e1ceb7e2!2sBurj%20Khalifa!5e0!3m2!1sen!2sae!4v1703634000000!5m2!1sen!2sae";
-            iframe.loading = "lazy";
-            iframe.title = "Location";
-            iframe.style.cssText =
-                "width:100%;height:100%;border:0;opacity:0;transition:opacity .3s";
-            iframe.onload = () => {
-                iframe.style.opacity = "1";
+                const iframe = document.createElement("iframe");
+                iframe.src =
+                    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3610.178!2d55.2744!3d25.1972!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f43348a67e24b%3A0xff45e502e1ceb7e2!2sBurj%20Khalifa!5e0!3m2!1sen!2sae!4v1703634000000!5m2!1sen!2sae";
+                iframe.loading = "lazy";
+                iframe.title = "Location";
+                iframe.style.cssText = "width:100%;height:100%;border:0;";
+                placeholder.remove();
+                mapContainer.appendChild(iframe);
             };
-            placeholder.remove();
-            mapContainer.appendChild(iframe);
+
+            if ("requestIdleCallback" in window) {
+                requestIdleCallback(loadMapDeferred, { timeout: 1000 });
+            } else {
+                setTimeout(loadMapDeferred, 500);
+            }
         }
     }
 
@@ -301,24 +276,8 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         display: flex;
         justify-content: center;
         align-items: center;
-    }
-
-    .map-load-btn {
-        padding: 0.75rem 1.5rem;
-        font: inherit;
+        color: var(--white-50);
         font-size: var(--fs-sm);
-        color: var(--white);
-        background: var(--white-10);
-        border: 1px solid var(--white-20);
-        border-radius: var(--radius-full);
-        cursor: pointer;
-        transition: background 0.15s ease;
-        touch-action: manipulation;
-    }
-
-    .map-load-btn:active,
-    .map-load-btn:hover {
-        background: var(--white-20);
     }
 
     @media (orientation: landscape) and (max-height: 500px) {
