@@ -158,9 +158,20 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         // Always reset state on init
         resetState();
 
+        // Clear submitted flag when user actually visits the page fresh
+        // (not from bfcache or history navigation)
+        if (sessionStorage.getItem("rsvp_submitted") === "true") {
+            // User came back after submitting - clear the flag so they can submit again
+            sessionStorage.removeItem("rsvp_submitted");
+        }
+
         // Also reset on back/forward cache restore
         window.addEventListener("pageshow", (e) => {
-            if (e.persisted) resetState();
+            if (e.persisted) {
+                resetState();
+                // Clear submitted flag on bfcache restore
+                sessionStorage.removeItem("rsvp_submitted");
+            }
         });
 
         function scrollToShowForm() {
@@ -303,6 +314,9 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                 isAttending ? "false" : "true",
             );
 
+            // Mark as submitted to handle back navigation properly
+            sessionStorage.setItem("rsvp_submitted", "true");
+
             try {
                 await fetch(API, {
                     method: "POST",
@@ -326,9 +340,10 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                     }
                 }, 300);
 
-                // Navigate after animation - use normal navigation
+                // Navigate after animation - use replace to remove RSVP from history
+                // This prevents the back button from returning to RSVP page
                 setTimeout(() => {
-                    window.location.href = redirect;
+                    window.location.replace(redirect);
                 }, 900);
             } catch {
                 isSubmitting = false;
