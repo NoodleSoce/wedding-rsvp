@@ -117,21 +117,12 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
     const API =
         "https://script.google.com/macros/s/AKfycbwq4PjP3sAEj2YTMTge5tZkwDx447v4T-0ySATyf3GImmpnZTaop-NGoxFj-lSyGnTl/exec";
     const KEY = "rsvp";
-    const SUBMITTED_KEY = "rsvp_submitted";
 
     function init() {
         const form = document.getElementById("form") as HTMLFormElement | null;
         if (!form) return;
 
         const redirect = form.dataset.redirect || "/countdown";
-
-        // Check if we just submitted - redirect immediately
-        if (sessionStorage.getItem(SUBMITTED_KEY) === "true") {
-            sessionStorage.removeItem(SUBMITTED_KEY);
-            window.location.replace(redirect);
-            return;
-        }
-
         const submitBtn = document.getElementById(
             "submit-btn",
         ) as HTMLButtonElement;
@@ -147,8 +138,10 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         const checkmark = document.getElementById("checkmark");
 
         let keyboardOpen = false;
+        let isSubmitting = false;
 
         function resetState() {
+            isSubmitting = false;
             if (loadingOverlay) loadingOverlay.classList.remove("visible");
             if (spinner) {
                 spinner.style.display = "";
@@ -161,9 +154,12 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             if (errorMsg) errorMsg.hidden = true;
             if (submitBtn) submitBtn.disabled = false;
         }
+
+        // Always reset state on init
         resetState();
+
+        // Also reset on back/forward cache restore
         window.addEventListener("pageshow", (e) => {
-            // If back button was used (page was cached), reset
             if (e.persisted) resetState();
         });
 
@@ -280,7 +276,9 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
 
-            if (submitBtn?.disabled) return;
+            // Prevent double submission
+            if (isSubmitting) return;
+            isSubmitting = true;
 
             (document.activeElement as HTMLElement)?.blur();
             keyboardOpen = false;
@@ -328,12 +326,12 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                     }
                 }, 300);
 
-                // Mark as submitted and navigate with replace (so back button skips RSVP)
+                // Navigate after animation - use normal navigation
                 setTimeout(() => {
-                    sessionStorage.setItem(SUBMITTED_KEY, "true");
-                    window.location.replace(redirect);
+                    window.location.href = redirect;
                 }, 900);
             } catch {
+                isSubmitting = false;
                 if (loadingOverlay) loadingOverlay.classList.remove("visible");
                 if (errorMsg) errorMsg.hidden = false;
                 if (submitBtn) submitBtn.disabled = false;
