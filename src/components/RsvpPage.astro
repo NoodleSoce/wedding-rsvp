@@ -126,24 +126,23 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         const form = document.getElementById("form") as HTMLFormElement | null;
         if (!form) return;
 
-        const formCard = document.getElementById("form-card");
+        const submitBtn = document.getElementById(
+            "submit-btn",
+        ) as HTMLButtonElement;
         const nameEl = document.getElementById("name") as HTMLInputElement;
         const guestsEl = document.getElementById("guests") as HTMLInputElement;
         const guestsSection = document.getElementById("guests-section");
         const radios = document.querySelectorAll<HTMLInputElement>(
             'input[name="attending"]',
         );
-        const submitBtn = document.getElementById(
-            "submit-btn",
-        ) as HTMLButtonElement;
         const errorMsg = document.getElementById("error-msg");
         const loadingOverlay = document.getElementById("loading-overlay");
         const spinner = document.getElementById("spinner");
         const checkmark = document.getElementById("checkmark");
         const redirect = form.dataset.redirect || "/countdown";
 
-        // Track keyboard state
-        let wasNameFocused = false;
+        // Track if name was focused (keyboard open)
+        let keyboardOpen = false;
 
         // Reset state
         function resetState() {
@@ -162,37 +161,35 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         resetState();
         window.addEventListener("pageshow", resetState);
 
-        // Scroll to show form content
-        function scrollToForm() {
-            if (!formCard) return;
-            requestAnimationFrame(() => {
-                formCard.scrollIntoView({ behavior: "smooth", block: "start" });
-            });
+        // Scroll to show form - always the same behavior
+        function scrollToShowForm() {
+            // Small delay to let keyboard open
+            setTimeout(() => {
+                submitBtn?.scrollIntoView({ behavior: "smooth", block: "end" });
+            }, 150);
         }
 
-        // Name input focus
+        // Name input focus - scroll to show all content
         nameEl?.addEventListener("focus", () => {
-            wasNameFocused = true;
-            scrollToForm();
+            keyboardOpen = true;
+            scrollToShowForm();
         });
 
-        // Guests input focus - no scroll needed
+        // Guests input focus - also scroll to show all content
         guestsEl?.addEventListener("focus", () => {
-            // Don't scroll, form should already be visible
+            keyboardOpen = true;
+            scrollToShowForm();
         });
 
-        // Blurs - scroll to top only if clicking outside form
-        function handleBlur(e: FocusEvent) {
+        // Blur - only scroll to top if clicking outside form
+        function handleBlur() {
             setTimeout(() => {
                 const active = document.activeElement;
-                const isFormElement =
-                    active === nameEl ||
-                    active === guestsEl ||
-                    active === submitBtn ||
-                    active?.closest(".radio-label");
+                const isInForm =
+                    active?.closest("#form") || active?.closest(".radio-label");
 
-                if (!isFormElement && !active?.closest("#form")) {
-                    wasNameFocused = false;
+                if (!isInForm) {
+                    keyboardOpen = false;
                     window.scrollTo({ top: 0, behavior: "smooth" });
                 }
             }, 100);
@@ -201,7 +198,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         nameEl?.addEventListener("blur", handleBlur);
         guestsEl?.addEventListener("blur", handleBlur);
 
-        // Attendance toggle - refocus name if keyboard was open
+        // Attendance toggle
         function getAttending() {
             return (
                 (
@@ -217,12 +214,14 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             guestsSection?.classList.toggle("open", show);
         }
 
+        // Radio click - keep keyboard open by refocusing name
         radios.forEach((r) => {
             r.addEventListener("change", () => {
                 updateGuestsVisibility();
                 saveData();
-                // Keep keyboard open by refocusing name
-                if (wasNameFocused) {
+
+                if (keyboardOpen) {
+                    // Refocus name to keep keyboard open
                     nameEl?.focus();
                 }
             });
@@ -273,7 +272,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 
             // Hide keyboard
             (document.activeElement as HTMLElement)?.blur();
-            wasNameFocused = false;
+            keyboardOpen = false;
 
             // Show loading
             if (loadingOverlay) loadingOverlay.hidden = false;
@@ -315,7 +314,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                 }, 250);
 
                 // Navigate after animation
-                setTimeout(() => navigate(redirect), 750);
+                setTimeout(() => navigate(redirect), 800);
             } catch {
                 if (loadingOverlay) loadingOverlay.hidden = true;
                 if (errorMsg) errorMsg.hidden = false;
@@ -334,9 +333,8 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         inset: 0;
         display: flex;
         justify-content: center;
-        align-items: flex-start;
+        align-items: center;
         padding: var(--header-h) var(--page-pad) var(--page-pad);
-        padding-top: calc(var(--header-h) + var(--space-4));
         background: var(--bg);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
@@ -345,7 +343,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
     .form-wrap {
         width: 100%;
         max-width: var(--max-w);
-        margin: auto 0;
     }
 
     .form-card {
@@ -514,7 +511,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         align-items: center;
     }
 
-    /* Spinner */
     .spinner {
         width: 2.5rem;
         height: 2.5rem;
@@ -535,7 +531,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         }
     }
 
-    /* Checkmark */
     .checkmark {
         width: 3.5rem;
         height: 3.5rem;

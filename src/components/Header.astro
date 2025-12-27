@@ -19,14 +19,16 @@ const targetPath =
 
 <header class:list={["header", { animated: showAnimation }]}>
   <div class="inner">
-    <Image
-      src={logoImg}
-      alt="Z & H"
-      class="logo"
-      width={400}
-      height={133}
-      loading="eager"
-    />
+    <div class="logo-wrap">
+      <Image
+        src={logoImg}
+        alt="Z & H"
+        class="logo"
+        width={400}
+        height={133}
+        loading="eager"
+      />
+    </div>
     <a
       href={targetPath}
       class="lang-btn"
@@ -42,37 +44,14 @@ const targetPath =
   .header {
     position: absolute;
     inset: 0 0 auto 0;
-    padding: 1.25rem 1rem;
-    padding-bottom: 0.5rem;
+    padding: 1rem;
     z-index: 100;
     pointer-events: none;
   }
 
-  /* Animation only on landing page */
-  .header.animated .logo {
-    animation: fadeSlideDown 0.4s ease both;
-    animation-delay: 0.1s;
-  }
-
-  .header.animated .lang-btn {
-    animation: fadeSlideDown 0.4s ease both;
-    animation-delay: 0.2s;
-  }
-
-  @keyframes fadeSlideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-12px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
   .inner {
     position: relative;
-    max-width: 1200px;
+    max-width: 600px;
     margin: 0 auto;
     display: flex;
     justify-content: center;
@@ -81,20 +60,26 @@ const targetPath =
     direction: ltr;
   }
 
+  .logo-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
   .logo {
-    height: 72px;
+    height: 64px;
     width: auto;
   }
 
   @media (min-width: 400px) {
     .logo {
-      height: 84px;
+      height: 72px;
     }
   }
 
   @media (min-width: 600px) {
     .logo {
-      height: 96px;
+      height: 80px;
     }
   }
 
@@ -103,14 +88,14 @@ const targetPath =
     right: 0;
     top: 50%;
     transform: translateY(-50%);
-    min-height: 44px;
-    min-width: 52px;
+    min-height: 40px;
+    min-width: 48px;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 0.875rem;
     font-family: "Libre Baskerville", "Amiri", Georgia, serif;
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     font-weight: 600;
     color: #fff;
     background: rgba(255, 255, 255, 0.1);
@@ -128,5 +113,46 @@ const targetPath =
     .lang-btn:hover {
       background: rgba(255, 255, 255, 0.2);
     }
+  }
+
+  /* Animation only on landing page */
+  .header.animated .logo-wrap {
+    animation: fadeSlideDown 0.5s ease both;
+  }
+
+  .header.animated .lang-btn {
+    animation: fadeSlideDown 0.5s ease both;
+    animation-delay: 0.15s;
+  }
+
+  @keyframes fadeSlideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Fix lang-btn transform after animation */
+  .header.animated .lang-btn {
+    transform: translateY(-50%);
+  }
+
+  @keyframes fadeSlideDownBtn {
+    from {
+      opacity: 0;
+      transform: translateY(calc(-50% - 10px));
+    }
+    to {
+      opacity: 1;
+      transform: translateY(-50%);
+    }
+  }
+
+  .header.animated .lang-btn {
+    animation-name: fadeSlideDownBtn;
   }
 </style>
