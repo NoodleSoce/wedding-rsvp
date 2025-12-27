@@ -1,6 +1,6 @@
 /* ========================================
-   WEDDING RSVP - Design System
-   Mobile-first, keyboard-optimized
+   WEDDING RSVP - Optimized Design System
+   Mobile-first, GPU-accelerated
    ======================================== */
 
 :root {
@@ -15,7 +15,7 @@
     --success: #2e7d32;
     --error: #c62828;
 
-    /* Typography */
+    /* Typography - using system font stack as fallback for faster initial paint */
     --font: 'Libre Baskerville', 'Amiri', Georgia, serif;
     --fs-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.85rem);
     --fs-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
@@ -33,7 +33,7 @@
     --space-6: 1.5rem;
     --space-8: 2rem;
 
-    /* Layout - more header space */
+    /* Layout */
     --max-w: min(92vw, 480px);
     --header-h: clamp(90px, 75px + 4vw, 120px);
     --page-pad: clamp(1rem, 0.75rem + 1.25vw, 1.75rem);
@@ -50,7 +50,7 @@
 }
 
 /* ========================================
-   RESET & BASE
+   RESET & BASE - Optimized
    ======================================== */
 *,
 *::before,
@@ -63,11 +63,12 @@
 html {
     height: 100%;
     height: -webkit-fill-available;
-    scroll-behavior: auto;
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     overscroll-behavior: none;
+    /* Optimize scrolling */
+    scroll-behavior: auto;
 }
 
 body {
@@ -84,10 +85,13 @@ body {
     overflow-y: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
+    /* Use optimizeSpeed for faster rendering */
+    text-rendering: optimizeSpeed;
     overscroll-behavior-y: none;
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
+    /* CSS containment for better performance */
+    contain: layout style;
 }
 
 [dir="rtl"] body {
@@ -101,7 +105,7 @@ h2 {
 }
 
 /* ========================================
-   PAGE LAYOUT
+   PAGE LAYOUT - GPU Optimized
    ======================================== */
 .page {
     min-height: 100vh;
@@ -112,9 +116,10 @@ h2 {
     align-items: center;
     padding: var(--header-h) var(--page-pad) var(--page-pad);
     background: var(--bg);
+    /* CSS containment */
+    contain: layout style paint;
 }
 
-/* Landscape mode: add more top padding */
 @media (orientation: landscape) and (max-height: 500px) {
     .page {
         padding-top: calc(var(--header-h) + var(--space-4));
@@ -134,7 +139,7 @@ h2 {
 }
 
 /* ========================================
-   CARD
+   CARD - Simplified blur
    ======================================== */
 .card {
     width: 100%;
@@ -143,12 +148,13 @@ h2 {
     border: 1px solid var(--white-20);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    /* Use will-change only when needed, lighter blur */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 /* ========================================
-   BUTTON
+   BUTTON - Optimized transitions
    ======================================== */
 .btn {
     display: flex;
@@ -166,6 +172,8 @@ h2 {
     border-radius: var(--radius-full);
     cursor: pointer;
     text-decoration: none;
+    /* GPU-accelerated transform */
+    transform: translateZ(0);
     transition: background var(--duration) var(--ease),
         border-color var(--duration) var(--ease),
         transform var(--duration) var(--ease);
@@ -175,7 +183,7 @@ h2 {
 }
 
 .btn:active {
-    transform: scale(0.97);
+    transform: scale(0.97) translateZ(0);
     background: var(--white-20);
 }
 
@@ -192,7 +200,7 @@ h2 {
 }
 
 /* ========================================
-   INPUT
+   INPUT - Optimized
    ======================================== */
 .input {
     width: 100%;
@@ -231,76 +239,87 @@ h2 {
 }
 
 /* ========================================
-   ANIMATIONS
+   ANIMATIONS - GPU Accelerated
    ======================================== */
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translate3d(0, 10px, 0);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translate3d(0, 0, 0);
     }
 }
 
 @keyframes slideIn {
     from {
         opacity: 0;
-        transform: translateX(-12px);
+        transform: translate3d(-12px, 0, 0);
     }
 
     to {
         opacity: 1;
-        transform: translateX(0);
+        transform: translate3d(0, 0, 0);
     }
 }
 
 @keyframes slideInRTL {
     from {
         opacity: 0;
-        transform: translateX(12px);
+        transform: translate3d(12px, 0, 0);
     }
 
     to {
         opacity: 1;
-        transform: translateX(0);
+        transform: translate3d(0, 0, 0);
     }
 }
 
 .fade {
-    animation: fadeIn 0.3s var(--ease) both;
+    animation: fadeIn 0.25s var(--ease) both;
 }
 
 .anim {
     opacity: 0;
-    animation: slideIn 0.3s var(--ease) forwards;
+    animation: slideIn 0.25s var(--ease) forwards;
+    /* Hint browser about upcoming animation */
+    will-change: opacity, transform;
 }
 
 [dir="rtl"] .anim {
     animation-name: slideInRTL;
 }
 
+/* Staggered delays - reduced for faster perception */
 .anim-1 {
-    animation-delay: 0.04s;
+    animation-delay: 0.03s;
 }
 
 .anim-2 {
-    animation-delay: 0.08s;
+    animation-delay: 0.06s;
 }
 
 .anim-3 {
-    animation-delay: 0.12s;
+    animation-delay: 0.09s;
 }
 
 .anim-4 {
-    animation-delay: 0.16s;
+    animation-delay: 0.12s;
+}
+
+/* Remove will-change after animation completes */
+.anim-1,
+.anim-2,
+.anim-3,
+.anim-4 {
+    animation-fill-mode: forwards;
 }
 
 ::view-transition-old(root),
 ::view-transition-new(root) {
-    animation-duration: 0.2s;
+    animation-duration: 0.15s;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -310,6 +329,7 @@ h2 {
     *::after {
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
     }
 }
 
@@ -325,4 +345,9 @@ textarea,
 select,
 button {
     scroll-margin: 0;
+}
+
+/* Optimize images */
+img {
+    content-visibility: auto;
 }

@@ -9,6 +9,7 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = ui[lang];
+// Pre-compute target date at build time
 const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
 ---
 
@@ -25,22 +26,27 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
                 {t["countdown.title"]}
             </h1>
 
-            <div class="timer anim anim-2" id="timer" role="timer">
+            <div
+                class="timer anim anim-2"
+                id="timer"
+                role="timer"
+                aria-live="polite"
+            >
                 <div class="unit">
                     <span id="days">--</span>
                     <small>{t["countdown.days"]}</small>
                 </div>
-                <span class="sep">:</span>
+                <span class="sep" aria-hidden="true">:</span>
                 <div class="unit">
                     <span id="hours">--</span>
                     <small>{t["countdown.hours"]}</small>
                 </div>
-                <span class="sep">:</span>
+                <span class="sep" aria-hidden="true">:</span>
                 <div class="unit">
                     <span id="minutes">--</span>
                     <small>{t["countdown.minutes"]}</small>
                 </div>
-                <span class="sep">:</span>
+                <span class="sep" aria-hidden="true">:</span>
                 <div class="unit">
                     <span id="seconds">--</span>
                     <small>{t["countdown.seconds"]}</small>
@@ -52,7 +58,13 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
                 <p class="city">{t["countdown.city"]}</p>
                 <div class="map" id="map-container">
                     <div class="map-placeholder" id="map-placeholder">
-                        Loading map...
+                        <button
+                            type="button"
+                            class="map-load-btn"
+                            id="map-load-btn"
+                        >
+                            📍 Load Map
+                        </button>
                     </div>
                 </div>
             </div>
@@ -61,8 +73,18 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
 </Layout>
 
 <script>
+    // Optimized countdown with minimal DOM access
     let timer: number | undefined;
     let initialized = false;
+
+    // Cache DOM elements
+    let els: {
+        d: HTMLElement | null;
+        h: HTMLElement | null;
+        m: HTMLElement | null;
+        s: HTMLElement | null;
+        timer: HTMLElement | null;
+    };
 
     function init() {
         if (initialized) return;
@@ -74,17 +96,8 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
 
         initialized = true;
 
-        // Update title if declined
-        const titleEl = document.getElementById("countdown-title");
-        if (sessionStorage.getItem("rsvp_declined") === "true" && titleEl) {
-            titleEl.textContent =
-                page.dataset.titleDeclined || titleEl.textContent;
-        }
-
-        // Start countdown immediately
-        const target = Number(page.dataset.target);
-        const expired = page.dataset.expired || "Started!";
-        const el = {
+        // Cache all elements once
+        els = {
             timer: document.getElementById("timer"),
             d: document.getElementById("days"),
             h: document.getElementById("hours"),
@@ -92,56 +105,118 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
             s: document.getElementById("seconds"),
         };
 
+        // Update title if declined
+        const titleEl = document.getElementById("countdown-title");
+        if (sessionStorage.getItem("rsvp_declined") === "true" && titleEl) {
+            titleEl.textContent =
+                page.dataset.titleDeclined || titleEl.textContent;
+        }
+
+        // Parse target once
+        const target = Number(page.dataset.target);
+        const expired = page.dataset.expired || "Started!";
+
+        // Pre-calculate constants for faster math
+        const DAY = 86400000;
+        const HOUR = 3600000;
+        const MIN = 60000;
+        const SEC = 1000;
+
+        // Last values to prevent unnecessary DOM updates
+        let lastD = "",
+            lastH = "",
+            lastM = "",
+            lastS = "";
+
         function tick() {
             const diff = target - Date.now();
+
             if (diff <= 0) {
-                if (el.timer)
-                    el.timer.innerHTML = `<span class="done">${expired}</span>`;
+                if (els.timer)
+                    els.timer.innerHTML = `<span class="done">${expired}</span>`;
                 if (timer) clearInterval(timer);
                 return;
             }
 
-            const d = Math.floor(diff / 86400000);
-            const h = Math.floor((diff % 86400000) / 3600000);
-            const m = Math.floor((diff % 3600000) / 60000);
-            const s = Math.floor((diff % 60000) / 1000);
+            // Fast integer math
+            const d = String((diff / DAY) | 0).padStart(2, "0");
+            const h = String(((diff % DAY) / HOUR) | 0).padStart(2, "0");
+            const m = String(((diff % HOUR) / MIN) | 0).padStart(2, "0");
+            const s = String(((diff % MIN) / SEC) | 0).padStart(2, "0");
 
-            if (el.d) el.d.textContent = String(d).padStart(2, "0");
-            if (el.h) el.h.textContent = String(h).padStart(2, "0");
-            if (el.m) el.m.textContent = String(m).padStart(2, "0");
-            if (el.s) el.s.textContent = String(s).padStart(2, "0");
+            // Only update DOM if value changed
+            if (d !== lastD && els.d) {
+                els.d.textContent = d;
+                lastD = d;
+            }
+            if (h !== lastH && els.h) {
+                els.h.textContent = h;
+                lastH = h;
+            }
+            if (m !== lastM && els.m) {
+                els.m.textContent = m;
+                lastM = m;
+            }
+            if (s !== lastS && els.s) {
+                els.s.textContent = s;
+                lastS = s;
+            }
         }
 
+        // Initial tick immediately
         tick();
+
+        // Clear any existing timer
         if (timer) clearInterval(timer);
         timer = setInterval(tick, 1000) as unknown as number;
 
-        // Lazy load map after page is interactive
-        requestIdleCallback(
-            () => {
-                const mapContainer = document.getElementById("map-container");
-                const placeholder = document.getElementById("map-placeholder");
-                if (mapContainer && placeholder) {
-                    const iframe = document.createElement("iframe");
-                    iframe.src =
-                        "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3610.178!2d55.2744!3d25.1972!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f43348a67e24b%3A0xff45e502e1ceb7e2!2sBurj%20Khalifa!5e0!3m2!1sen!2sae!4v1703634000000!5m2!1sen!2sae";
-                    iframe.loading = "lazy";
-                    iframe.title = "Location";
-                    iframe.style.cssText = "width:100%;height:100%;border:0;";
-                    placeholder.remove();
-                    mapContainer.appendChild(iframe);
-                }
-            },
-            { timeout: 1000 },
-        );
+        // Lazy load map on user interaction
+        const mapBtn = document.getElementById("map-load-btn");
+        const mapContainer = document.getElementById("map-container");
+        const placeholder = document.getElementById("map-placeholder");
+
+        if (mapBtn && mapContainer && placeholder) {
+            mapBtn.addEventListener("click", loadMap, {
+                once: true,
+                passive: true,
+            });
+
+            // Also load on viewport visibility after delay
+            if ("IntersectionObserver" in window) {
+                const observer = new IntersectionObserver(
+                    (entries) => {
+                        if (entries[0].isIntersecting) {
+                            observer.disconnect();
+                            // Delay map load to prioritize above-fold content
+                            setTimeout(loadMap, 1500);
+                        }
+                    },
+                    { threshold: 0.1 },
+                );
+                observer.observe(mapContainer);
+            }
+        }
+
+        function loadMap() {
+            if (!mapContainer || !placeholder) return;
+            if (mapContainer.querySelector("iframe")) return; // Already loaded
+
+            const iframe = document.createElement("iframe");
+            iframe.src =
+                "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3610.178!2d55.2744!3d25.1972!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f43348a67e24b%3A0xff45e502e1ceb7e2!2sBurj%20Khalifa!5e0!3m2!1sen!2sae!4v1703634000000!5m2!1sen!2sae";
+            iframe.loading = "lazy";
+            iframe.title = "Location";
+            iframe.style.cssText =
+                "width:100%;height:100%;border:0;opacity:0;transition:opacity .3s";
+            iframe.onload = () => {
+                iframe.style.opacity = "1";
+            };
+            placeholder.remove();
+            mapContainer.appendChild(iframe);
+        }
     }
 
-    // Polyfill for requestIdleCallback
-    if (!window.requestIdleCallback) {
-        (window as any).requestIdleCallback = (cb: Function) =>
-            setTimeout(cb, 100);
-    }
-
+    // Cleanup
     document.addEventListener("astro:before-swap", () => {
         if (timer) clearInterval(timer);
         initialized = false;
@@ -167,6 +242,7 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         display: flex;
         align-items: center;
         gap: var(--space-3);
+        contain: layout style;
     }
 
     .unit {
@@ -216,6 +292,7 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         min-height: 100px;
         box-shadow: var(--shadow);
         background: var(--white-10);
+        contain: layout paint;
     }
 
     .map-placeholder {
@@ -224,8 +301,24 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         display: flex;
         justify-content: center;
         align-items: center;
-        color: var(--white-50);
+    }
+
+    .map-load-btn {
+        padding: 0.75rem 1.5rem;
+        font: inherit;
         font-size: var(--fs-sm);
+        color: var(--white);
+        background: var(--white-10);
+        border: 1px solid var(--white-20);
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: background 0.15s ease;
+        touch-action: manipulation;
+    }
+
+    .map-load-btn:active,
+    .map-load-btn:hover {
+        background: var(--white-20);
     }
 
     @media (orientation: landscape) and (max-height: 500px) {

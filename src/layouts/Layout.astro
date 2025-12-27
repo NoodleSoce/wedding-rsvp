@@ -52,36 +52,49 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 			content={lang === "ar" ? "ar_AE" : "en_US"}
 		/>
 
-		<link rel="preconnect" href="https://script.google.com" />
-		<link rel="preconnect" href="https://www.google.com" />
+		<!-- DNS prefetch for external resources -->
+		<link rel="dns-prefetch" href="https://script.google.com" />
+		<link rel="dns-prefetch" href="https://www.google.com" />
+
+		<!-- Preconnect only when needed -->
+		<link rel="preconnect" href="https://script.google.com" crossorigin />
 
 		<ClientRouter />
+
+		<!-- Critical inline styles for instant render -->
+		<style is:inline>
+			html {
+				background: #4b0101;
+			}
+			body {
+				opacity: 0;
+				animation: fo 0.1s 0.05s forwards;
+			}
+			@keyframes fo {
+				to {
+					opacity: 1;
+				}
+			}
+		</style>
 	</head>
 	<body>
 		<Header lang={lang} showAnimation={headerAnimation} />
 		<slot />
 
 		<script is:inline>
-			// Language detection - runs once on first visit
+			// Language detection - runs once on first visit (minified)
 			(function () {
 				var k = "lang_set";
 				if (sessionStorage.getItem(k)) return;
 				sessionStorage.setItem(k, "1");
-
-				var pref = localStorage.getItem("preferred_lang");
-				if (pref) return;
-
-				var isAr = (navigator.language || navigator.userLanguage || "")
-					.toLowerCase()
-					.startsWith("ar");
-				var path = location.pathname;
-				var onAr = path.startsWith("/ar");
-
-				if (isAr && !onAr) {
-					location.replace("/ar" + (path === "/" ? "" : path));
-				} else if (!isAr && onAr) {
-					location.replace(path.replace("/ar", "") || "/");
-				}
+				if (localStorage.getItem("preferred_lang")) return;
+				var a = (navigator.language || "")
+						.toLowerCase()
+						.startsWith("ar"),
+					p = location.pathname,
+					o = p.startsWith("/ar");
+				if (a && !o) location.replace("/ar" + (p === "/" ? "" : p));
+				else if (!a && o) location.replace(p.replace("/ar", "") || "/");
 			})();
 		</script>
 	</body>

@@ -31,6 +31,8 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
                     densities={[1.5, 2]}
                     loading="eager"
                     fetchpriority="high"
+                    decoding="async"
+                    quality={85}
                 />
             </figure>
 
@@ -60,19 +62,22 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
         max-width: 90%;
     }
 
-    /* Larger hero image */
     .hero {
         width: clamp(240px, 60vw, 320px);
         margin: var(--space-3) 0;
         border-radius: var(--radius);
         overflow: hidden;
         box-shadow: var(--shadow);
+        /* Contain for performance */
+        contain: layout paint;
     }
 
     .hero :global(img) {
         width: 100%;
         height: auto;
         display: block;
+        /* Async decode */
+        content-visibility: auto;
     }
 
     .cta {

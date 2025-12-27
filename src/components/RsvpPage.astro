@@ -13,8 +13,8 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 
 <Layout title={lang === "ar" ? "تأكيد الحضور" : "RSVP"} lang={lang}>
     <main class="rsvp-page fade" id="rsvp-page">
-        <div class="form-wrap" id="form-wrap">
-            <div class="card form-card" id="form-card">
+        <div class="form-wrap">
+            <div class="card form-card">
                 <form id="form" data-redirect={redirectUrl}>
                     <div class="field">
                         <label class="label" for="name">{t["rsvp.name"]}</label>
@@ -27,18 +27,18 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                             placeholder={t["rsvp.namePlaceholder"]}
                             autocomplete="name"
                             autocapitalize="words"
+                            enterkeyhint="next"
                         />
                     </div>
 
                     <div class="field">
                         <span class="label">{t["rsvp.attending"]}</span>
-                        <div class="radio-row">
+                        <div class="radio-row" role="radiogroup">
                             <label class="radio-label">
                                 <input
                                     type="radio"
                                     name="attending"
                                     value="yes"
-                                    id="att-yes"
                                     checked
                                 />
                                 <span class="radio-btn yes"
@@ -50,7 +50,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                                     type="radio"
                                     name="attending"
                                     value="no"
-                                    id="att-no"
                                 />
                                 <span class="radio-btn no"
                                     >{t["rsvp.decline"]}</span
@@ -73,13 +72,18 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                                 max="9"
                                 value="0"
                                 inputmode="numeric"
+                                enterkeyhint="done"
                             />
                         </div>
                     </div>
 
-                    <button type="submit" class="btn submit-btn" id="submit-btn"
-                        >{t["rsvp.submit"]}</button
+                    <button
+                        type="submit"
+                        class="btn submit-btn"
+                        id="submit-btn"
                     >
+                        {t["rsvp.submit"]}
+                    </button>
                     <p id="error-msg" class="error-msg" hidden>
                         {t["rsvp.error"]}
                     </p>
@@ -87,7 +91,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             </div>
         </div>
 
-        <!-- Loading overlay -->
+        <!-- Loading overlay - minimal DOM -->
         <div id="loading-overlay" class="loading-overlay">
             <div class="loading-content">
                 <div id="spinner" class="spinner"></div>
@@ -95,7 +99,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                     id="checkmark"
                     class="checkmark"
                     viewBox="0 0 52 52"
-                    style="display: none;"
+                    aria-hidden="true"
                 >
                     <circle
                         class="checkmark-circle"
@@ -118,241 +122,217 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         "https://script.google.com/macros/s/AKfycbwq4PjP3sAEj2YTMTge5tZkwDx447v4T-0ySATyf3GImmpnZTaop-NGoxFj-lSyGnTl/exec";
     const KEY = "rsvp";
 
+    // Cache DOM elements
+    let form: HTMLFormElement | null;
+    let submitBtn: HTMLButtonElement | null;
+    let nameEl: HTMLInputElement | null;
+    let guestsEl: HTMLInputElement | null;
+    let guestsSection: HTMLElement | null;
+    let errorMsg: HTMLElement | null;
+    let loadingOverlay: HTMLElement | null;
+    let spinner: HTMLElement | null;
+    let checkmark: HTMLElement | null;
+    let redirect: string;
+
+    let isSubmitting = false;
+    let saveTimeout: ReturnType<typeof setTimeout>;
+
     function init() {
-        const form = document.getElementById("form") as HTMLFormElement | null;
+        form = document.getElementById("form") as HTMLFormElement | null;
         if (!form) return;
 
-        const redirect = form.dataset.redirect || "/countdown";
-        const submitBtn = document.getElementById(
-            "submit-btn",
-        ) as HTMLButtonElement;
-        const nameEl = document.getElementById("name") as HTMLInputElement;
-        const guestsEl = document.getElementById("guests") as HTMLInputElement;
-        const guestsSection = document.getElementById("guests-section");
-        const radios = document.querySelectorAll<HTMLInputElement>(
-            'input[name="attending"]',
-        );
-        const errorMsg = document.getElementById("error-msg");
-        const loadingOverlay = document.getElementById("loading-overlay");
-        const spinner = document.getElementById("spinner");
-        const checkmark = document.getElementById("checkmark");
+        // Cache all elements once
+        redirect = form.dataset.redirect || "/countdown";
+        submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
+        nameEl = document.getElementById("name") as HTMLInputElement;
+        guestsEl = document.getElementById("guests") as HTMLInputElement;
+        guestsSection = document.getElementById("guests-section");
+        errorMsg = document.getElementById("error-msg");
+        loadingOverlay = document.getElementById("loading-overlay");
+        spinner = document.getElementById("spinner");
+        checkmark = document.getElementById("checkmark");
 
-        let keyboardOpen = false;
-        let isSubmitting = false;
-
-        function resetState() {
-            isSubmitting = false;
-            if (loadingOverlay) loadingOverlay.classList.remove("visible");
-            if (spinner) {
-                spinner.style.display = "";
-                spinner.classList.remove("fade-out");
-            }
-            if (checkmark) {
-                checkmark.style.display = "none";
-                checkmark.classList.remove("animate");
-            }
-            if (errorMsg) errorMsg.hidden = true;
-            if (submitBtn) submitBtn.disabled = false;
-        }
-
-        // Always reset state on init
+        // Reset state
         resetState();
 
-        // Clear submitted flag when user actually visits the page fresh
-        // (not from bfcache or history navigation)
-        if (sessionStorage.getItem("rsvp_submitted") === "true") {
-            // User came back after submitting - clear the flag so they can submit again
-            sessionStorage.removeItem("rsvp_submitted");
-        }
-
-        // Also reset on back/forward cache restore
-        window.addEventListener("pageshow", (e) => {
-            if (e.persisted) {
-                resetState();
-                // Clear submitted flag on bfcache restore
-                sessionStorage.removeItem("rsvp_submitted");
-            }
-        });
-
-        function scrollToShowForm() {
-            setTimeout(() => {
-                submitBtn?.scrollIntoView({ behavior: "smooth", block: "end" });
-            }, 150);
-        }
-
-        let lastHeight = window.visualViewport?.height || window.innerHeight;
-
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener("resize", () => {
-                const currentHeight = window.visualViewport!.height;
-                if (currentHeight > lastHeight + 100) {
-                    const active = document.activeElement as HTMLElement;
-                    if (active === nameEl || active === guestsEl) {
-                        active.blur();
-                        keyboardOpen = false;
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                    }
-                }
-                lastHeight = currentHeight;
-            });
-        }
-
-        nameEl?.addEventListener("focus", () => {
-            keyboardOpen = true;
-            scrollToShowForm();
-        });
-
-        guestsEl?.addEventListener("focus", () => {
-            keyboardOpen = true;
-            scrollToShowForm();
-            setTimeout(() => guestsEl.select(), 50);
-        });
-
-        function handleBlur() {
-            setTimeout(() => {
-                const active = document.activeElement;
-                const isInForm =
-                    active?.closest("#form") || active?.closest(".radio-label");
-                if (!isInForm) {
-                    keyboardOpen = false;
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                }
-            }, 100);
-        }
-
-        nameEl?.addEventListener("blur", handleBlur);
-        guestsEl?.addEventListener("blur", handleBlur);
-
-        function getAttending() {
-            return (
-                (
-                    document.querySelector(
-                        'input[name="attending"]:checked',
-                    ) as HTMLInputElement
-                )?.value || "yes"
-            );
-        }
-
-        function updateGuestsVisibility() {
-            const show = getAttending() === "yes";
-            guestsSection?.classList.toggle("open", show);
-        }
-
-        radios.forEach((r) => {
-            r.addEventListener("change", () => {
-                updateGuestsVisibility();
-                saveData();
-                if (keyboardOpen) nameEl?.focus();
-            });
-        });
+        // Clear submitted flag on fresh visit
+        sessionStorage.removeItem("rsvp_submitted");
 
         // Load saved data
+        loadSaved();
+
+        // Event delegation for radio buttons (more efficient)
+        form.addEventListener("change", handleChange, { passive: true });
+        form.addEventListener("input", handleInput, { passive: true });
+        form.addEventListener("submit", handleSubmit);
+
+        // Keyboard handling with passive listeners
+        if (window.visualViewport) {
+            let lastHeight = window.visualViewport.height;
+            window.visualViewport.addEventListener(
+                "resize",
+                () => {
+                    const h = window.visualViewport!.height;
+                    if (h > lastHeight + 100) {
+                        (document.activeElement as HTMLElement)?.blur();
+                    }
+                    lastHeight = h;
+                },
+                { passive: true },
+            );
+        }
+    }
+
+    function resetState() {
+        isSubmitting = false;
+        if (loadingOverlay) loadingOverlay.classList.remove("visible");
+        if (spinner) {
+            spinner.style.display = "";
+            spinner.classList.remove("fade-out");
+        }
+        if (checkmark) {
+            checkmark.style.display = "none";
+            checkmark.classList.remove("animate");
+        }
+        if (errorMsg) errorMsg.hidden = true;
+        if (submitBtn) submitBtn.disabled = false;
+    }
+
+    function loadSaved() {
         try {
             const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
             if (saved.name && nameEl) nameEl.value = saved.name;
             if (saved.guests && guestsEl) guestsEl.value = saved.guests;
             if (saved.attending) {
-                const r = document.querySelector(
+                const r = form?.querySelector(
                     `input[value="${saved.attending}"]`,
                 ) as HTMLInputElement;
                 if (r) r.checked = true;
             }
             updateGuestsVisibility();
         } catch {}
-
-        let saveTimeout: ReturnType<typeof setTimeout>;
-        function saveData() {
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => {
-                localStorage.setItem(
-                    KEY,
-                    JSON.stringify({
-                        name: nameEl?.value || "",
-                        attending: getAttending(),
-                        guests: guestsEl?.value || "0",
-                    }),
-                );
-            }, 200);
-        }
-
-        nameEl?.addEventListener("input", saveData);
-
-        guestsEl?.addEventListener("input", () => {
-            let v = guestsEl.value.replace(/\D/g, "");
-            if (v.length > 1) v = v.slice(-1);
-            guestsEl.value = v || "0";
-            saveData();
-        });
-
-        form.addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            // Prevent double submission
-            if (isSubmitting) return;
-            isSubmitting = true;
-
-            (document.activeElement as HTMLElement)?.blur();
-            keyboardOpen = false;
-
-            if (loadingOverlay) loadingOverlay.classList.add("visible");
-            if (spinner) {
-                spinner.style.display = "";
-                spinner.classList.remove("fade-out");
-            }
-            if (checkmark) {
-                checkmark.style.display = "none";
-                checkmark.classList.remove("animate");
-            }
-            if (errorMsg) errorMsg.hidden = true;
-            if (submitBtn) submitBtn.disabled = true;
-
-            const isAttending = getAttending() === "yes";
-
-            // Store decline status for countdown page
-            sessionStorage.setItem(
-                "rsvp_declined",
-                isAttending ? "false" : "true",
-            );
-
-            // Mark as submitted to handle back navigation properly
-            sessionStorage.setItem("rsvp_submitted", "true");
-
-            try {
-                await fetch(API, {
-                    method: "POST",
-                    mode: "no-cors",
-                    body: JSON.stringify({
-                        name: nameEl?.value.trim() || "",
-                        attending: isAttending ? "Yes" : "No",
-                        guests: isAttending ? +(guestsEl?.value || 0) : 0,
-                    }),
-                });
-
-                localStorage.removeItem(KEY);
-
-                if (spinner) spinner.classList.add("fade-out");
-
-                setTimeout(() => {
-                    if (spinner) spinner.style.display = "none";
-                    if (checkmark) {
-                        checkmark.style.display = "";
-                        checkmark.classList.add("animate");
-                    }
-                }, 300);
-
-                // Navigate after animation - use replace to remove RSVP from history
-                // This prevents the back button from returning to RSVP page
-                setTimeout(() => {
-                    window.location.replace(redirect);
-                }, 900);
-            } catch {
-                isSubmitting = false;
-                if (loadingOverlay) loadingOverlay.classList.remove("visible");
-                if (errorMsg) errorMsg.hidden = false;
-                if (submitBtn) submitBtn.disabled = false;
-            }
-        });
     }
+
+    function getAttending(): string {
+        return (
+            (
+                form?.querySelector(
+                    'input[name="attending"]:checked',
+                ) as HTMLInputElement
+            )?.value || "yes"
+        );
+    }
+
+    function updateGuestsVisibility() {
+        guestsSection?.classList.toggle("open", getAttending() === "yes");
+    }
+
+    function saveData() {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            localStorage.setItem(
+                KEY,
+                JSON.stringify({
+                    name: nameEl?.value || "",
+                    attending: getAttending(),
+                    guests: guestsEl?.value || "0",
+                }),
+            );
+        }, 300);
+    }
+
+    function handleChange(e: Event) {
+        const target = e.target as HTMLInputElement;
+        if (target.name === "attending") {
+            updateGuestsVisibility();
+            saveData();
+        }
+    }
+
+    function handleInput(e: Event) {
+        const target = e.target as HTMLInputElement;
+        if (target.id === "name") {
+            saveData();
+        } else if (target.id === "guests") {
+            // Validate guest count
+            let v = target.value.replace(/\D/g, "");
+            if (v.length > 1) v = v.slice(-1);
+            target.value = v || "0";
+            saveData();
+        }
+    }
+
+    async function handleSubmit(e: Event) {
+        e.preventDefault();
+        if (isSubmitting) return;
+        isSubmitting = true;
+
+        // Blur active element
+        (document.activeElement as HTMLElement)?.blur();
+
+        // Show loading
+        if (loadingOverlay) loadingOverlay.classList.add("visible");
+        if (spinner) {
+            spinner.style.display = "";
+            spinner.classList.remove("fade-out");
+        }
+        if (checkmark) {
+            checkmark.style.display = "none";
+            checkmark.classList.remove("animate");
+        }
+        if (errorMsg) errorMsg.hidden = true;
+        if (submitBtn) submitBtn.disabled = true;
+
+        const isAttending = getAttending() === "yes";
+
+        // Store state
+        sessionStorage.setItem("rsvp_declined", isAttending ? "false" : "true");
+        sessionStorage.setItem("rsvp_submitted", "true");
+
+        try {
+            // Fire and forget - no need to wait for response with no-cors
+            fetch(API, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify({
+                    name: nameEl?.value.trim() || "",
+                    attending: isAttending ? "Yes" : "No",
+                    guests: isAttending ? +(guestsEl?.value || 0) : 0,
+                }),
+            });
+
+            localStorage.removeItem(KEY);
+
+            // Animate checkmark
+            if (spinner) spinner.classList.add("fade-out");
+
+            setTimeout(() => {
+                if (spinner) spinner.style.display = "none";
+                if (checkmark) {
+                    checkmark.style.display = "";
+                    checkmark.classList.add("animate");
+                }
+            }, 250);
+
+            // Navigate faster - don't wait for full animation
+            setTimeout(() => {
+                window.location.replace(redirect);
+            }, 700);
+        } catch {
+            isSubmitting = false;
+            if (loadingOverlay) loadingOverlay.classList.remove("visible");
+            if (errorMsg) errorMsg.hidden = false;
+            if (submitBtn) submitBtn.disabled = false;
+        }
+    }
+
+    // Handle bfcache
+    window.addEventListener("pageshow", (e) => {
+        if (e.persisted) {
+            resetState();
+            sessionStorage.removeItem("rsvp_submitted");
+        }
+    });
 
     init();
     document.addEventListener("astro:page-load", init);
@@ -368,8 +348,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         align-items: center;
         padding: var(--header-h) var(--page-pad) var(--page-pad);
         background: var(--bg);
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
+        contain: layout style;
     }
 
     @media (orientation: landscape) and (max-height: 500px) {
@@ -391,8 +370,8 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         border: 1px solid var(--white-20);
         border-radius: var(--radius);
         box-shadow: var(--shadow);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
     }
 
     .field {
@@ -421,6 +400,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         -webkit-appearance: none;
         appearance: none;
         text-align: start;
+        transition: border-color 0.15s ease;
     }
 
     .input::placeholder {
@@ -445,6 +425,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
     .radio-label {
         flex: 1;
         cursor: pointer;
+        touch-action: manipulation;
     }
 
     .radio-label input {
@@ -465,11 +446,15 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         background: var(--white-10);
         border: 1px solid var(--white-20);
         border-radius: var(--radius-sm);
-        transition: all 0.15s ease;
+        transition:
+            background 0.15s ease,
+            border-color 0.15s ease,
+            transform 0.1s ease;
+        transform: translateZ(0);
     }
 
     .radio-label:active .radio-btn {
-        transform: scale(0.97);
+        transform: scale(0.97) translateZ(0);
     }
 
     .radio-label input:checked + .yes {
@@ -509,11 +494,15 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         border: 1px solid var(--white-20);
         border-radius: var(--radius-full);
         cursor: pointer;
-        transition: all 0.15s ease;
+        transition:
+            background 0.15s ease,
+            transform 0.1s ease;
+        transform: translateZ(0);
+        touch-action: manipulation;
     }
 
     .submit-btn:active {
-        transform: scale(0.97);
+        transform: scale(0.97) translateZ(0);
         background: var(--white-20);
     }
 
@@ -542,6 +531,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         transition:
             opacity 0.2s ease,
             visibility 0.2s ease;
+        contain: layout style paint;
     }
 
     .loading-overlay.visible {
@@ -561,8 +551,8 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         border: 3px solid var(--white-20);
         border-top-color: var(--white);
         border-radius: 50%;
-        animation: spin 0.7s linear infinite;
-        transition: opacity 0.3s ease;
+        animation: spin 0.6s linear infinite;
+        transition: opacity 0.25s ease;
         flex-shrink: 0;
     }
 
@@ -580,6 +570,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         width: 52px;
         height: 52px;
         flex-shrink: 0;
+        display: none;
     }
 
     .checkmark-circle {
@@ -598,13 +589,17 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         stroke-dashoffset: 36;
     }
 
+    .checkmark.animate {
+        display: block;
+    }
+
     .checkmark.animate .checkmark-circle {
-        animation: checkCircle 0.5s ease forwards;
+        animation: checkCircle 0.4s ease forwards;
     }
 
     .checkmark.animate .checkmark-check {
-        animation: checkMark 0.3s ease forwards;
-        animation-delay: 0.2s;
+        animation: checkMark 0.25s ease forwards;
+        animation-delay: 0.15s;
     }
 
     @keyframes checkCircle {

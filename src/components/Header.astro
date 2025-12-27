@@ -27,18 +27,36 @@ const targetPath =
         width={400}
         height={133}
         loading="eager"
+        decoding="async"
       />
     </div>
     <a
       href={targetPath}
       class:list={["lang-btn", { arabic: lang === "en" }]}
       data-astro-prefetch
-      onclick="localStorage.setItem('preferred_lang', this.classList.contains('arabic') ? 'ar' : 'en')"
+      aria-label={lang === "en" ? "Switch to Arabic" : "Switch to English"}
     >
       {lang === "en" ? "ع" : "EN"}
     </a>
   </div>
 </header>
+
+<script>
+  // Handle language preference on click - passive event
+  document.addEventListener(
+    "click",
+    (e) => {
+      const btn = (e.target as HTMLElement).closest(".lang-btn");
+      if (btn) {
+        localStorage.setItem(
+          "preferred_lang",
+          btn.classList.contains("arabic") ? "ar" : "en",
+        );
+      }
+    },
+    { passive: true },
+  );
+</script>
 
 <style>
   .header {
@@ -49,6 +67,9 @@ const targetPath =
     padding: 1rem;
     z-index: 100;
     pointer-events: none;
+    /* Promote to GPU layer */
+    transform: translateZ(0);
+    contain: layout style;
   }
 
   .inner {
@@ -72,6 +93,8 @@ const targetPath =
   .logo {
     height: 72px;
     width: auto;
+    /* Content visibility for off-screen optimization */
+    contain: layout;
   }
 
   @media (min-width: 400px) {
@@ -95,12 +118,11 @@ const targetPath =
     }
   }
 
-  /* Language button */
   .lang-btn {
     position: absolute;
     right: 0;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translateY(-50%) translateZ(0);
     width: 44px;
     height: 44px;
     display: flex;
@@ -116,9 +138,11 @@ const targetPath =
     text-decoration: none;
     transition: background 0.15s ease;
     pointer-events: auto;
+    /* Optimize touch */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  /* Arabic character styling */
   .lang-btn.arabic {
     font-family: "Amiri", Georgia, serif;
     font-size: 1.25rem;
@@ -137,35 +161,37 @@ const targetPath =
     }
   }
 
-  /* Animation */
+  /* Animation - GPU accelerated */
   .header.animated .logo-wrap {
-    animation: fadeSlideDown 0.5s ease both;
+    animation: fadeSlideDown 0.4s ease both;
+    will-change: opacity, transform;
   }
 
   .header.animated .lang-btn {
-    animation: fadeSlideDownBtn 0.5s ease both;
-    animation-delay: 0.15s;
+    animation: fadeSlideDownBtn 0.4s ease both;
+    animation-delay: 0.1s;
+    will-change: opacity, transform;
   }
 
   @keyframes fadeSlideDown {
     from {
       opacity: 0;
-      transform: translateY(-10px);
+      transform: translate3d(0, -10px, 0);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translate3d(0, 0, 0);
     }
   }
 
   @keyframes fadeSlideDownBtn {
     from {
       opacity: 0;
-      transform: translateY(calc(-50% - 10px));
+      transform: translate3d(0, calc(-50% - 10px), 0);
     }
     to {
       opacity: 1;
-      transform: translateY(-50%);
+      transform: translate3d(0, -50%, 0);
     }
   }
 </style>
