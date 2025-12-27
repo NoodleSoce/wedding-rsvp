@@ -38,14 +38,11 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
 </Layout>
 
 <style>
+    /* Content distributed with space between */
     .page-content {
-        gap: var(--s-3);
-    }
-
-    @media (min-width: 480px) {
-        .page-content {
-            gap: var(--s-4);
-        }
+        justify-content: space-evenly;
+        gap: var(--s-4);
+        padding: var(--s-4) 0;
     }
 
     .title {
@@ -59,19 +56,19 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
         font-weight: 300;
     }
 
+    /* Hero fills more space */
     .hero {
         width: 100%;
-        max-width: 200px;
-        margin: var(--s-2) 0;
+        max-width: 280px;
         border-radius: var(--radius);
         overflow: hidden;
         box-shadow: var(--shadow);
+        flex-shrink: 0;
     }
 
     @media (min-width: 480px) {
         .hero {
-            max-width: 240px;
-            margin: var(--s-4) 0;
+            max-width: 320px;
         }
     }
 
@@ -82,13 +79,13 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
     }
 
     .cta {
-        max-width: 260px;
-        margin-top: var(--s-2);
+        max-width: 280px;
+        flex-shrink: 0;
     }
 
     @media (min-width: 480px) {
         .cta {
-            max-width: 280px;
+            max-width: 300px;
         }
     }
 </style>

@@ -23,7 +23,7 @@
     --fs-xl: clamp(1.25rem, 4vw, 1.75rem);
     --fs-2xl: clamp(1.5rem, 5vw, 2.25rem);
 
-    /* Spacing - mobile first */
+    /* Spacing */
     --s-1: 0.25rem;
     --s-2: 0.5rem;
     --s-3: 0.75rem;
@@ -35,7 +35,8 @@
     /* Layout */
     --max-w: 480px;
     --header-h: clamp(64px, 9vh, 84px);
-    --page-px: var(--s-4);
+    --page-px: var(--s-3);
+    --page-py: var(--s-4);
 
     /* Effects */
     --shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
@@ -50,6 +51,7 @@
     :root {
         --max-w: 520px;
         --page-px: var(--s-6);
+        --page-py: var(--s-6);
         --radius: 1rem;
     }
 }
@@ -91,14 +93,13 @@ body {
 }
 
 /* ========================================
-   PAGE LAYOUT
+   PAGE LAYOUT - fills available space
    ======================================== */
 .page {
     position: fixed;
     inset: 0;
-    padding-top: var(--header-h);
-    padding-left: var(--page-px);
-    padding-right: var(--page-px);
+    /* Top: header space, Bottom: small padding */
+    padding: var(--header-h) var(--page-px) var(--page-py);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -107,13 +108,20 @@ body {
     background: var(--c-bg);
 }
 
+/* Content fills available space */
 .page-content {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     text-align: center;
     width: 100%;
     max-width: var(--max-w);
+    /* Allow content to grow and fill space */
+    flex: 1;
+    /* But don't overflow */
+    min-height: 0;
+    max-height: 100%;
 }
 
 /* Card */
