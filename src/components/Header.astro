@@ -7,56 +7,46 @@ interface Props {
 }
 
 const { lang = "en" } = Astro.props;
-const currentPath = Astro.url.pathname;
-
-// Calculate language switch path
+const path = Astro.url.pathname;
 const targetPath =
   lang === "en"
-    ? currentPath === "/"
+    ? path === "/"
       ? "/ar"
-      : `/ar${currentPath}`
-    : currentPath.replace("/ar", "") || "/";
-const label = lang === "en" ? "AR" : "EN";
+      : `/ar${path}`
+    : path.replace("/ar", "") || "/";
 ---
 
 <header class="header">
-  <div class="header-inner">
+  <div class="inner">
     <Image
       src={logoImg}
-      alt="Zaid & Haya"
+      alt="Z & H"
       class="logo"
-      width={300}
-      height={100}
+      width={280}
+      height={93}
       loading="eager"
     />
-    <a href={targetPath} class="lang-btn" data-astro-prefetch>
-      {label}
+    <a
+      href={targetPath}
+      class="lang"
+      data-astro-prefetch
+      onclick="localStorage.setItem('preferred_lang', this.textContent.trim() === 'AR' ? 'ar' : 'en')"
+    >
+      {lang === "en" ? "AR" : "EN"}
     </a>
   </div>
 </header>
 
-<script>
-  document.addEventListener("astro:page-load", () => {
-    const btn = document.querySelector(".lang-btn");
-    btn?.addEventListener("click", () => {
-      const lang = btn.textContent?.trim() === "AR" ? "ar" : "en";
-      localStorage.setItem("preferred_lang", lang);
-    });
-  });
-</script>
-
 <style>
   .header {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    padding: var(--s-6) var(--s-4) var(--s-4);
+    inset: 0 0 auto 0;
+    padding: 1rem;
     z-index: 100;
     pointer-events: none;
   }
 
-  .header-inner {
+  .inner {
     position: relative;
     max-width: 1200px;
     margin: 0 auto;
@@ -68,31 +58,32 @@ const label = lang === "en" ? "AR" : "EN";
   }
 
   .logo {
-    height: 80px;
+    height: 56px;
     width: auto;
   }
 
-  .lang-btn {
+  .lang {
     position: absolute;
     right: 0;
     top: 50%;
     transform: translateY(-50%);
-    padding: var(--s-1) var(--s-3);
-    font-family: var(--font);
-    font-size: var(--fs-sm);
-    font-weight: 500;
+    padding: 0.375rem 0.75rem;
+    font: 500 var(--fs-sm) var(--font);
     color: var(--c-white);
     background: var(--c-white-10);
     border: 1px solid var(--c-white-20);
-    border-radius: var(--radius-full);
-    backdrop-filter: blur(4px);
-    transition:
-      background var(--transition),
-      border-color var(--transition);
+    border-radius: 999px;
+    text-decoration: none;
+    transition: background 0.15s var(--ease);
   }
 
-  .lang-btn:hover {
+  .lang:active {
     background: var(--c-white-20);
-    border-color: var(--c-white-50);
+  }
+
+  @media (hover: hover) {
+    .lang:hover {
+      background: var(--c-white-20);
+    }
   }
 </style>

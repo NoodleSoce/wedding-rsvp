@@ -12,25 +12,17 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 ---
 
 <Layout title={lang === "ar" ? "تأكيد الحضور" : "RSVP"} lang={lang}>
-    <main class="page fade-in">
-        <div class="page-content">
+    <main class="page fade">
+        <div class="content">
             <div class="card">
-                <header class="form-header">
-                    <h2 class="title anim anim-1">{t["rsvp.title"]}</h2>
-                    <p class="subtitle anim anim-2">{t["rsvp.subtitle"]}</p>
-                </header>
+                <h2 class="anim anim-1">{t["rsvp.title"]}</h2>
+                <p class="sub anim anim-2">{t["rsvp.subtitle"]}</p>
 
-                <form
-                    id="form"
-                    class="form anim anim-3"
-                    data-redirect={redirectUrl}
-                >
+                <form id="form" class="anim anim-3" data-redirect={redirectUrl}>
                     <a href={redirectUrl} data-astro-prefetch="load" hidden></a>
 
-                    <div class="field">
-                        <label class="field-label" for="name"
-                            >{t["rsvp.name"]}</label
-                        >
+                    <label class="field">
+                        <span class="label">{t["rsvp.name"]}</span>
                         <input
                             type="text"
                             id="name"
@@ -41,40 +33,38 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                             autocomplete="name"
                             autocapitalize="words"
                         />
-                    </div>
+                    </label>
 
                     <div class="field">
-                        <label class="field-label">{t["rsvp.attending"]}</label>
-                        <div class="options">
-                            <label class="option">
+                        <span class="label">{t["rsvp.attending"]}</span>
+                        <div class="opts">
+                            <label class="opt">
                                 <input
                                     type="radio"
                                     name="attending"
                                     value="yes"
                                     checked
                                 />
-                                <span class="option-btn accept"
+                                <span class="opt-btn yes"
                                     >{t["rsvp.accept"]}</span
                                 >
                             </label>
-                            <label class="option">
+                            <label class="opt">
                                 <input
                                     type="radio"
                                     name="attending"
                                     value="no"
                                 />
-                                <span class="option-btn decline"
+                                <span class="opt-btn no"
                                     >{t["rsvp.decline"]}</span
                                 >
                             </label>
                         </div>
                     </div>
 
-                    <div id="guests-wrap" class="expand expanded">
-                        <div class="field">
-                            <label class="field-label" for="guests"
-                                >{t["rsvp.guests"]}</label
-                            >
+                    <div id="guests-wrap" class="guests">
+                        <label class="field">
+                            <span class="label">{t["rsvp.guests"]}</span>
                             <input
                                 type="number"
                                 id="guests"
@@ -85,20 +75,18 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                                 value="0"
                                 inputmode="numeric"
                             />
-                        </div>
+                        </label>
                     </div>
 
-                    <button type="submit" class="btn submit-btn"
-                        >{t["rsvp.submit"]}</button
+                    <button type="submit" class="btn">{t["rsvp.submit"]}</button
                     >
                     <p id="error" class="error hidden">{t["rsvp.error"]}</p>
                 </form>
             </div>
         </div>
 
-        <!-- Loader -->
         <div id="loader" class="loader hidden">
-            <div class="spinner"></div>
+            <div class="spin"></div>
             <svg
                 class="check"
                 viewBox="0 0 24 24"
@@ -108,7 +96,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             >
                 <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
-            <p id="loader-text">{t["rsvp.sending"]}</p>
+            <span id="status">{t["rsvp.sending"]}</span>
         </div>
     </main>
 </Layout>
@@ -116,9 +104,9 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 <script>
     import { navigate } from "astro:transitions/client";
 
-    const SCRIPT_URL =
+    const URL =
         "https://script.google.com/macros/s/AKfycbwq4PjP3sAEj2YTMTge5tZkwDx447v4T-0ySATyf3GImmpnZTaop-NGoxFj-lSyGnTl/exec";
-    const STORAGE_KEY = "rsvp_form";
+    const KEY = "rsvp";
 
     document.addEventListener("astro:page-load", () => {
         const form = document.getElementById("form") as HTMLFormElement;
@@ -129,72 +117,68 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         const guestsWrap = document.getElementById("guests-wrap");
         const radios = document.getElementsByName("attending");
         const loader = document.getElementById("loader");
-        const loaderText = document.getElementById("loader-text");
+        const status = document.getElementById("status");
         const error = document.getElementById("error");
-        const redirectUrl = form.dataset.redirect || "/countdown";
+        const redirect = form.dataset.redirect || "/countdown";
 
-        // Reset state
-        const reset = () => {
+        // Reset loader
+        function reset() {
             loader?.classList.add("hidden");
-            loader?.classList.remove("success");
+            loader?.classList.remove("done");
             error?.classList.add("hidden");
-        };
+        }
         reset();
-        window.addEventListener("pageshow", reset);
+        addEventListener("pageshow", reset);
 
-        // Guest visibility
-        const updateGuests = (hide: boolean) => {
-            guestsWrap?.classList.toggle("expanded", !hide);
-        };
-
-        // Load saved data
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            try {
-                const data = JSON.parse(saved);
-                if (name) name.value = data.name || "";
-                if (guests) guests.value = data.guests || "0";
-                if (data.attending) {
-                    const radio = document.querySelector(
-                        `input[value="${data.attending}"]`,
-                    ) as HTMLInputElement;
-                    if (radio) {
-                        radio.checked = true;
-                        updateGuests(data.attending === "no");
-                    }
-                }
-            } catch {}
+        // Toggle guests
+        function toggleGuests(show: boolean) {
+            guestsWrap?.classList.toggle("show", show);
         }
 
-        // Save form data
-        let timeout: ReturnType<typeof setTimeout>;
-        const save = () => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => {
-                const radio = document.querySelector(
+        // Load saved
+        try {
+            const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
+            if (saved.name) name.value = saved.name;
+            if (saved.guests) guests.value = saved.guests;
+            if (saved.attending) {
+                const r = document.querySelector(
+                    `input[value="${saved.attending}"]`,
+                ) as HTMLInputElement;
+                if (r) {
+                    r.checked = true;
+                    toggleGuests(saved.attending === "yes");
+                }
+            }
+        } catch {}
+
+        // Save
+        let t: ReturnType<typeof setTimeout>;
+        function save() {
+            clearTimeout(t);
+            t = setTimeout(() => {
+                const r = document.querySelector(
                     'input[name="attending"]:checked',
                 ) as HTMLInputElement;
                 localStorage.setItem(
-                    STORAGE_KEY,
+                    KEY,
                     JSON.stringify({
-                        name: name?.value || "",
-                        attending: radio?.value || "yes",
-                        guests: guests?.value || "0",
+                        name: name.value,
+                        attending: r?.value,
+                        guests: guests.value,
                     }),
                 );
-            }, 400);
-        };
+            }, 300);
+        }
 
-        name?.addEventListener("input", save);
-        guests?.addEventListener("input", () => {
+        name.addEventListener("input", save);
+        guests.addEventListener("input", () => {
             if (guests.value.length > 1) guests.value = guests.value.slice(-1);
-            if (!/^[0-9]?$/.test(guests.value)) guests.value = "0";
             save();
         });
 
         radios.forEach((r) =>
             r.addEventListener("change", (e) => {
-                updateGuests((e.target as HTMLInputElement).value === "no");
+                toggleGuests((e.target as HTMLInputElement).value === "yes");
                 save();
             }),
         );
@@ -205,30 +189,28 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             loader?.classList.remove("hidden");
             error?.classList.add("hidden");
 
-            const attending =
+            const coming =
                 (
                     document.querySelector(
                         'input[name="attending"]:checked',
                     ) as HTMLInputElement
                 )?.value === "yes";
-            const data = {
-                name: name?.value.trim() || "",
-                attending: attending ? "Yes" : "No",
-                guests: attending ? Number(guests?.value || 0) : 0,
-            };
 
             try {
-                await fetch(SCRIPT_URL, {
+                await fetch(URL, {
                     method: "POST",
                     mode: "no-cors",
-                    headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify(data),
+                    body: JSON.stringify({
+                        name: name.value.trim(),
+                        attending: coming ? "Yes" : "No",
+                        guests: coming ? +guests.value : 0,
+                    }),
                 });
 
-                localStorage.removeItem(STORAGE_KEY);
-                loader?.classList.add("success");
-                if (loaderText) loaderText.textContent = "✓";
-                setTimeout(() => navigate(redirectUrl), 800);
+                localStorage.removeItem(KEY);
+                loader?.classList.add("done");
+                if (status) status.textContent = "✓";
+                setTimeout(() => navigate(redirect), 600);
             } catch {
                 error?.classList.remove("hidden");
                 loader?.classList.add("hidden");
@@ -238,136 +220,100 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 </script>
 
 <style>
-    /* Card styling - fills available space */
     .card {
-        padding: var(--s-6) var(--s-4);
-        display: flex;
-        flex-direction: column;
-    }
-
-    @media (min-width: 480px) {
-        .card {
-            padding: var(--s-8) var(--s-6);
-        }
-    }
-
-    /* Form header - centered */
-    .form-header {
-        text-align: center;
-        margin-bottom: var(--s-6);
-    }
-
-    @media (min-width: 480px) {
-        .form-header {
-            margin-bottom: var(--s-8);
-        }
-    }
-
-    .title {
-        font-size: var(--fs-2xl);
-        font-style: italic;
-        margin-bottom: var(--s-2);
-    }
-
-    .subtitle {
-        color: var(--c-white-80);
-        font-size: var(--fs-sm);
-    }
-
-    /* Form fields - left aligned */
-    .form {
         text-align: left;
     }
 
-    .field {
-        margin-bottom: var(--s-6);
+    h2 {
+        text-align: center;
+        font-size: var(--fs-2xl);
+        font-style: italic;
+        margin-bottom: 0.25rem;
     }
 
-    .field-label {
-        display: block;
-        margin-bottom: var(--s-2);
+    .sub {
+        text-align: center;
         font-size: var(--fs-sm);
-        font-weight: 500;
-        color: var(--c-white);
+        color: var(--c-white-70);
+        margin-bottom: var(--gap-lg);
     }
 
-    /* Input styling */
-    .input {
-        padding: var(--s-4);
+    .field {
+        display: block;
+        margin-bottom: var(--gap);
     }
 
-    /* Radio options */
-    .options {
+    .label {
+        display: block;
+        font-size: var(--fs-sm);
+        color: var(--c-white-90);
+        margin-bottom: 0.375rem;
+    }
+
+    .opts {
         display: flex;
-        gap: var(--s-3);
+        gap: 0.5rem;
     }
 
-    .option {
+    .opt {
         flex: 1;
         cursor: pointer;
     }
 
-    .option input {
+    .opt input {
         position: absolute;
         opacity: 0;
-        pointer-events: none;
     }
 
-    .option-btn {
+    .opt-btn {
         display: block;
-        padding: var(--s-4);
+        padding: 0.75rem;
         text-align: center;
+        font-size: var(--fs-sm);
         background: var(--c-white-10);
         border: 1px solid var(--c-white-20);
-        border-radius: var(--s-2);
-        font-size: var(--fs-base);
-        transition: all var(--transition);
+        border-radius: var(--radius-sm);
+        transition: all 0.15s var(--ease);
     }
 
-    .option input:checked + .accept {
+    .opt input:checked + .yes {
         background: var(--c-success);
         border-color: var(--c-success);
         font-weight: 600;
-        box-shadow: 0 0 12px rgba(46, 125, 50, 0.4);
     }
 
-    .option input:checked + .decline {
+    .opt input:checked + .no {
         background: var(--c-error);
         border-color: var(--c-error);
         font-weight: 600;
-        box-shadow: 0 0 12px rgba(198, 40, 40, 0.4);
     }
 
-    /* Expandable guests field */
-    .expand {
+    .guests {
         display: grid;
         grid-template-rows: 0fr;
-        transition: grid-template-rows 0.35s ease;
+        transition: grid-template-rows 0.2s var(--ease);
     }
 
-    .expand.expanded {
+    .guests.show {
         grid-template-rows: 1fr;
     }
 
-    .expand > * {
+    .guests > * {
         overflow: hidden;
     }
 
-    /* Submit button */
-    .submit-btn {
-        margin-top: var(--s-2);
-        padding: var(--s-4);
+    .btn {
+        margin-top: 0.5rem;
     }
 
-    /* Error message */
     .error {
         text-align: center;
-        color: #fcc;
+        color: #faa;
         font-size: var(--fs-sm);
-        margin-top: var(--s-4);
+        margin-top: var(--gap);
     }
 
-    /* Loader overlay */
+    /* Loader */
     .loader {
         position: fixed;
         inset: 0;
@@ -375,9 +321,10 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        background: rgba(75, 1, 1, 0.95);
-        z-index: 9999;
-        transition: opacity 0.2s;
+        background: rgba(75, 1, 1, 0.96);
+        z-index: 999;
+        opacity: 1;
+        transition: opacity 0.15s;
     }
 
     .loader.hidden {
@@ -385,44 +332,34 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         pointer-events: none;
     }
 
-    .spinner {
-        width: 2.5rem;
-        height: 2.5rem;
-        border: 3px solid var(--c-white-20);
+    .spin {
+        width: 2rem;
+        height: 2rem;
+        border: 2px solid var(--c-white-20);
         border-top-color: var(--c-white);
         border-radius: 50%;
-        animation: spin 0.6s linear infinite;
-        margin-bottom: var(--s-4);
+        animation: spin 0.5s linear infinite;
+        margin-bottom: 0.75rem;
     }
 
     .check {
-        width: 3rem;
-        height: 3rem;
+        width: 2.5rem;
+        height: 2.5rem;
         color: #4ade80;
-        margin-bottom: var(--s-4);
+        margin-bottom: 0.75rem;
         display: none;
     }
 
-    .loader.success .spinner {
+    .loader.done .spin {
         display: none;
     }
-    .loader.success .check {
+    .loader.done .check {
         display: block;
-        animation: pop 0.3s ease;
     }
 
     @keyframes spin {
         to {
             transform: rotate(360deg);
-        }
-    }
-
-    @keyframes pop {
-        from {
-            transform: scale(0);
-        }
-        to {
-            transform: scale(1);
         }
     }
 </style>

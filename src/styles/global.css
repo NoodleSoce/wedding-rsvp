@@ -1,65 +1,58 @@
 /* ========================================
    WEDDING RSVP - Global Styles
+   Optimized for mobile, RTL, and performance
    ======================================== */
 
-/* Design Tokens */
 :root {
     /* Colors */
     --c-bg: #4b0101;
     --c-white: #fff;
-    --c-white-80: rgba(255, 255, 255, 0.8);
-    --c-white-50: rgba(255, 255, 255, 0.5);
+    --c-white-90: rgba(255, 255, 255, 0.9);
+    --c-white-70: rgba(255, 255, 255, 0.7);
+    --c-white-40: rgba(255, 255, 255, 0.4);
     --c-white-20: rgba(255, 255, 255, 0.2);
     --c-white-10: rgba(255, 255, 255, 0.1);
-    --c-white-05: rgba(255, 255, 255, 0.05);
     --c-success: #2e7d32;
     --c-error: #c62828;
 
-    /* Typography */
+    /* Typography - optimized for mobile */
     --font: 'Libre Baskerville', 'Amiri', serif;
-    --fs-sm: clamp(0.75rem, 1.5vw, 0.875rem);
-    --fs-base: clamp(0.875rem, 2vw, 1rem);
-    --fs-lg: clamp(1rem, 2.5vw, 1.125rem);
-    --fs-xl: clamp(1.25rem, 4vw, 1.75rem);
-    --fs-2xl: clamp(1.5rem, 5vw, 2.25rem);
+    --fs-xs: 0.75rem;
+    --fs-sm: 0.875rem;
+    --fs-base: 1rem;
+    --fs-lg: 1.125rem;
+    --fs-xl: 1.5rem;
+    --fs-2xl: 1.875rem;
 
-    /* Spacing */
-    --s-1: 0.25rem;
-    --s-2: 0.5rem;
-    --s-3: 0.75rem;
-    --s-4: 1rem;
-    --s-6: 1.5rem;
-    --s-8: 2rem;
-    --s-12: 3rem;
+    /* Spacing - tight and cohesive */
+    --gap: 0.75rem;
+    --gap-lg: 1.25rem;
 
     /* Layout */
-    --max-w: 480px;
-    --header-h: clamp(64px, 9vh, 84px);
-    --page-px: var(--s-3);
-    --page-py: var(--s-4);
+    --max-w: 400px;
+    --header-h: 72px;
+    --page-pad: 1rem;
 
     /* Effects */
-    --shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-    --blur: blur(10px);
-    --radius: 0.75rem;
-    --radius-full: 9999px;
-    --transition: 0.2s ease;
+    --shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    --blur: blur(8px);
+    --radius: 0.875rem;
+    --radius-sm: 0.5rem;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Larger screens */
-@media (min-width: 480px) {
+@media (min-width: 400px) {
     :root {
-        --max-w: 520px;
-        --page-px: var(--s-6);
-        --page-py: var(--s-6);
-        --radius: 1rem;
+        --max-w: 440px;
+        --gap: 1rem;
+        --gap-lg: 1.5rem;
     }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 600px) {
     :root {
-        --max-w: 560px;
-        --page-px: var(--s-8);
+        --max-w: 480px;
+        --page-pad: 1.5rem;
     }
 }
 
@@ -70,13 +63,12 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    -webkit-tap-highlight-color: transparent;
 }
 
 html {
     height: 100%;
     scroll-behavior: auto;
-    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
 }
 
@@ -85,61 +77,49 @@ body {
     min-height: 100dvh;
     font-family: var(--font);
     font-size: var(--fs-base);
+    line-height: 1.5;
     background: var(--c-bg);
     color: var(--c-white);
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
     touch-action: manipulation;
+    overscroll-behavior: none;
 }
 
 /* ========================================
-   PAGE LAYOUT - fills available space
+   PAGE LAYOUT - centered content
    ======================================== */
 .page {
     position: fixed;
     inset: 0;
-    /* Top: header space, Bottom: small padding */
-    padding: var(--header-h) var(--page-px) var(--page-py);
+    padding: var(--header-h) var(--page-pad) var(--page-pad);
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
     background: var(--c-bg);
+    overflow: hidden;
 }
 
-/* Content fills available space */
-.page-content {
+.content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     text-align: center;
     width: 100%;
     max-width: var(--max-w);
-    /* Allow content to grow and fill space */
-    flex: 1;
-    /* But don't overflow */
-    min-height: 0;
-    max-height: 100%;
+    gap: var(--gap);
 }
 
 /* Card */
 .card {
     background: var(--c-white-10);
     backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
     border: 1px solid var(--c-white-20);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    padding: var(--s-4);
+    padding: var(--gap-lg);
     width: 100%;
-    max-width: var(--max-w);
-}
-
-@media (min-width: 480px) {
-    .card {
-        padding: var(--s-6);
-    }
 }
 
 /* Button */
@@ -148,77 +128,63 @@ body {
     justify-content: center;
     align-items: center;
     width: 100%;
-    padding: var(--s-3) var(--s-4);
-    font-family: inherit;
-    font-size: var(--fs-base);
+    padding: 0.875rem 1.25rem;
+    font: inherit;
     font-weight: 500;
     color: var(--c-white);
-    background: var(--c-white-05);
+    background: var(--c-white-10);
     border: 1px solid var(--c-white-20);
-    border-radius: var(--radius-full);
+    border-radius: 999px;
     cursor: pointer;
-    transition: background var(--transition), border-color var(--transition);
+    transition: background 0.15s var(--ease), border-color 0.15s var(--ease);
     text-decoration: none;
 }
 
-@media (min-width: 480px) {
-    .btn {
-        padding: var(--s-4);
+.btn:active {
+    background: var(--c-white-20);
+}
+
+@media (hover: hover) {
+    .btn:hover {
+        background: var(--c-white-20);
+        border-color: var(--c-white-40);
     }
 }
 
-.btn:hover {
-    background: var(--c-white-10);
-    border-color: var(--c-white-50);
-}
-
 .btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+    opacity: 0.5;
+    pointer-events: none;
 }
 
 /* Input */
 .input {
     width: 100%;
-    padding: var(--s-3);
-    font-family: inherit;
-    font-size: var(--fs-base);
+    padding: 0.875rem;
+    font: inherit;
     color: var(--c-white);
-    background: var(--c-white-05);
+    background: rgba(0, 0, 0, 0.2);
     border: 1px solid var(--c-white-20);
-    border-radius: var(--s-2);
+    border-radius: var(--radius-sm);
+    transition: border-color 0.15s var(--ease);
     -webkit-appearance: none;
 }
 
-@media (min-width: 480px) {
-    .input {
-        padding: var(--s-4);
-    }
-}
-
 .input::placeholder {
-    color: var(--c-white-50);
+    color: var(--c-white-40);
 }
 
 .input:focus {
     outline: none;
-    border-color: var(--c-white);
-    background: var(--c-white-10);
+    border-color: var(--c-white-70);
 }
 
-/* Label */
-.label {
-    display: block;
-    margin-bottom: var(--s-1);
-    font-size: var(--fs-sm);
-    color: var(--c-white-80);
-}
-
-/* Animations */
-@keyframes fadeUp {
+/* ========================================
+   ANIMATIONS - fast and smooth
+   ======================================== */
+@keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(12px);
+        transform: translateY(8px);
     }
 
     to {
@@ -230,61 +196,66 @@ body {
 @keyframes slideIn {
     from {
         opacity: 0;
-        transform: translateX(-16px);
+        transform: translateX(-12px);
     }
 
     to {
         opacity: 1;
         transform: translateX(0);
     }
+}
+
+@keyframes slideInRTL {
+    from {
+        opacity: 0;
+        transform: translateX(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.fade {
+    animation: fadeIn 0.25s var(--ease) both;
+}
+
+.anim {
+    opacity: 0;
+    animation: slideIn 0.25s var(--ease) forwards;
 }
 
 [dir="rtl"] .anim {
     animation-name: slideInRTL;
 }
 
-@keyframes slideInRTL {
-    from {
-        opacity: 0;
-        transform: translateX(16px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.anim {
-    opacity: 0;
-    animation: slideIn 0.3s ease-out forwards;
-}
-
 .anim-1 {
-    animation-delay: 0.05s;
+    animation-delay: 0.03s;
 }
 
 .anim-2 {
-    animation-delay: 0.1s;
+    animation-delay: 0.06s;
 }
 
 .anim-3 {
-    animation-delay: 0.15s;
+    animation-delay: 0.09s;
 }
 
 .anim-4 {
-    animation-delay: 0.2s;
+    animation-delay: 0.12s;
 }
 
-.fade-in {
-    animation: fadeUp 0.3s ease-out forwards;
+/* Faster page transitions */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 0.15s;
 }
 
-/* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
 
-    .anim,
-    .fade-in {
+    .fade,
+    .anim {
         animation: none;
         opacity: 1;
         transform: none;
@@ -296,19 +267,14 @@ h1,
 h2 {
     font-weight: 400;
     line-height: 1.2;
-    text-wrap: balance;
 }
 
 /* Utilities */
-.text-center {
-    text-align: center;
-}
-
 .hidden {
     display: none !important;
 }
 
-/* Prevent scroll on input focus */
+/* Prevent scroll-into-view on focus */
 input,
 textarea,
 select {

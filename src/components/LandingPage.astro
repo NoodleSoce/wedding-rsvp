@@ -14,23 +14,23 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
 ---
 
 <Layout title={lang === "ar" ? "الرئيسية" : "Welcome"} lang={lang}>
-    <main class="page fade-in">
-        <div class="page-content">
-            <h1 class="title anim anim-1">{t["index.title"]}</h1>
-            <p class="subtitle anim anim-2">{t["index.subtitle"]}</p>
+    <main class="page fade">
+        <div class="content">
+            <h1 class="anim anim-1">{t["index.title"]}</h1>
+            <p class="sub anim anim-2">{t["index.subtitle"]}</p>
 
             <div class="hero anim anim-3">
                 <Image
                     src={heroImg}
                     alt="Zaid & Haya"
-                    width={600}
+                    width={500}
                     densities={[1.5, 2]}
                     loading="eager"
                     fetchpriority="high"
                 />
             </div>
 
-            <a href={rsvpLink} class="btn cta anim anim-4" data-astro-prefetch>
+            <a href={rsvpLink} class="btn anim anim-4" data-astro-prefetch>
                 {t["index.cta"]}
             </a>
         </div>
@@ -38,38 +38,28 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
 </Layout>
 
 <style>
-    /* Content distributed with space between */
-    .page-content {
-        justify-content: space-evenly;
-        gap: var(--s-4);
-        padding: var(--s-4) 0;
+    .content {
+        gap: var(--gap);
     }
 
-    .title {
+    h1 {
         font-size: var(--fs-2xl);
         font-style: italic;
     }
 
-    .subtitle {
-        font-size: var(--fs-base);
-        color: var(--c-white-80);
-        font-weight: 300;
+    .sub {
+        font-size: var(--fs-sm);
+        color: var(--c-white-70);
+        margin-top: -0.25rem;
     }
 
-    /* Hero fills more space */
     .hero {
         width: 100%;
-        max-width: 280px;
+        max-width: 220px;
+        margin: var(--gap) 0;
         border-radius: var(--radius);
         overflow: hidden;
         box-shadow: var(--shadow);
-        flex-shrink: 0;
-    }
-
-    @media (min-width: 480px) {
-        .hero {
-            max-width: 320px;
-        }
     }
 
     .hero :global(img) {
@@ -78,14 +68,7 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
         display: block;
     }
 
-    .cta {
-        max-width: 280px;
-        flex-shrink: 0;
-    }
-
-    @media (min-width: 480px) {
-        .cta {
-            max-width: 300px;
-        }
+    .btn {
+        max-width: 240px;
     }
 </style>

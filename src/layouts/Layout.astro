@@ -14,10 +14,8 @@ interface Props {
 
 const { title, lang = "en" } = Astro.props;
 const fullTitle = `${title} | Zaid & Haya`;
-const description =
-	"You're invited to celebrate the wedding of Zaid & Haya. Please RSVP to confirm your attendance.";
+const description = "You're invited to celebrate the wedding of Zaid & Haya.";
 const dir = lang === "ar" ? "rtl" : "ltr";
-const path = Astro.url.pathname;
 ---
 
 <!doctype html>
@@ -31,62 +29,56 @@ const path = Astro.url.pathname;
 		<meta name="description" content={description} />
 		<title>{fullTitle}</title>
 
-		<!-- Theme -->
 		<meta name="theme-color" content="#4b0101" />
 		<meta name="color-scheme" content="dark" />
 		<link rel="icon" type="image/webp" href="/favicon.webp" />
 
-		<!-- Mobile -->
 		<meta name="mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta
 			name="apple-mobile-web-app-status-bar-style"
 			content="black-translucent"
 		/>
-		<meta name="format-detection" content="telephone=no" />
 
-		<!-- Social -->
-		<meta property="og:type" content="website" />
 		<meta property="og:title" content={fullTitle} />
 		<meta property="og:description" content={description} />
 		<meta property="og:image" content="/hero-image.webp" />
-		<meta name="twitter:card" content="summary" />
 
-		<!-- Preconnect -->
 		<link rel="preconnect" href="https://script.google.com" />
 		<link rel="preconnect" href="https://www.google.com" />
-		<link rel="preconnect" href="https://maps.googleapis.com" />
-
-		<!-- i18n -->
-		<link
-			rel="alternate"
-			hreflang="en"
-			href={Astro.url.origin + path.replace("/ar", "")}
-		/>
-		<link
-			rel="alternate"
-			hreflang="ar"
-			href={Astro.url.origin + "/ar" + path.replace("/ar", "")}
-		/>
 
 		<ClientRouter />
-
-		<script is:inline>
-			(function () {
-				if (localStorage.getItem("preferred_lang")) return;
-				if (
-					navigator.language?.startsWith("ar") &&
-					!location.pathname.startsWith("/ar")
-				) {
-					location.href =
-						"/ar" +
-						(location.pathname === "/" ? "" : location.pathname);
-				}
-			})();
-		</script>
 	</head>
 	<body>
 		<Header lang={lang} />
 		<slot />
+
+		<script is:inline>
+			// Language detection - runs once on first visit
+			(function () {
+				var k = "lang_set";
+				if (sessionStorage.getItem(k)) return;
+				sessionStorage.setItem(k, "1");
+
+				var pref = localStorage.getItem("preferred_lang");
+				if (pref) return;
+
+				var isAr = (navigator.language || "").startsWith("ar");
+				var onAr = location.pathname.startsWith("/ar");
+
+				if (isAr && !onAr) {
+					location.replace(
+						"/ar" +
+							(location.pathname === "/"
+								? ""
+								: location.pathname),
+					);
+				} else if (!isAr && onAr) {
+					location.replace(
+						location.pathname.replace("/ar", "") || "/",
+					);
+				}
+			})();
+		</script>
 	</body>
 </html>

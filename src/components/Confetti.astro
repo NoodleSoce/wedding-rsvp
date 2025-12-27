@@ -1,57 +1,48 @@
 ---
-// Confetti animation for countdown page
+// Confetti - optimized, respects reduced motion
 ---
 
 <script>
   import confetti from "canvas-confetti";
 
-  let interval: number;
+  let timer: number;
 
   function run() {
-    if (!document.querySelector(".countdown")) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!document.querySelector(".page[data-target]")) return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const end = Date.now() + 3000;
-    
-    if (interval) clearInterval(interval);
-    
-    interval = setInterval(() => {
-      if (Date.now() > end) {
-        clearInterval(interval);
-        return;
-      }
+    const end = Date.now() + 2500;
+
+    clearInterval(timer);
+    timer = setInterval(() => {
+      if (Date.now() > end) return clearInterval(timer);
 
       confetti({
-        particleCount: 30,
+        particleCount: 25,
         spread: 360,
-        startVelocity: 25,
-        ticks: 50,
-        origin: { x: Math.random() * 0.4 + 0.1, y: Math.random() * 0.3 },
+        startVelocity: 20,
+        ticks: 40,
+        origin: { x: Math.random() * 0.4 + 0.1, y: Math.random() * 0.25 },
         zIndex: 0,
       });
-      
+
       confetti({
-        particleCount: 30,
+        particleCount: 25,
         spread: 360,
-        startVelocity: 25,
-        ticks: 50,
-        origin: { x: Math.random() * 0.4 + 0.5, y: Math.random() * 0.3 },
+        startVelocity: 20,
+        ticks: 40,
+        origin: { x: Math.random() * 0.4 + 0.5, y: Math.random() * 0.25 },
         zIndex: 0,
       });
-    }, 250) as unknown as number;
+    }, 200) as unknown as number;
   }
 
-  function schedule() {
-    if ("requestIdleCallback" in window) {
-      requestIdleCallback(() => run(), { timeout: 500 });
-    } else {
-      setTimeout(run, 100);
-    }
-  }
+  document.addEventListener("astro:page-load", () => {
+    requestAnimationFrame(() => setTimeout(run, 100));
+  });
 
-  document.addEventListener("astro:page-load", schedule);
   document.addEventListener("astro:before-swap", () => {
-    clearInterval(interval);
-    try { (confetti as any).reset(); } catch {}
+    clearInterval(timer);
+    confetti.reset?.();
   });
 </script>
