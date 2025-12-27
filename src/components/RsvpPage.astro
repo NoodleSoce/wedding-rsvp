@@ -89,7 +89,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             </div>
         </div>
 
-        <!-- Loading overlay - consistent sizing -->
+        <!-- Loading overlay -->
         <div id="loading-overlay" class="loading-overlay" hidden>
             <div class="loading-content">
                 <div id="spinner" class="spinner"></div>
@@ -97,7 +97,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                     id="checkmark"
                     class="checkmark"
                     viewBox="0 0 40 40"
-                    hidden
+                    style="display: none;"
                 >
                     <circle
                         class="checkmark-circle"
@@ -143,40 +143,33 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 
         let keyboardOpen = false;
 
-        // Reset state
         function resetState() {
             if (loadingOverlay) loadingOverlay.hidden = true;
             if (spinner) {
-                spinner.hidden = false;
+                spinner.style.display = "";
                 spinner.classList.remove("fade-out");
             }
-            if (checkmark) {
-                checkmark.hidden = true;
-                checkmark.classList.remove("animate");
-            }
+            if (checkmark) checkmark.style.display = "none";
             if (errorMsg) errorMsg.hidden = true;
             if (submitBtn) submitBtn.disabled = false;
         }
         resetState();
         window.addEventListener("pageshow", resetState);
 
-        // Scroll to show form
         function scrollToShowForm() {
             setTimeout(() => {
                 submitBtn?.scrollIntoView({ behavior: "smooth", block: "end" });
             }, 150);
         }
 
-        // Blur input when keyboard collapses (viewport resize)
+        // Blur when keyboard collapses
         let lastHeight = window.visualViewport?.height || window.innerHeight;
 
         if (window.visualViewport) {
             window.visualViewport.addEventListener("resize", () => {
                 const currentHeight = window.visualViewport!.height;
 
-                // If viewport grew significantly (keyboard closed)
                 if (currentHeight > lastHeight + 100) {
-                    // Blur the active element to unfocus
                     const active = document.activeElement as HTMLElement;
                     if (active === nameEl || active === guestsEl) {
                         active.blur();
@@ -189,19 +182,16 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             });
         }
 
-        // Name input focus
         nameEl?.addEventListener("focus", () => {
             keyboardOpen = true;
             scrollToShowForm();
         });
 
-        // Guests input focus
         guestsEl?.addEventListener("focus", () => {
             keyboardOpen = true;
             scrollToShowForm();
         });
 
-        // Blur handling
         function handleBlur() {
             setTimeout(() => {
                 const active = document.activeElement;
@@ -218,7 +208,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         nameEl?.addEventListener("blur", handleBlur);
         guestsEl?.addEventListener("blur", handleBlur);
 
-        // Attendance toggle
         function getAttending() {
             return (
                 (
@@ -245,7 +234,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             });
         });
 
-        // Load saved data
         try {
             const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
             if (saved.name && nameEl) nameEl.value = saved.name;
@@ -259,7 +247,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             updateGuestsVisibility();
         } catch {}
 
-        // Save data
         let saveTimeout: ReturnType<typeof setTimeout>;
         function saveData() {
             clearTimeout(saveTimeout);
@@ -284,7 +271,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             saveData();
         });
 
-        // Submit
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
 
@@ -293,13 +279,10 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 
             if (loadingOverlay) loadingOverlay.hidden = false;
             if (spinner) {
-                spinner.hidden = false;
+                spinner.style.display = "";
                 spinner.classList.remove("fade-out");
             }
-            if (checkmark) {
-                checkmark.hidden = true;
-                checkmark.classList.remove("animate");
-            }
+            if (checkmark) checkmark.style.display = "none";
             if (errorMsg) errorMsg.hidden = true;
             if (submitBtn) submitBtn.disabled = true;
 
@@ -321,9 +304,9 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                 if (spinner) spinner.classList.add("fade-out");
 
                 setTimeout(() => {
-                    if (spinner) spinner.hidden = true;
+                    if (spinner) spinner.style.display = "none";
                     if (checkmark) {
-                        checkmark.hidden = false;
+                        checkmark.style.display = "";
                         checkmark.classList.add("animate");
                     }
                 }, 250);
@@ -354,7 +337,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         -webkit-overflow-scrolling: touch;
     }
 
-    /* Landscape: align to top with padding */
     @media (orientation: landscape) and (max-height: 500px) {
         .rsvp-page {
             align-items: flex-start;
@@ -512,7 +494,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         margin-top: var(--space-4);
     }
 
-    /* Loading overlay - consistent sizing */
+    /* Loading overlay */
     .loading-overlay {
         position: fixed;
         inset: 0;
@@ -531,19 +513,18 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 2.5rem;
-        height: 2.5rem;
     }
 
-    /* Spinner - same size as checkmark */
+    /* Spinner - proper circle with explicit sizing */
     .spinner {
-        width: 2.5rem;
-        height: 2.5rem;
+        width: 40px;
+        height: 40px;
         border: 3px solid var(--white-20);
         border-top-color: var(--white);
         border-radius: 50%;
-        animation: spin 0.6s linear infinite;
+        animation: spin 0.7s linear infinite;
         transition: opacity 0.25s ease;
+        flex-shrink: 0;
     }
 
     .spinner.fade-out {
@@ -558,8 +539,9 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 
     /* Checkmark - same size as spinner */
     .checkmark {
-        width: 2.5rem;
-        height: 2.5rem;
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
     }
 
     .checkmark-circle {

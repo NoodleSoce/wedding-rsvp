@@ -42,22 +42,16 @@ const targetPath =
 
 <style>
   .header {
-    position: absolute;
-    inset: 0 0 auto 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     padding: 1rem;
     z-index: 100;
     pointer-events: none;
   }
 
-  /* Landscape: more padding */
-  @media (orientation: landscape) and (max-height: 500px) {
-    .header {
-      padding: 0.75rem 1rem;
-    }
-  }
-
   .inner {
-    position: relative;
     max-width: 600px;
     margin: 0 auto;
     display: flex;
@@ -90,18 +84,20 @@ const targetPath =
     }
   }
 
-  /* Landscape: smaller logo */
   @media (orientation: landscape) and (max-height: 500px) {
     .logo {
       height: 48px;
     }
+    .header {
+      padding: 0.75rem 1rem;
+    }
   }
 
+  /* Language button - always top right, centered with logo */
   .lang-btn {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
     min-height: 40px;
     min-width: 48px;
     display: flex;
@@ -117,6 +113,21 @@ const targetPath =
     border-radius: 100px;
     text-decoration: none;
     transition: background 0.15s ease;
+    pointer-events: auto;
+  }
+
+  /* Adjust for logo height */
+  @media (min-width: 400px) {
+    .lang-btn {
+      top: 1rem;
+    }
+  }
+
+  @media (orientation: landscape) and (max-height: 500px) {
+    .lang-btn {
+      top: 0.75rem;
+      right: 0.75rem;
+    }
   }
 
   .lang-btn:active {
@@ -135,7 +146,8 @@ const targetPath =
   }
 
   .header.animated .lang-btn {
-    animation: fadeSlideDownBtn 0.5s ease both;
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
     animation-delay: 0.15s;
   }
 
@@ -150,14 +162,12 @@ const targetPath =
     }
   }
 
-  @keyframes fadeSlideDownBtn {
+  @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(calc(-50% - 10px));
     }
     to {
       opacity: 1;
-      transform: translateY(-50%);
     }
   }
 </style>

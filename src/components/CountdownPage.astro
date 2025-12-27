@@ -22,7 +22,6 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         <div class="content countdown">
             <h1 class="title anim anim-1">{t["countdown.title"]}</h1>
 
-            <!-- BIGGER timer for app-like feel -->
             <div class="timer anim anim-2" id="timer" role="timer">
                 <div class="unit">
                     <span id="days">00</span>
@@ -127,17 +126,17 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
 
 <style>
     .countdown {
-        gap: var(--space-6);
+        gap: var(--space-5);
     }
 
     .title {
         font-size: var(--fs-xl);
         font-weight: 300;
-        max-width: min(90%, 400px);
+        max-width: min(90%, 380px);
         line-height: 1.35;
+        padding: 0 var(--space-4);
     }
 
-    /* BIGGER timer numbers for app-like feel */
     .timer {
         display: flex;
         align-items: center;
@@ -148,11 +147,11 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         display: flex;
         flex-direction: column;
         align-items: center;
-        min-width: clamp(44px, 38px + 2vw, 64px);
+        min-width: clamp(40px, 10vw, 56px);
     }
 
     .unit span {
-        font-size: clamp(1.75rem, 1.4rem + 1.75vw, 2.75rem);
+        font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
         font-weight: 700;
         font-variant-numeric: tabular-nums;
         line-height: 1;
@@ -165,7 +164,7 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
     }
 
     .sep {
-        font-size: clamp(1.25rem, 1rem + 0.75vw, 1.75rem);
+        font-size: clamp(1rem, 0.8rem + 0.5vw, 1.5rem);
         color: var(--white-50);
         margin-bottom: var(--space-6);
     }
@@ -183,11 +182,20 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         margin-bottom: var(--space-4);
     }
 
+    /* Map - consistent height in all orientations */
     .map {
         border-radius: var(--radius-sm);
         overflow: hidden;
-        height: clamp(120px, 22vh, 200px);
+        height: clamp(120px, 20vh, 180px);
+        min-height: 100px;
         box-shadow: var(--shadow);
+    }
+
+    /* Landscape: use more width-based sizing */
+    @media (orientation: landscape) and (max-height: 500px) {
+        .map {
+            height: clamp(100px, 30vw, 160px);
+        }
     }
 
     .map iframe {
@@ -197,7 +205,7 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
     }
 
     .done {
-        font-size: var(--fs-2xl);
+        font-size: var(--fs-xl);
         font-weight: 600;
     }
 </style>
