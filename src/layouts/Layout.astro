@@ -59,6 +59,21 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 		<link rel="preconnect" href="https://www.gstatic.com" crossorigin />
 		<link rel="preconnect" href="https://maps.googleapis.com" />
 		<link rel="preconnect" href="https://maps.gstatic.com" />
+
+		<!-- SEO: Language Alternates -->
+		<link
+			rel="alternate"
+			hreflang="en"
+			href={Astro.url.origin + Astro.url.pathname.replace("/ar", "")}
+		/>
+		<link
+			rel="alternate"
+			hreflang="ar"
+			href={Astro.url.origin +
+				"/ar" +
+				Astro.url.pathname.replace("/ar", "")}
+		/>
+
 		<ClientRouter />
 	</head>
 	<body>

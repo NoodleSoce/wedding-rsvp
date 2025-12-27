@@ -70,6 +70,7 @@ if (lang === "en") {
     justify-content: center;
     align-items: center;
     pointer-events: auto; /* Re-enable clicks on content */
+    direction: ltr; /* Force LTR to ensure 'right: 0' always means physical right and prevents mirroring issues */
   }
 
   .logo-img {
