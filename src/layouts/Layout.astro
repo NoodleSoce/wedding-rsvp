@@ -14,7 +14,10 @@ interface Props {
 
 const { title, lang = "en" } = Astro.props;
 const fullTitle = `${title} | Zaid & Haya`;
-const description = "You're invited to celebrate the wedding of Zaid & Haya.";
+const description =
+	lang === "ar"
+		? "أنتم مدعوون للاحتفال بزفاف زيد وهيا"
+		: "You're invited to celebrate the wedding of Zaid & Haya.";
 const dir = lang === "ar" ? "rtl" : "ltr";
 ---
 
@@ -22,6 +25,7 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 <html lang={lang} dir={dir}>
 	<head>
 		<meta charset="UTF-8" />
+		<!-- Optimized viewport for keyboard handling -->
 		<meta
 			name="viewport"
 			content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no, interactive-widget=resizes-visual"
@@ -43,6 +47,10 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 		<meta property="og:title" content={fullTitle} />
 		<meta property="og:description" content={description} />
 		<meta property="og:image" content="/hero-image.webp" />
+		<meta
+			property="og:locale"
+			content={lang === "ar" ? "ar_AE" : "en_US"}
+		/>
 
 		<link rel="preconnect" href="https://script.google.com" />
 		<link rel="preconnect" href="https://www.google.com" />
@@ -60,25 +68,34 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 				if (sessionStorage.getItem(k)) return;
 				sessionStorage.setItem(k, "1");
 
+				// Respect user's explicit choice
 				var pref = localStorage.getItem("preferred_lang");
 				if (pref) return;
 
-				var isAr = (navigator.language || "").startsWith("ar");
-				var onAr = location.pathname.startsWith("/ar");
+				// Auto-detect based on browser language
+				var isAr = (navigator.language || navigator.userLanguage || "")
+					.toLowerCase()
+					.startsWith("ar");
+				var path = location.pathname;
+				var onAr = path.startsWith("/ar");
 
 				if (isAr && !onAr) {
-					location.replace(
-						"/ar" +
-							(location.pathname === "/"
-								? ""
-								: location.pathname),
-					);
+					location.replace("/ar" + (path === "/" ? "" : path));
 				} else if (!isAr && onAr) {
-					location.replace(
-						location.pathname.replace("/ar", "") || "/",
-					);
+					location.replace(path.replace("/ar", "") || "/");
 				}
 			})();
+
+			// Prevent iOS rubber-band scrolling on html/body when not needed
+			document.addEventListener(
+				"touchmove",
+				function (e) {
+					if (document.body.scrollHeight <= window.innerHeight) {
+						e.preventDefault();
+					}
+				},
+				{ passive: false },
+			);
 		</script>
 	</body>
 </html>

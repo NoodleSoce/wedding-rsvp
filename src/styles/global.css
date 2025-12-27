@@ -1,6 +1,6 @@
 /* ========================================
    WEDDING RSVP - Design System
-   Mobile-first, app-like experience
+   Mobile-first, keyboard-optimized
    ======================================== */
 
 :root {
@@ -15,7 +15,7 @@
     --success: #2e7d32;
     --error: #c62828;
 
-    /* Typography - larger for mobile readability */
+    /* Typography */
     --font: 'Libre Baskerville', 'Amiri', Georgia, serif;
     --fs-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.85rem);
     --fs-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
@@ -34,7 +34,7 @@
     --space-8: 2rem;
 
     /* Layout */
-    --max-w: min(90vw, 480px);
+    --max-w: min(92vw, 480px);
     --header-h: clamp(96px, 80px + 4vw, 120px);
     --page-pad: clamp(1rem, 0.75rem + 1.25vw, 1.75rem);
 
@@ -50,7 +50,7 @@
 }
 
 /* ========================================
-   RESET & BASE
+   RESET & BASE - Keyboard optimized
    ======================================== */
 *,
 *::before,
@@ -62,25 +62,43 @@
 
 html {
     height: 100%;
+    height: -webkit-fill-available;
+    /* Disable smooth scroll to prevent jumping on focus */
+    scroll-behavior: auto;
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* Prevent overscroll bounce */
+    overscroll-behavior: none;
 }
 
 body {
-    height: 100%;
+    /* Use min-height to allow content to expand */
+    min-height: 100%;
     min-height: 100dvh;
+    min-height: -webkit-fill-available;
     font-family: var(--font);
     font-size: var(--fs-base);
     font-weight: 400;
     line-height: 1.5;
     color: var(--white);
     background: var(--bg);
-    overflow: hidden;
+    /* Allow scroll when needed (keyboard) */
+    overflow-x: hidden;
+    overflow-y: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    touch-action: manipulation;
-    overscroll-behavior: none;
+    /* Prevent pull-to-refresh */
+    overscroll-behavior-y: none;
+    /* Important: allow normal touch scrolling */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* RTL text rendering optimization */
+[dir="rtl"] body {
+    font-feature-settings: "liga" 1, "calt" 1;
 }
 
 h1,
@@ -90,14 +108,17 @@ h2 {
 }
 
 /* ========================================
-   PAGE LAYOUT
+   PAGE LAYOUT - Keyboard aware
    ======================================== */
 .page {
-    position: fixed;
-    inset: 0;
+    /* Use min-height instead of fixed height for keyboard */
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
     display: flex;
     justify-content: center;
-    align-items: center;
+    /* Align to top so content stays stable when keyboard opens */
+    align-items: flex-start;
     padding: var(--header-h) var(--page-pad) var(--page-pad);
     background: var(--bg);
 }
@@ -110,6 +131,10 @@ h2 {
     width: 100%;
     max-width: var(--max-w);
     gap: var(--space-4);
+    /* Add margin to vertically center when there's space */
+    margin: auto 0;
+    /* Padding at bottom for keyboard clearance */
+    padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 /* ========================================
@@ -127,7 +152,7 @@ h2 {
 }
 
 /* ========================================
-   BUTTON - Large touch target
+   BUTTON
    ======================================== */
 .btn {
     display: flex;
@@ -150,6 +175,8 @@ h2 {
         transform var(--duration) var(--ease);
     -webkit-user-select: none;
     user-select: none;
+    /* Prevent zoom on double-tap */
+    touch-action: manipulation;
 }
 
 .btn:active {
@@ -170,20 +197,25 @@ h2 {
 }
 
 /* ========================================
-   INPUT - Large touch target
+   INPUT - Keyboard optimized
    ======================================== */
 .input {
     width: 100%;
     min-height: 54px;
     padding: var(--space-4);
     font: inherit;
-    font-size: var(--fs-base);
+    font-size: 16px;
+    /* Prevents iOS zoom on focus */
     color: var(--white);
     background: rgba(0, 0, 0, 0.15);
     border: 1px solid var(--white-20);
     border-radius: var(--radius-sm);
     transition: border-color var(--duration) var(--ease);
     -webkit-appearance: none;
+    appearance: none;
+    /* Prevent scroll into view jumping */
+    scroll-margin: 0;
+    scroll-margin-top: 100px;
 }
 
 .input::placeholder {
@@ -193,6 +225,20 @@ h2 {
 .input:focus {
     outline: none;
     border-color: var(--white-70);
+}
+
+/* RTL input text alignment */
+[dir="rtl"] .input {
+    text-align: right;
+}
+
+[dir="rtl"] .input::placeholder {
+    text-align: right;
+}
+
+/* Number inputs stay LTR for numbers */
+.input[type="number"] {
+    text-align: center;
 }
 
 /* ========================================
@@ -263,6 +309,7 @@ h2 {
     animation-delay: 0.16s;
 }
 
+/* View transitions */
 ::view-transition-old(root),
 ::view-transition-new(root) {
     animation-duration: 0.2s;
@@ -285,8 +332,10 @@ h2 {
     display: none !important;
 }
 
+/* Prevent automatic scroll-into-view on all form elements */
 input,
 textarea,
-select {
+select,
+button {
     scroll-margin: 0;
 }
