@@ -9,21 +9,18 @@ interface Props {
 const { lang } = Astro.props;
 const t = ui[lang];
 const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
+const isRTL = lang === "ar";
 ---
 
 <Layout title={lang === "ar" ? "تأكيد الحضور" : "RSVP"} lang={lang}>
-    <main class="page fade" id="rsvp-page">
-        <div class="content">
+    <main class="rsvp-page fade" id="rsvp-page">
+        <div class="form-wrap" id="form-wrap">
             <div class="card form-card" id="form-card">
                 <form id="form" data-redirect={redirectUrl}>
-                    <a
-                        href={redirectUrl}
-                        data-astro-prefetch="load"
-                        hidden
-                        aria-hidden="true"></a>
+                    <a href={redirectUrl} data-astro-prefetch="load" hidden></a>
 
-                    <label class="field" id="name-field">
-                        <span class="label">{t["rsvp.name"]}</span>
+                    <div class="field">
+                        <label class="label" for="name">{t["rsvp.name"]}</label>
                         <input
                             type="text"
                             id="name"
@@ -33,14 +30,13 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                             placeholder={t["rsvp.namePlaceholder"]}
                             autocomplete="name"
                             autocapitalize="words"
-                            enterkeyhint="next"
                         />
-                    </label>
+                    </div>
 
-                    <div class="field" id="attending-field">
+                    <div class="field">
                         <span class="label">{t["rsvp.attending"]}</span>
-                        <div class="radio-group">
-                            <label class="radio">
+                        <div class="radio-row">
+                            <label class="radio-label">
                                 <input
                                     type="radio"
                                     name="attending"
@@ -51,7 +47,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                                     >{t["rsvp.accept"]}</span
                                 >
                             </label>
-                            <label class="radio">
+                            <label class="radio-label">
                                 <input
                                     type="radio"
                                     name="attending"
@@ -64,9 +60,11 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                         </div>
                     </div>
 
-                    <div id="guests-wrap" class="guests-wrap show">
-                        <label class="field" id="guests-field">
-                            <span class="label">{t["rsvp.guests"]}</span>
+                    <div id="guests-section" class="guests-section open">
+                        <div class="field">
+                            <label class="label" for="guests"
+                                >{t["rsvp.guests"]}</label
+                            >
                             <input
                                 type="number"
                                 id="guests"
@@ -76,25 +74,28 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                                 max="9"
                                 value="0"
                                 inputmode="numeric"
-                                enterkeyhint="done"
                             />
-                        </label>
+                        </div>
                     </div>
 
-                    <button type="submit" class="btn submit" id="submit-btn"
+                    <button type="submit" class="btn submit-btn" id="submit-btn"
                         >{t["rsvp.submit"]}</button
                     >
-                    <p id="error" class="error hidden" role="alert">
+                    <p id="error-msg" class="error-msg" hidden>
                         {t["rsvp.error"]}
                     </p>
                 </form>
             </div>
         </div>
 
-        <!-- Loader overlay -->
-        <div id="loader" class="loader hidden" aria-live="polite">
-            <div class="spinner" id="spinner"></div>
-            <p class="sent-text" id="sent-text">{t["rsvp.sent"]}</p>
+        <!-- Loading overlay -->
+        <div id="loading-overlay" class="loading-overlay" hidden>
+            <div class="loading-content">
+                <div id="spinner" class="spinner"></div>
+                <p id="success-text" class="success-text" hidden>
+                    {t["rsvp.sent"]}
+                </p>
+            </div>
         </div>
     </main>
 </Layout>
@@ -107,227 +108,183 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
     const KEY = "rsvp";
 
     function init() {
-        const form = document.getElementById("form") as HTMLFormElement;
+        const form = document.getElementById("form") as HTMLFormElement | null;
         if (!form) return;
 
-        const page = document.getElementById("rsvp-page");
         const formCard = document.getElementById("form-card");
-        const nameInput = document.getElementById("name") as HTMLInputElement;
-        const guestsInput = document.getElementById(
-            "guests",
-        ) as HTMLInputElement;
-        const guestsWrap = document.getElementById("guests-wrap");
+        const nameEl = document.getElementById("name") as HTMLInputElement;
+        const guestsEl = document.getElementById("guests") as HTMLInputElement;
+        const guestsSection = document.getElementById("guests-section");
         const radios = document.querySelectorAll<HTMLInputElement>(
             'input[name="attending"]',
         );
-        const loader = document.getElementById("loader");
-        const spinner = document.getElementById("spinner");
-        const sentText = document.getElementById("sent-text");
-        const error = document.getElementById("error");
         const submitBtn = document.getElementById(
             "submit-btn",
         ) as HTMLButtonElement;
+        const errorMsg = document.getElementById("error-msg");
+        const loadingOverlay = document.getElementById("loading-overlay");
+        const spinner = document.getElementById("spinner");
+        const successText = document.getElementById("success-text");
         const redirect = form.dataset.redirect || "/countdown";
 
-        // Check if keyboard is likely open
-        let isKeyboardOpen = false;
-
-        // Reset UI state
-        function reset() {
-            loader?.classList.add("hidden");
-            loader?.classList.remove("done");
-            error?.classList.add("hidden");
+        // Reset state
+        function resetState() {
+            if (loadingOverlay) loadingOverlay.hidden = true;
+            if (spinner) spinner.hidden = false;
+            if (successText) successText.hidden = true;
+            if (errorMsg) errorMsg.hidden = true;
             if (submitBtn) submitBtn.disabled = false;
-            if (spinner) spinner.style.display = "";
-            if (sentText) sentText.style.display = "none";
         }
-        reset();
-        addEventListener("pageshow", reset);
+        resetState();
+        window.addEventListener("pageshow", resetState);
 
-        // Scroll form into view smoothly when keyboard opens
-        function scrollFormIntoView() {
+        // Scroll form into view (fast, show button)
+        function scrollToForm() {
             if (!formCard) return;
-
-            // Small delay to let keyboard fully open
-            setTimeout(() => {
-                formCard.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                });
-            }, 100);
+            // Immediate scroll with small offset from top
+            formCard.scrollIntoView({ behavior: "smooth", block: "center" });
         }
 
-        // Scroll back to center when keyboard closes
-        function scrollToCenter() {
-            if (!page) return;
+        // Scroll to top of page
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
 
+        // Track if an input is focused
+        let inputFocused = false;
+
+        // Name input focus
+        nameEl?.addEventListener("focus", () => {
+            inputFocused = true;
+            scrollToForm();
+        });
+
+        // Guests input focus - no scroll since form already visible
+        guestsEl?.addEventListener("focus", () => {
+            inputFocused = true;
+        });
+
+        // Handle blur
+        function onBlur() {
             setTimeout(() => {
-                window.scrollTo({
-                    top: 0,
-                    behavior: "smooth",
-                });
+                // Check if focus moved to another form element
+                const active = document.activeElement;
+                const stillInForm =
+                    active === nameEl ||
+                    active === guestsEl ||
+                    active === submitBtn ||
+                    (active as HTMLInputElement)?.name === "attending";
+
+                if (!stillInForm) {
+                    inputFocused = false;
+                    scrollToTop();
+                }
             }, 50);
         }
 
-        // Name input focus - scroll to show form
-        nameInput?.addEventListener("focus", () => {
-            isKeyboardOpen = true;
-            scrollFormIntoView();
-        });
+        nameEl?.addEventListener("blur", onBlur);
+        guestsEl?.addEventListener("blur", onBlur);
 
-        // Guests input focus - don't scroll, keyboard already open
-        guestsInput?.addEventListener("focus", () => {
-            isKeyboardOpen = true;
-            // Don't scroll - keep view as is
-        });
-
-        // Handle blur on both inputs
-        function handleBlur() {
-            // Small delay to check if focus moved to another input
-            setTimeout(() => {
-                const active = document.activeElement;
-                const isInputFocused =
-                    active === nameInput || active === guestsInput;
-
-                if (!isInputFocused) {
-                    isKeyboardOpen = false;
-                    scrollToCenter();
-                }
-            }, 100);
+        // Attendance toggle
+        function getAttending() {
+            return (
+                (
+                    document.querySelector(
+                        'input[name="attending"]:checked',
+                    ) as HTMLInputElement
+                )?.value || "yes"
+            );
         }
 
-        nameInput?.addEventListener("blur", handleBlur);
-        guestsInput?.addEventListener("blur", handleBlur);
-
-        // Handle visualViewport changes (keyboard show/hide)
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener("resize", () => {
-                // If viewport grew (keyboard closed), scroll to center
-                if (window.visualViewport!.height > window.innerHeight * 0.8) {
-                    if (isKeyboardOpen) {
-                        isKeyboardOpen = false;
-                        scrollToCenter();
-                    }
-                }
-            });
+        function updateGuestsVisibility() {
+            const show = getAttending() === "yes";
+            guestsSection?.classList.toggle("open", show);
         }
 
-        // Get selected attendance
-        const getAttending = () =>
-            (
-                document.querySelector(
-                    'input[name="attending"]:checked',
-                ) as HTMLInputElement
-            )?.value || "yes";
-
-        // Toggle guests visibility
-        function updateGuests() {
-            guestsWrap?.classList.toggle("show", getAttending() === "yes");
-        }
-
-        // Load saved form data
+        // Load saved data
         try {
             const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
-            if (saved.name) nameInput.value = saved.name;
-            if (saved.guests) guestsInput.value = saved.guests;
+            if (saved.name && nameEl) nameEl.value = saved.name;
+            if (saved.guests && guestsEl) guestsEl.value = saved.guests;
             if (saved.attending) {
                 const r = document.querySelector(
                     `input[value="${saved.attending}"]`,
                 ) as HTMLInputElement;
                 if (r) r.checked = true;
             }
-            updateGuests();
+            updateGuestsVisibility();
         } catch {}
 
-        // Debounced save
-        let saveTimer: ReturnType<typeof setTimeout>;
-        function save() {
-            clearTimeout(saveTimer);
-            saveTimer = setTimeout(() => {
+        // Save data
+        let saveTimeout: ReturnType<typeof setTimeout>;
+        function saveData() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
                 localStorage.setItem(
                     KEY,
                     JSON.stringify({
-                        name: nameInput.value,
+                        name: nameEl?.value || "",
                         attending: getAttending(),
-                        guests: guestsInput.value,
+                        guests: guestsEl?.value || "0",
                     }),
                 );
             }, 200);
         }
 
-        // Input handlers
-        nameInput?.addEventListener("input", save);
+        nameEl?.addEventListener("input", saveData);
 
-        // Guests input - keep only last digit (0-9)
-        guestsInput?.addEventListener("input", () => {
-            let val = guestsInput.value.replace(/[^0-9]/g, "");
-            if (val.length > 1) val = val.slice(-1);
-            if (val === "") val = "0";
-            guestsInput.value = val;
-            save();
+        guestsEl?.addEventListener("input", () => {
+            let v = guestsEl.value.replace(/\D/g, "");
+            if (v.length > 1) v = v.slice(-1);
+            guestsEl.value = v || "0";
+            saveData();
         });
 
-        // Radio change - don't affect keyboard
         radios.forEach((r) =>
             r.addEventListener("change", () => {
-                updateGuests();
-                save();
-                // Keep focus where it is, don't close keyboard
+                updateGuestsVisibility();
+                saveData();
             }),
         );
 
-        // Form submission
+        // Submit
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
 
-            // Blur to dismiss keyboard
+            // Hide keyboard
             (document.activeElement as HTMLElement)?.blur();
 
-            // Show loader with spinner
-            loader?.classList.remove("hidden");
-            if (spinner) spinner.style.display = "";
-            if (sentText) sentText.style.display = "none";
-            error?.classList.add("hidden");
+            // Show loading
+            if (loadingOverlay) loadingOverlay.hidden = false;
+            if (spinner) spinner.hidden = false;
+            if (successText) successText.hidden = true;
+            if (errorMsg) errorMsg.hidden = true;
             if (submitBtn) submitBtn.disabled = true;
 
-            const coming = getAttending() === "yes";
+            const isAttending = getAttending() === "yes";
 
             try {
                 await fetch(API, {
                     method: "POST",
                     mode: "no-cors",
                     body: JSON.stringify({
-                        name: nameInput.value.trim(),
-                        attending: coming ? "Yes" : "No",
-                        guests: coming ? +guestsInput.value : 0,
+                        name: nameEl?.value.trim() || "",
+                        attending: isAttending ? "Yes" : "No",
+                        guests: isAttending ? +(guestsEl?.value || 0) : 0,
                     }),
                 });
 
                 localStorage.removeItem(KEY);
 
-                // Smooth transition to "RSVP sent!"
-                if (spinner) {
-                    spinner.style.transition = "opacity 0.2s ease";
-                    spinner.style.opacity = "0";
-                }
+                // Show success
+                if (spinner) spinner.hidden = true;
+                if (successText) successText.hidden = false;
 
-                setTimeout(() => {
-                    if (spinner) spinner.style.display = "none";
-                    if (sentText) {
-                        sentText.style.display = "";
-                        sentText.style.opacity = "0";
-                        sentText.style.transition = "opacity 0.3s ease";
-                        requestAnimationFrame(() => {
-                            sentText.style.opacity = "1";
-                        });
-                    }
-                }, 200);
-
-                // Navigate after showing success message
-                setTimeout(() => navigate(redirect), 1000);
+                // Navigate
+                setTimeout(() => navigate(redirect), 800);
             } catch {
-                error?.classList.remove("hidden");
-                loader?.classList.add("hidden");
+                if (loadingOverlay) loadingOverlay.hidden = true;
+                if (errorMsg) errorMsg.hidden = false;
                 if (submitBtn) submitBtn.disabled = false;
             }
         });
@@ -338,46 +295,89 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 </script>
 
 <style>
-    /* Page scrollable */
-    .page {
+    .rsvp-page {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: var(--header-h) var(--page-pad) var(--page-pad);
+        background: var(--bg);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
     }
 
+    .form-wrap {
+        width: 100%;
+        max-width: var(--max-w);
+    }
+
     .form-card {
-        text-align: left;
-        scroll-margin-top: var(--space-4);
+        width: 100%;
+        padding: var(--space-6);
+        background: var(--white-10);
+        border: 1px solid var(--white-20);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
     }
 
-    [dir="rtl"] .form-card {
-        text-align: right;
-    }
-
+    /* Field layout */
     .field {
-        display: block;
         margin-bottom: var(--space-5);
     }
 
     .label {
         display: block;
         font-size: var(--fs-base);
+        font-weight: 500;
         color: var(--white-90);
         margin-bottom: var(--space-2);
-        font-weight: 500;
+        text-align: start;
+    }
+
+    .input {
+        width: 100%;
+        min-height: 54px;
+        padding: var(--space-4);
+        font: inherit;
+        font-size: 16px;
+        color: var(--white);
+        background: rgba(0, 0, 0, 0.15);
+        border: 1px solid var(--white-20);
+        border-radius: var(--radius-sm);
+        -webkit-appearance: none;
+        appearance: none;
+        text-align: start;
+    }
+
+    .input::placeholder {
+        color: var(--white-50);
+        text-align: start;
+    }
+
+    .input:focus {
+        outline: none;
+        border-color: var(--white-70);
+    }
+
+    .input[type="number"] {
+        text-align: center;
     }
 
     /* Radio buttons */
-    .radio-group {
+    .radio-row {
         display: flex;
         gap: var(--space-3);
     }
 
-    .radio {
+    .radio-label {
         flex: 1;
         cursor: pointer;
     }
 
-    .radio input {
+    .radio-label input {
         position: absolute;
         opacity: 0;
         pointer-events: none;
@@ -395,80 +395,101 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         background: var(--white-10);
         border: 1px solid var(--white-20);
         border-radius: var(--radius-sm);
-        transition: all var(--duration) var(--ease);
+        transition: all 0.15s ease;
     }
 
-    .radio:active .radio-btn {
+    .radio-label:active .radio-btn {
         transform: scale(0.97);
     }
 
-    .radio input:checked + .yes {
+    .radio-label input:checked + .yes {
         background: var(--success);
         border-color: var(--success);
     }
 
-    .radio input:checked + .no {
+    .radio-label input:checked + .no {
         background: var(--error);
         border-color: var(--error);
     }
 
-    /* Guests expandable section */
-    .guests-wrap {
+    /* Guests section */
+    .guests-section {
         display: grid;
         grid-template-rows: 0fr;
-        transition: grid-template-rows 0.2s var(--ease);
+        transition: grid-template-rows 0.2s ease;
     }
 
-    .guests-wrap.show {
+    .guests-section.open {
         grid-template-rows: 1fr;
     }
 
-    .guests-wrap > * {
+    .guests-section > * {
         overflow: hidden;
     }
 
-    .submit {
+    /* Submit button */
+    .submit-btn {
+        width: 100%;
+        min-height: 54px;
         margin-top: var(--space-2);
+        padding: var(--space-4) var(--space-6);
+        font: inherit;
         font-size: var(--fs-lg);
+        font-weight: 500;
+        color: var(--white);
+        background: var(--white-10);
+        border: 1px solid var(--white-20);
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: all 0.15s ease;
     }
 
-    .error {
+    .submit-btn:active {
+        transform: scale(0.97);
+        background: var(--white-20);
+    }
+
+    .submit-btn:disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    /* Error message */
+    .error-msg {
         text-align: center;
         color: #f99;
         font-size: var(--fs-base);
         margin-top: var(--space-4);
     }
 
-    /* Loader overlay */
-    .loader {
+    /* Loading overlay */
+    .loading-overlay {
         position: fixed;
         inset: 0;
         display: flex;
-        flex-direction: column;
         justify-content: center;
         align-items: center;
         background: rgba(75, 1, 1, 0.96);
-        z-index: 999;
-        opacity: 1;
-        transition: opacity 0.2s var(--ease);
+        z-index: 1000;
     }
 
-    .loader.hidden {
-        opacity: 0;
-        pointer-events: none;
+    .loading-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-4);
     }
 
     .spinner {
-        width: 2.25rem;
-        height: 2.25rem;
-        border: 2.5px solid var(--white-20);
+        width: 2.5rem;
+        height: 2.5rem;
+        border: 3px solid var(--white-20);
         border-top-color: var(--white);
         border-radius: 50%;
-        animation: spin 0.5s linear infinite;
+        animation: spin 0.6s linear infinite;
     }
 
-    .sent-text {
-        display: none;
+    .success-text {
         font-size: var(--fs-xl);
         font-weight: 500;
         color: #4ade80;
