@@ -72,10 +72,18 @@
 [class*="stagger-"] {
     opacity: 0;
     will-change: transform, opacity;
+    /* GPU acceleration for animations */
+    backface-visibility: hidden;
+}
+
+/* Clean up will-change after animation completes */
+[class*="stagger-"]:not(:global(.animating)) {
+    animation-fill-mode: forwards;
 }
 
 .fade-in {
     animation: fadeIn 0.3s ease-out forwards;
+    backface-visibility: hidden;
 }
 
 /* Respect reduced motion preferences */
@@ -108,17 +116,22 @@
 
 html {
     height: 100%;
+    height: -webkit-fill-available;
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    /* Prevent overscroll bounce effects */
+    overscroll-behavior: none;
 }
 
 body {
     height: 100%;
+    min-height: -webkit-fill-available;
     font-family: var(--font-body);
     background-color: var(--color-bg);
     color: var(--color-white);
     overflow-x: hidden;
+    overflow-y: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -128,6 +141,12 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    /* Improve touch scrolling performance */
+    -webkit-overflow-scrolling: touch;
+    /* Prevent pull-to-refresh and overscroll */
+    overscroll-behavior: none;
+    /* Optimize touch events */
+    touch-action: manipulation;
 }
 
 h1,

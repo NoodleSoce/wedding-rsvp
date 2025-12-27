@@ -47,8 +47,12 @@ import heroImg from "../assets/hero-image.webp";
 		padding: 1rem;
 		padding-top: 140px; /* Shifted down */
 		background: var(--color-bg);
-		position: relative;
+		position: fixed;
+		inset: 0;
 		overflow: hidden;
+		contain: layout style paint size;
+		transform: translateZ(0);
+		will-change: contents;
 	}
 
 	.content {

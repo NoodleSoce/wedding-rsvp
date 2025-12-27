@@ -72,6 +72,12 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
 			const secondsEl = document.getElementById("seconds");
 			const countdownEl = document.getElementById("countdown");
 
+			// Cache previous values to avoid unnecessary DOM updates
+			let prevDays = -1;
+			let prevHours = -1;
+			let prevMinutes = -1;
+			let prevSeconds = -1;
+
 			function updateCountdown() {
 				const now = Date.now();
 				const distance = targetDate - now;
@@ -87,13 +93,23 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
 				const minutes = Math.floor((distance % 3600000) / 60000);
 				const seconds = Math.floor((distance % 60000) / 1000);
 
-				if (daysEl) daysEl.textContent = String(days).padStart(2, "0");
-				if (hoursEl)
+				// Only update DOM if value changed (reduces repaints)
+				if (days !== prevDays && daysEl) {
+					daysEl.textContent = String(days).padStart(2, "0");
+					prevDays = days;
+				}
+				if (hours !== prevHours && hoursEl) {
 					hoursEl.textContent = String(hours).padStart(2, "0");
-				if (minutesEl)
+					prevHours = hours;
+				}
+				if (minutes !== prevMinutes && minutesEl) {
 					minutesEl.textContent = String(minutes).padStart(2, "0");
-				if (secondsEl)
+					prevMinutes = minutes;
+				}
+				if (seconds !== prevSeconds && secondsEl) {
 					secondsEl.textContent = String(seconds).padStart(2, "0");
+					prevSeconds = seconds;
+				}
 			}
 
 			// Start immediately
@@ -130,6 +146,11 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
 			padding: 0;
 			padding-top: var(--header-height);
 			overflow: hidden;
+			position: fixed;
+			inset: 0;
+			contain: layout style paint size;
+			transform: translateZ(0);
+			will-change: contents;
 		}
 		/* Grouping: Content container spacing */
 		.content {

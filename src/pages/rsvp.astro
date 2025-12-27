@@ -320,7 +320,7 @@ import Layout from "../layouts/Layout.astro";
 				// Show Success Animation
 				fullPageLoader.classList.add("success");
 				const loaderText = document.getElementById("loader-text");
-				if (loaderText) loaderText.textContent = "See you there!";
+				if (loaderText) loaderText.textContent = "RSVP sent!";
 
 				// Redirect after animation
 				setTimeout(() => {
@@ -347,10 +347,11 @@ import Layout from "../layouts/Layout.astro";
 		justify-content: center;
 		align-items: center;
 		overflow: hidden;
-		position: relative;
-		position: relative;
-		contain: layout style;
+		position: fixed;
+		inset: 0;
+		contain: layout style paint size;
 		transform: translateZ(0);
+		will-change: contents;
 	}
 
 	.content-wrapper {
