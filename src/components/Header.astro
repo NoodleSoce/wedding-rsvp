@@ -4,9 +4,10 @@ import logoImg from "../assets/logo.webp";
 
 interface Props {
   lang?: "en" | "ar";
+  showAnimation?: boolean;
 }
 
-const { lang = "en" } = Astro.props;
+const { lang = "en", showAnimation = false } = Astro.props;
 const path = Astro.url.pathname;
 const targetPath =
   lang === "en"
@@ -16,7 +17,7 @@ const targetPath =
     : path.replace("/ar", "") || "/";
 ---
 
-<header class="header">
+<header class:list={["header", { animated: showAnimation }]}>
   <div class="inner">
     <Image
       src={logoImg}
@@ -41,10 +42,32 @@ const targetPath =
   .header {
     position: absolute;
     inset: 0 0 auto 0;
-    /* Use explicit values to ensure consistency across all pages */
     padding: 1.25rem 1rem;
+    padding-bottom: 0.5rem;
     z-index: 100;
     pointer-events: none;
+  }
+
+  /* Animation only on landing page */
+  .header.animated .logo {
+    animation: fadeSlideDown 0.4s ease both;
+    animation-delay: 0.1s;
+  }
+
+  .header.animated .lang-btn {
+    animation: fadeSlideDown 0.4s ease both;
+    animation-delay: 0.2s;
+  }
+
+  @keyframes fadeSlideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .inner {
@@ -58,7 +81,6 @@ const targetPath =
     direction: ltr;
   }
 
-  /* BIG logo - explicit sizing for consistency */
   .logo {
     height: 72px;
     width: auto;
@@ -95,7 +117,7 @@ const targetPath =
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 100px;
     text-decoration: none;
-    transition: background 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background 0.15s ease;
   }
 
   .lang-btn:active {

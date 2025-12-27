@@ -13,7 +13,11 @@ const t = ui[lang];
 const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
 ---
 
-<Layout title={lang === "ar" ? "الرئيسية" : "Welcome"} lang={lang}>
+<Layout
+    title={lang === "ar" ? "الرئيسية" : "Welcome"}
+    lang={lang}
+    headerAnimation={true}
+>
     <main class="page fade">
         <div class="content landing">
             <h1 class="title anim anim-1">{t["index.title"]}</h1>

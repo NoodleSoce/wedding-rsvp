@@ -9,7 +9,6 @@ interface Props {
 const { lang } = Astro.props;
 const t = ui[lang];
 const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
-const isRTL = lang === "ar";
 ---
 
 <Layout title={lang === "ar" ? "تأكيد الحضور" : "RSVP"} lang={lang}>
@@ -41,6 +40,7 @@ const isRTL = lang === "ar";
                                     type="radio"
                                     name="attending"
                                     value="yes"
+                                    id="att-yes"
                                     checked
                                 />
                                 <span class="radio-btn yes"
@@ -52,6 +52,7 @@ const isRTL = lang === "ar";
                                     type="radio"
                                     name="attending"
                                     value="no"
+                                    id="att-no"
                                 />
                                 <span class="radio-btn no"
                                     >{t["rsvp.decline"]}</span
@@ -88,13 +89,27 @@ const isRTL = lang === "ar";
             </div>
         </div>
 
-        <!-- Loading overlay -->
+        <!-- Loading overlay with checkmark -->
         <div id="loading-overlay" class="loading-overlay" hidden>
             <div class="loading-content">
                 <div id="spinner" class="spinner"></div>
-                <p id="success-text" class="success-text" hidden>
-                    {t["rsvp.sent"]}
-                </p>
+                <svg
+                    id="checkmark"
+                    class="checkmark"
+                    viewBox="0 0 52 52"
+                    hidden
+                >
+                    <circle
+                        class="checkmark-circle"
+                        cx="26"
+                        cy="26"
+                        r="25"
+                        fill="none"></circle>
+                    <path
+                        class="checkmark-check"
+                        fill="none"
+                        d="M14.1 27.2l7.1 7.2 16.7-16.8"></path>
+                </svg>
             </div>
         </div>
     </main>
@@ -124,68 +139,69 @@ const isRTL = lang === "ar";
         const errorMsg = document.getElementById("error-msg");
         const loadingOverlay = document.getElementById("loading-overlay");
         const spinner = document.getElementById("spinner");
-        const successText = document.getElementById("success-text");
+        const checkmark = document.getElementById("checkmark");
         const redirect = form.dataset.redirect || "/countdown";
+
+        // Track keyboard state
+        let wasNameFocused = false;
 
         // Reset state
         function resetState() {
             if (loadingOverlay) loadingOverlay.hidden = true;
-            if (spinner) spinner.hidden = false;
-            if (successText) successText.hidden = true;
+            if (spinner) {
+                spinner.hidden = false;
+                spinner.classList.remove("fade-out");
+            }
+            if (checkmark) {
+                checkmark.hidden = true;
+                checkmark.classList.remove("animate");
+            }
             if (errorMsg) errorMsg.hidden = true;
             if (submitBtn) submitBtn.disabled = false;
         }
         resetState();
         window.addEventListener("pageshow", resetState);
 
-        // Scroll form into view (fast, show button)
+        // Scroll to show form content
         function scrollToForm() {
             if (!formCard) return;
-            // Immediate scroll with small offset from top
-            formCard.scrollIntoView({ behavior: "smooth", block: "center" });
+            requestAnimationFrame(() => {
+                formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+            });
         }
-
-        // Scroll to top of page
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        }
-
-        // Track if an input is focused
-        let inputFocused = false;
 
         // Name input focus
         nameEl?.addEventListener("focus", () => {
-            inputFocused = true;
+            wasNameFocused = true;
             scrollToForm();
         });
 
-        // Guests input focus - no scroll since form already visible
+        // Guests input focus - no scroll needed
         guestsEl?.addEventListener("focus", () => {
-            inputFocused = true;
+            // Don't scroll, form should already be visible
         });
 
-        // Handle blur
-        function onBlur() {
+        // Blurs - scroll to top only if clicking outside form
+        function handleBlur(e: FocusEvent) {
             setTimeout(() => {
-                // Check if focus moved to another form element
                 const active = document.activeElement;
-                const stillInForm =
+                const isFormElement =
                     active === nameEl ||
                     active === guestsEl ||
                     active === submitBtn ||
-                    (active as HTMLInputElement)?.name === "attending";
+                    active?.closest(".radio-label");
 
-                if (!stillInForm) {
-                    inputFocused = false;
-                    scrollToTop();
+                if (!isFormElement && !active?.closest("#form")) {
+                    wasNameFocused = false;
+                    window.scrollTo({ top: 0, behavior: "smooth" });
                 }
-            }, 50);
+            }, 100);
         }
 
-        nameEl?.addEventListener("blur", onBlur);
-        guestsEl?.addEventListener("blur", onBlur);
+        nameEl?.addEventListener("blur", handleBlur);
+        guestsEl?.addEventListener("blur", handleBlur);
 
-        // Attendance toggle
+        // Attendance toggle - refocus name if keyboard was open
         function getAttending() {
             return (
                 (
@@ -200,6 +216,17 @@ const isRTL = lang === "ar";
             const show = getAttending() === "yes";
             guestsSection?.classList.toggle("open", show);
         }
+
+        radios.forEach((r) => {
+            r.addEventListener("change", () => {
+                updateGuestsVisibility();
+                saveData();
+                // Keep keyboard open by refocusing name
+                if (wasNameFocused) {
+                    nameEl?.focus();
+                }
+            });
+        });
 
         // Load saved data
         try {
@@ -240,24 +267,24 @@ const isRTL = lang === "ar";
             saveData();
         });
 
-        radios.forEach((r) =>
-            r.addEventListener("change", () => {
-                updateGuestsVisibility();
-                saveData();
-            }),
-        );
-
         // Submit
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
 
             // Hide keyboard
             (document.activeElement as HTMLElement)?.blur();
+            wasNameFocused = false;
 
             // Show loading
             if (loadingOverlay) loadingOverlay.hidden = false;
-            if (spinner) spinner.hidden = false;
-            if (successText) successText.hidden = true;
+            if (spinner) {
+                spinner.hidden = false;
+                spinner.classList.remove("fade-out");
+            }
+            if (checkmark) {
+                checkmark.hidden = true;
+                checkmark.classList.remove("animate");
+            }
             if (errorMsg) errorMsg.hidden = true;
             if (submitBtn) submitBtn.disabled = true;
 
@@ -276,12 +303,19 @@ const isRTL = lang === "ar";
 
                 localStorage.removeItem(KEY);
 
-                // Show success
-                if (spinner) spinner.hidden = true;
-                if (successText) successText.hidden = false;
+                // Smooth transition: fade spinner, show checkmark
+                if (spinner) spinner.classList.add("fade-out");
 
-                // Navigate
-                setTimeout(() => navigate(redirect), 800);
+                setTimeout(() => {
+                    if (spinner) spinner.hidden = true;
+                    if (checkmark) {
+                        checkmark.hidden = false;
+                        checkmark.classList.add("animate");
+                    }
+                }, 250);
+
+                // Navigate after animation
+                setTimeout(() => navigate(redirect), 750);
             } catch {
                 if (loadingOverlay) loadingOverlay.hidden = true;
                 if (errorMsg) errorMsg.hidden = false;
@@ -300,8 +334,9 @@ const isRTL = lang === "ar";
         inset: 0;
         display: flex;
         justify-content: center;
-        align-items: center;
+        align-items: flex-start;
         padding: var(--header-h) var(--page-pad) var(--page-pad);
+        padding-top: calc(var(--header-h) + var(--space-4));
         background: var(--bg);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
@@ -310,6 +345,7 @@ const isRTL = lang === "ar";
     .form-wrap {
         width: 100%;
         max-width: var(--max-w);
+        margin: auto 0;
     }
 
     .form-card {
@@ -323,7 +359,6 @@ const isRTL = lang === "ar";
         -webkit-backdrop-filter: blur(10px);
     }
 
-    /* Field layout */
     .field {
         margin-bottom: var(--space-5);
     }
@@ -366,7 +401,6 @@ const isRTL = lang === "ar";
         text-align: center;
     }
 
-    /* Radio buttons */
     .radio-row {
         display: flex;
         gap: var(--space-3);
@@ -412,7 +446,6 @@ const isRTL = lang === "ar";
         border-color: var(--error);
     }
 
-    /* Guests section */
     .guests-section {
         display: grid;
         grid-template-rows: 0fr;
@@ -427,7 +460,6 @@ const isRTL = lang === "ar";
         overflow: hidden;
     }
 
-    /* Submit button */
     .submit-btn {
         width: 100%;
         min-height: 54px;
@@ -454,7 +486,6 @@ const isRTL = lang === "ar";
         pointer-events: none;
     }
 
-    /* Error message */
     .error-msg {
         text-align: center;
         color: #f99;
@@ -481,9 +512,9 @@ const isRTL = lang === "ar";
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: var(--space-4);
     }
 
+    /* Spinner */
     .spinner {
         width: 2.5rem;
         height: 2.5rem;
@@ -491,17 +522,59 @@ const isRTL = lang === "ar";
         border-top-color: var(--white);
         border-radius: 50%;
         animation: spin 0.6s linear infinite;
+        transition: opacity 0.25s ease;
     }
 
-    .success-text {
-        font-size: var(--fs-xl);
-        font-weight: 500;
-        color: #4ade80;
+    .spinner.fade-out {
+        opacity: 0;
     }
 
     @keyframes spin {
         to {
             transform: rotate(360deg);
+        }
+    }
+
+    /* Checkmark */
+    .checkmark {
+        width: 3.5rem;
+        height: 3.5rem;
+    }
+
+    .checkmark-circle {
+        stroke: #4ade80;
+        stroke-width: 2;
+        stroke-dasharray: 166;
+        stroke-dashoffset: 166;
+    }
+
+    .checkmark-check {
+        stroke: #4ade80;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+    }
+
+    .checkmark.animate .checkmark-circle {
+        animation: checkCircle 0.5s ease forwards;
+    }
+
+    .checkmark.animate .checkmark-check {
+        animation: checkMark 0.3s ease forwards;
+        animation-delay: 0.2s;
+    }
+
+    @keyframes checkCircle {
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
+
+    @keyframes checkMark {
+        to {
+            stroke-dashoffset: 0;
         }
     }
 </style>

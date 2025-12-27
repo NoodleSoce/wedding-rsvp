@@ -10,9 +10,10 @@ import "@fontsource/amiri";
 interface Props {
 	title: string;
 	lang?: "en" | "ar";
+	headerAnimation?: boolean;
 }
 
-const { title, lang = "en" } = Astro.props;
+const { title, lang = "en", headerAnimation = false } = Astro.props;
 const fullTitle = `${title} | Zaid & Haya`;
 const description =
 	lang === "ar"
@@ -25,7 +26,6 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 <html lang={lang} dir={dir}>
 	<head>
 		<meta charset="UTF-8" />
-		<!-- Optimized viewport for keyboard handling -->
 		<meta
 			name="viewport"
 			content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no, interactive-widget=resizes-visual"
@@ -58,7 +58,7 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 		<ClientRouter />
 	</head>
 	<body>
-		<Header lang={lang} />
+		<Header lang={lang} showAnimation={headerAnimation} />
 		<slot />
 
 		<script is:inline>
@@ -68,11 +68,9 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 				if (sessionStorage.getItem(k)) return;
 				sessionStorage.setItem(k, "1");
 
-				// Respect user's explicit choice
 				var pref = localStorage.getItem("preferred_lang");
 				if (pref) return;
 
-				// Auto-detect based on browser language
 				var isAr = (navigator.language || navigator.userLanguage || "")
 					.toLowerCase()
 					.startsWith("ar");
@@ -85,17 +83,6 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 					location.replace(path.replace("/ar", "") || "/");
 				}
 			})();
-
-			// Prevent iOS rubber-band scrolling on html/body when not needed
-			document.addEventListener(
-				"touchmove",
-				function (e) {
-					if (document.body.scrollHeight <= window.innerHeight) {
-						e.preventDefault();
-					}
-				},
-				{ passive: false },
-			);
 		</script>
 	</body>
 </html>
