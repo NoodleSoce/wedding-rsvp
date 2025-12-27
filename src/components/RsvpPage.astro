@@ -24,17 +24,14 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                 class="rsvp-form stagger-3"
                 data-sending-text={t["rsvp.sending"]}
                 data-sent-text={t["rsvp.sent"]}
-                Note:
-                logic
-                previously
-                was
-                hardcoded
-                to
-                "RSVP
-                sent!"
                 data-error-text={t["rsvp.error"]}
                 data-redirect-url={redirectUrl}
             >
+                <a
+                    href={redirectUrl}
+                    data-astro-prefetch="load"
+                    style="display:none;"
+                    aria-hidden="true"></a>
                 <div class="form-group">
                     <label for="name">{t["rsvp.name"]}</label>
                     <input
@@ -227,11 +224,12 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                 guestsInput.value = guestsInput.value.slice(0, 1);
             }
 
-            saveState();
+            debouncedSaveState();
         });
 
         // --- PERSISTENCE LOGIC ---
         const STORAGE_KEY = "rsvp_form_data";
+        let saveTimeout: ReturnType<typeof setTimeout>;
 
         const saveState = () => {
             const selectedRadio = document.querySelector(
@@ -247,6 +245,11 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                 guests: guestsInput?.value || "0",
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        };
+
+        const debouncedSaveState = () => {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(saveState, 500);
         };
 
         const loadState = () => {
@@ -285,8 +288,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         };
 
         // Event Listeners for Persistence & UI
-        nameInput?.addEventListener("input", saveState);
-        guestsInput?.addEventListener("input", saveState);
+        nameInput?.addEventListener("input", debouncedSaveState);
 
         attendingRadios.forEach((radio) => {
             (radio as HTMLInputElement).addEventListener(
@@ -294,7 +296,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                 (e: Event) => {
                     const target = e.target as HTMLInputElement;
                     updateGuestVisibility(target.value === "no");
-                    saveState();
+                    saveState(); // Immediate save on radio change is fine
                 },
             );
         });
@@ -365,7 +367,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                 // Redirect after animation
                 setTimeout(() => {
                     navigate(redirectUrl);
-                }, 1200);
+                }, 1000);
             } catch (error) {
                 console.error("Error:", error);
                 errorMsg.classList.remove("hidden");
