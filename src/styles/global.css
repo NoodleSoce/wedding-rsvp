@@ -1,6 +1,6 @@
 /* ========================================
    WEDDING RSVP - Design System
-   Adaptive sizing for all screen sizes
+   Mobile-first, app-like experience
    ======================================== */
 
 :root {
@@ -15,32 +15,33 @@
     --success: #2e7d32;
     --error: #c62828;
 
-    /* Typography - fluid scaling */
+    /* Typography - larger for mobile readability */
     --font: 'Libre Baskerville', 'Amiri', Georgia, serif;
-    --fs-xs: clamp(0.7rem, 0.65rem + 0.25vw, 0.8rem);
-    --fs-sm: clamp(0.8rem, 0.75rem + 0.25vw, 0.9rem);
-    --fs-base: clamp(0.9rem, 0.85rem + 0.25vw, 1rem);
-    --fs-lg: clamp(1rem, 0.9rem + 0.5vw, 1.15rem);
-    --fs-xl: clamp(1.25rem, 1rem + 1.25vw, 1.75rem);
-    --fs-2xl: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    --fs-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.85rem);
+    --fs-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+    --fs-base: clamp(1rem, 0.9rem + 0.5vw, 1.15rem);
+    --fs-lg: clamp(1.125rem, 1rem + 0.6vw, 1.35rem);
+    --fs-xl: clamp(1.5rem, 1.25rem + 1.25vw, 2rem);
+    --fs-2xl: clamp(1.875rem, 1.5rem + 1.75vw, 2.75rem);
 
-    /* Spacing - fluid scaling */
-    --space-1: clamp(0.2rem, 0.15rem + 0.25vw, 0.3rem);
-    --space-2: clamp(0.4rem, 0.35rem + 0.25vw, 0.55rem);
-    --space-3: clamp(0.6rem, 0.5rem + 0.5vw, 0.85rem);
-    --space-4: clamp(0.85rem, 0.7rem + 0.75vw, 1.25rem);
-    --space-5: clamp(1.1rem, 0.9rem + 1vw, 1.6rem);
-    --space-6: clamp(1.4rem, 1.1rem + 1.5vw, 2.25rem);
+    /* Spacing */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
 
-    /* Layout - fluid scaling */
-    --max-w: clamp(320px, 85vw, 520px);
-    --header-h: clamp(60px, 50px + 2.5vw, 80px);
-    --page-pad: clamp(0.75rem, 0.5rem + 1.25vw, 1.5rem);
+    /* Layout */
+    --max-w: min(90vw, 480px);
+    --header-h: clamp(72px, 60px + 3vw, 96px);
+    --page-pad: clamp(1rem, 0.75rem + 1.25vw, 1.75rem);
 
     /* Appearance */
-    --shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-    --radius: clamp(10px, 8px + 1vw, 16px);
-    --radius-sm: clamp(6px, 5px + 0.5vw, 10px);
+    --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+    --radius: clamp(12px, 10px + 1vw, 20px);
+    --radius-sm: clamp(8px, 6px + 0.75vw, 12px);
     --radius-full: 100px;
 
     /* Motion */
@@ -116,25 +117,25 @@ h2 {
    ======================================== */
 .card {
     width: 100%;
-    padding: var(--space-5);
+    padding: var(--space-6);
     background: var(--white-10);
     border: 1px solid var(--white-20);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 /* ========================================
-   BUTTON
+   BUTTON - Large touch target
    ======================================== */
 .btn {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
-    min-height: clamp(44px, 40px + 1vw, 52px);
-    padding: var(--space-3) var(--space-5);
+    min-height: 54px;
+    padding: var(--space-4) var(--space-6);
     font: inherit;
     font-size: var(--fs-base);
     font-weight: 500;
@@ -152,7 +153,7 @@ h2 {
 }
 
 .btn:active {
-    transform: scale(0.98);
+    transform: scale(0.97);
     background: var(--white-20);
 }
 
@@ -169,12 +170,12 @@ h2 {
 }
 
 /* ========================================
-   INPUT
+   INPUT - Large touch target
    ======================================== */
 .input {
     width: 100%;
-    min-height: clamp(44px, 40px + 1vw, 52px);
-    padding: var(--space-3) var(--space-4);
+    min-height: 54px;
+    padding: var(--space-4);
     font: inherit;
     font-size: var(--fs-base);
     color: var(--white);
@@ -200,7 +201,7 @@ h2 {
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(8px);
+        transform: translateY(10px);
     }
 
     to {
@@ -212,7 +213,7 @@ h2 {
 @keyframes slideIn {
     from {
         opacity: 0;
-        transform: translateX(-10px);
+        transform: translateX(-12px);
     }
 
     to {
@@ -224,7 +225,7 @@ h2 {
 @keyframes slideInRTL {
     from {
         opacity: 0;
-        transform: translateX(10px);
+        transform: translateX(12px);
     }
 
     to {
@@ -234,12 +235,12 @@ h2 {
 }
 
 .fade {
-    animation: fadeIn 0.25s var(--ease) both;
+    animation: fadeIn 0.3s var(--ease) both;
 }
 
 .anim {
     opacity: 0;
-    animation: slideIn 0.25s var(--ease) forwards;
+    animation: slideIn 0.3s var(--ease) forwards;
 }
 
 [dir="rtl"] .anim {
@@ -247,24 +248,24 @@ h2 {
 }
 
 .anim-1 {
-    animation-delay: 0.03s;
+    animation-delay: 0.04s;
 }
 
 .anim-2 {
-    animation-delay: 0.06s;
+    animation-delay: 0.08s;
 }
 
 .anim-3 {
-    animation-delay: 0.09s;
+    animation-delay: 0.12s;
 }
 
 .anim-4 {
-    animation-delay: 0.12s;
+    animation-delay: 0.16s;
 }
 
 ::view-transition-old(root),
 ::view-transition-new(root) {
-    animation-duration: 0.15s;
+    animation-duration: 0.2s;
 }
 
 @media (prefers-reduced-motion: reduce) {
