@@ -15,14 +15,22 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
     <main class="page fade-in">
         <div class="page-content">
             <div class="card">
-                <h2 class="title anim anim-1">{t["rsvp.title"]}</h2>
-                <p class="subtitle anim anim-2">{t["rsvp.subtitle"]}</p>
+                <header class="form-header">
+                    <h2 class="title anim anim-1">{t["rsvp.title"]}</h2>
+                    <p class="subtitle anim anim-2">{t["rsvp.subtitle"]}</p>
+                </header>
 
-                <form id="form" class="anim anim-3" data-redirect={redirectUrl}>
+                <form
+                    id="form"
+                    class="form anim anim-3"
+                    data-redirect={redirectUrl}
+                >
                     <a href={redirectUrl} data-astro-prefetch="load" hidden></a>
 
                     <div class="field">
-                        <label class="label" for="name">{t["rsvp.name"]}</label>
+                        <label class="field-label" for="name"
+                            >{t["rsvp.name"]}</label
+                        >
                         <input
                             type="text"
                             id="name"
@@ -36,7 +44,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                     </div>
 
                     <div class="field">
-                        <label class="label">{t["rsvp.attending"]}</label>
+                        <label class="field-label">{t["rsvp.attending"]}</label>
                         <div class="options">
                             <label class="option">
                                 <input
@@ -45,7 +53,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                                     value="yes"
                                     checked
                                 />
-                                <span class="option-label accept"
+                                <span class="option-btn accept"
                                     >{t["rsvp.accept"]}</span
                                 >
                             </label>
@@ -55,7 +63,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                                     name="attending"
                                     value="no"
                                 />
-                                <span class="option-label decline"
+                                <span class="option-btn decline"
                                     >{t["rsvp.decline"]}</span
                                 >
                             </label>
@@ -64,7 +72,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 
                     <div id="guests-wrap" class="expand expanded">
                         <div class="field">
-                            <label class="label" for="guests"
+                            <label class="field-label" for="guests"
                                 >{t["rsvp.guests"]}</label
                             >
                             <input
@@ -80,7 +88,8 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                         </div>
                     </div>
 
-                    <button type="submit" class="btn">{t["rsvp.submit"]}</button
+                    <button type="submit" class="btn submit-btn"
+                        >{t["rsvp.submit"]}</button
                     >
                     <p id="error" class="error hidden">{t["rsvp.error"]}</p>
                 </form>
@@ -229,27 +238,72 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 </script>
 
 <style>
+    /* Card styling */
+    .card {
+        padding: var(--s-4);
+    }
+
+    @media (min-width: 480px) {
+        .card {
+            padding: var(--s-6) var(--s-8);
+        }
+    }
+
+    /* Form header - centered */
+    .form-header {
+        text-align: center;
+        margin-bottom: var(--s-6);
+    }
+
     .title {
         font-size: var(--fs-2xl);
         font-style: italic;
-        text-align: center;
         margin-bottom: var(--s-1);
     }
 
     .subtitle {
-        text-align: center;
         color: var(--c-white-80);
         font-size: var(--fs-sm);
-        margin-bottom: var(--s-6);
+    }
+
+    /* Form fields - left aligned */
+    .form {
+        text-align: left;
     }
 
     .field {
         margin-bottom: var(--s-4);
     }
 
+    @media (min-width: 480px) {
+        .field {
+            margin-bottom: var(--s-6);
+        }
+    }
+
+    .field-label {
+        display: block;
+        margin-bottom: var(--s-2);
+        font-size: var(--fs-sm);
+        font-weight: 500;
+        color: var(--c-white);
+    }
+
+    /* Input styling */
+    .input {
+        padding: var(--s-3);
+    }
+
+    @media (min-width: 480px) {
+        .input {
+            padding: var(--s-4);
+        }
+    }
+
+    /* Radio options */
     .options {
         display: flex;
-        gap: var(--s-2);
+        gap: var(--s-3);
     }
 
     .option {
@@ -263,7 +317,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         pointer-events: none;
     }
 
-    .option-label {
+    .option-btn {
         display: block;
         padding: var(--s-3);
         text-align: center;
@@ -272,6 +326,12 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         border-radius: var(--s-2);
         font-size: var(--fs-base);
         transition: all var(--transition);
+    }
+
+    @media (min-width: 480px) {
+        .option-btn {
+            padding: var(--s-4);
+        }
     }
 
     .option input:checked + .accept {
@@ -288,6 +348,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         box-shadow: 0 0 12px rgba(198, 40, 40, 0.4);
     }
 
+    /* Expandable guests field */
     .expand {
         display: grid;
         grid-template-rows: 0fr;
@@ -302,10 +363,18 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         overflow: hidden;
     }
 
-    .btn {
-        margin-top: var(--s-4);
+    /* Submit button */
+    .submit-btn {
+        margin-top: var(--s-2);
     }
 
+    @media (min-width: 480px) {
+        .submit-btn {
+            margin-top: var(--s-4);
+        }
+    }
+
+    /* Error message */
     .error {
         text-align: center;
         color: #fcc;
@@ -313,7 +382,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         margin-top: var(--s-4);
     }
 
-    /* Loader */
+    /* Loader overlay */
     .loader {
         position: fixed;
         inset: 0;

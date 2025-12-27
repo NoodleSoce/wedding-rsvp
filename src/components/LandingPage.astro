@@ -30,7 +30,7 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
                 />
             </div>
 
-            <a href={rsvpLink} class="btn anim anim-4" data-astro-prefetch>
+            <a href={rsvpLink} class="btn cta anim anim-4" data-astro-prefetch>
                 {t["index.cta"]}
             </a>
         </div>
@@ -39,7 +39,13 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
 
 <style>
     .page-content {
-        gap: var(--s-4);
+        gap: var(--s-3);
+    }
+
+    @media (min-width: 480px) {
+        .page-content {
+            gap: var(--s-4);
+        }
     }
 
     .title {
@@ -55,11 +61,18 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
 
     .hero {
         width: 100%;
-        max-width: 240px;
+        max-width: 200px;
         margin: var(--s-2) 0;
         border-radius: var(--radius);
         overflow: hidden;
         box-shadow: var(--shadow);
+    }
+
+    @media (min-width: 480px) {
+        .hero {
+            max-width: 240px;
+            margin: var(--s-4) 0;
+        }
     }
 
     .hero :global(img) {
@@ -68,7 +81,14 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
         display: block;
     }
 
-    .btn {
-        max-width: 280px;
+    .cta {
+        max-width: 260px;
+        margin-top: var(--s-2);
+    }
+
+    @media (min-width: 480px) {
+        .cta {
+            max-width: 280px;
+        }
     }
 </style>
