@@ -1,157 +1,50 @@
-/* Global CSS */
-/* Font is imported via @fontsource in Layout.astro for performance */
+/* ========================================
+   WEDDING RSVP - Global Styles
+   ======================================== */
 
+/* Design Tokens */
 :root {
     /* Colors */
-    --color-bg: #4b0101;
-    --color-white: #FFFFFF;
-    --color-white-muted: rgba(255, 255, 255, 0.8);
-    --color-white-faint: rgba(255, 255, 255, 0.5);
+    --c-bg: #4b0101;
+    --c-white: #fff;
+    --c-white-80: rgba(255, 255, 255, 0.8);
+    --c-white-50: rgba(255, 255, 255, 0.5);
+    --c-white-20: rgba(255, 255, 255, 0.2);
+    --c-white-10: rgba(255, 255, 255, 0.1);
+    --c-white-05: rgba(255, 255, 255, 0.05);
+    --c-success: #2e7d32;
+    --c-error: #c62828;
 
-    /* Fluid Typography */
-    --font-body: 'Libre Baskerville', 'Amiri', 'Geeza Pro', 'Nadeem', 'Al Bayan', 'DecoType Naskh', 'Traditional Arabic', serif;
-    --text-xs: clamp(0.7rem, 1.2vw, 0.8rem);
-    --text-sm: clamp(0.75rem, 1.5vw, 0.9rem);
-    --text-base: clamp(0.95rem, 2.5vw, 1.1rem);
-    --text-lg: clamp(1.2rem, 3.5vw, 1.4rem);
-    --text-xl: clamp(1.5rem, 5vw, 2rem);
-    --text-2xl: clamp(1.8rem, 7vw, 2.8rem);
+    /* Typography */
+    --font: 'Libre Baskerville', 'Amiri', serif;
+    --fs-sm: clamp(0.75rem, 1.5vw, 0.875rem);
+    --fs-base: clamp(0.938rem, 2vw, 1.063rem);
+    --fs-lg: clamp(1.125rem, 3vw, 1.25rem);
+    --fs-xl: clamp(1.5rem, 5vw, 2rem);
+    --fs-2xl: clamp(1.75rem, 6vw, 2.5rem);
 
-    /* Spacing Scale (4px base, rem units for consistency) */
-    --space-xs: 0.25rem;
-    /* 4px */
-    --space-sm: 0.5rem;
-    /* 8px */
-    --space-md: 1rem;
-    /* 16px */
-    --space-lg: 1.5rem;
-    /* 24px */
-    --space-xl: 2rem;
-    /* 32px */
-    --space-2xl: 3rem;
-    /* 48px */
-    --space-3xl: 4rem;
-    /* 64px */
-
-    /* Component-specific spacing */
-    --input-padding: 0.75rem;
-    --card-padding: var(--space-lg);
-    --section-gap: var(--space-xl);
-    --page-padding: var(--space-md);
+    /* Spacing */
+    --s-1: 0.25rem;
+    --s-2: 0.5rem;
+    --s-3: 0.75rem;
+    --s-4: 1rem;
+    --s-6: 1.5rem;
+    --s-8: 2rem;
+    --s-12: 3rem;
 
     /* Layout */
-    --max-width: 600px;
-    --header-height: clamp(60px, 8vh, 80px);
+    --max-w: 560px;
+    --header-h: clamp(60px, 8vh, 80px);
 
-    /* Shadows & Borders */
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
-    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.3);
-    --radius-sm: 0.5rem;
-    --radius-md: 0.75rem;
-    --radius-lg: 1rem;
+    /* Effects */
+    --shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    --blur: blur(10px);
+    --radius: 1rem;
     --radius-full: 9999px;
+    --transition: 0.2s ease;
 }
 
-/* Animations */
-@keyframes slideInLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-/* RTL Animation Override */
-[dir="rtl"] .stagger-1,
-[dir="rtl"] .stagger-2,
-[dir="rtl"] .stagger-3,
-[dir="rtl"] .stagger-4 {
-    animation-name: slideInRight;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Staggered Animation Utilities */
-.stagger-1 {
-    animation: slideInLeft 0.3s ease-out forwards;
-    animation-delay: 50ms;
-}
-
-.stagger-2 {
-    animation: slideInLeft 0.3s ease-out forwards;
-    animation-delay: 100ms;
-}
-
-.stagger-3 {
-    animation: slideInLeft 0.3s ease-out forwards;
-    animation-delay: 150ms;
-}
-
-.stagger-4 {
-    animation: slideInLeft 0.3s ease-out forwards;
-    animation-delay: 200ms;
-}
-
-[class*="stagger-"] {
-    opacity: 0;
-    /* GPU acceleration during animation */
-    backface-visibility: hidden;
-}
-
-/* will-change is applied only during animation, then removed via animation-fill-mode */
-
-.fade-in {
-    animation: fadeIn 0.3s ease-out forwards;
-    backface-visibility: hidden;
-}
-
-/* Respect reduced motion preferences */
-@media (prefers-reduced-motion: reduce) {
-
-    .stagger-1,
-    .stagger-2,
-    .stagger-3,
-    .stagger-4,
-    .fade-in {
-        animation: none;
-        opacity: 1;
-        transform: none;
-    }
-
-    [class*="stagger-"] {
-        opacity: 1;
-        will-change: auto;
-    }
-}
-
-/* Reset & Base Styles */
+/* Reset */
 *,
 *::before,
 *::after {
@@ -163,74 +56,205 @@
 
 html {
     height: 100%;
-    height: -webkit-fill-available;
-    /* Use auto scroll behavior to prevent jarring scroll-into-view on input focus */
     scroll-behavior: auto;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-    /* Prevent overscroll bounce effects */
     overscroll-behavior: none;
-}
-
-/* Prevent browser auto-scroll when inputs are focused */
-input,
-textarea,
-select {
-    scroll-margin: 0;
+    -webkit-text-size-adjust: 100%;
 }
 
 body {
     height: 100%;
-    min-height: -webkit-fill-available;
-    font-family: var(--font-body);
-    background-color: var(--color-bg);
-    color: var(--color-white);
-    overflow-x: hidden;
-    overflow-y: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
     min-height: 100dvh;
-    margin: 0;
+    font-family: var(--font);
+    font-size: var(--fs-base);
+    background: var(--c-bg);
+    color: var(--c-white);
+    overflow: hidden;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-    /* Improve touch scrolling performance */
-    -webkit-overflow-scrolling: touch;
-    /* Prevent pull-to-refresh and overscroll */
-    overscroll-behavior: none;
-    /* Optimize touch events */
     touch-action: manipulation;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+/* Shared Page Layout */
+.page {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--s-4);
+    padding-top: calc(var(--header-h) + var(--s-8));
+    overflow: hidden;
+    background: var(--c-bg);
+}
+
+/* Shared Card */
+.card {
+    background: var(--c-white-10);
+    backdrop-filter: var(--blur);
+    border: 1px solid var(--c-white-20);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: var(--s-6);
+    width: 100%;
+    max-width: var(--max-w);
+}
+
+/* Shared Button */
+.btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: var(--s-4);
+    font-family: inherit;
+    font-size: var(--fs-base);
     font-weight: 500;
+    color: var(--c-white);
+    background: var(--c-white-05);
+    border: 1px solid var(--c-white-20);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition);
+    text-decoration: none;
+}
+
+.btn:hover {
+    background: var(--c-white-10);
+    border-color: var(--c-white-50);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Shared Input */
+.input {
+    width: 100%;
+    padding: var(--s-3);
+    font-family: inherit;
+    font-size: var(--fs-base);
+    color: var(--c-white);
+    background: var(--c-white-05);
+    border: 1px solid var(--c-white-20);
+    border-radius: var(--s-2);
+    -webkit-appearance: none;
+}
+
+.input::placeholder {
+    color: var(--c-white-50);
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--c-white);
+    background: var(--c-white-10);
+}
+
+/* Shared Label */
+.label {
+    display: block;
+    margin-bottom: var(--s-1);
+    font-size: var(--fs-sm);
+    color: var(--c-white-80);
+}
+
+/* Animations */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+[dir="rtl"] .anim {
+    animation-name: slideInRTL;
+}
+
+@keyframes slideInRTL {
+    from {
+        opacity: 0;
+        transform: translateX(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.anim {
+    opacity: 0;
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+.anim-1 {
+    animation-delay: 0.05s;
+}
+
+.anim-2 {
+    animation-delay: 0.1s;
+}
+
+.anim-3 {
+    animation-delay: 0.15s;
+}
+
+.anim-4 {
+    animation-delay: 0.2s;
+}
+
+.fade-in {
+    animation: fadeUp 0.3s ease-out forwards;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+
+    .anim,
+    .fade-in {
+        animation: none;
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Typography */
+h1,
+h2 {
+    font-weight: 400;
     line-height: 1.2;
     text-wrap: balance;
 }
 
-button {
-    font-family: inherit;
-    cursor: pointer;
-    border: none;
-}
-
-a {
-    color: inherit;
-    text-decoration: none;
-}
-
 /* Utilities */
+.text-center {
+    text-align: center;
+}
 
-/* Tablet/Desktop Optimization */
-@media (min-width: 768px) {
-    :root {
-        --text-base: 1.1rem;
-    }
+.hidden {
+    display: none !important;
+}
+
+/* Prevent scroll on input focus */
+input,
+textarea,
+select {
+    scroll-margin: 0;
 }

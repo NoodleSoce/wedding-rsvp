@@ -12,108 +12,83 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 ---
 
 <Layout title={lang === "ar" ? "تأكيد الحضور" : "RSVP"} lang={lang}>
-    <main class="rsvp-page fade-in">
-        <div class="content-wrapper">
-            <h2 class="stagger-1">{t["rsvp.title"]}</h2>
-            <p class="subtitle stagger-2">
-                {t["rsvp.subtitle"]}
-            </p>
+    <main class="page rsvp fade-in">
+        <div class="card">
+            <h2 class="anim anim-1">{t["rsvp.title"]}</h2>
+            <p class="subtitle anim anim-2">{t["rsvp.subtitle"]}</p>
 
-            <form
-                id="rsvpForm"
-                class="rsvp-form stagger-3"
-                data-sending-text={t["rsvp.sending"]}
-                data-sent-text={t["rsvp.sent"]}
-                data-error-text={t["rsvp.error"]}
-                data-redirect-url={redirectUrl}
-            >
-                <a
-                    href={redirectUrl}
-                    data-astro-prefetch="load"
-                    style="display:none;"
-                    aria-hidden="true"></a>
-                <div class="form-group">
-                    <label for="name">{t["rsvp.name"]}</label>
+            <form id="form" class="anim anim-3" data-redirect={redirectUrl}>
+                <a href={redirectUrl} data-astro-prefetch="load" hidden></a>
+
+                <div class="field">
+                    <label class="label" for="name">{t["rsvp.name"]}</label>
                     <input
                         type="text"
                         id="name"
                         name="name"
+                        class="input"
                         required
                         placeholder={t["rsvp.namePlaceholder"]}
                         autocomplete="name"
-                        enterkeyhint="next"
                         autocapitalize="words"
                     />
                 </div>
 
-                <div class="form-group">
-                    <label id="attending-label">{t["rsvp.attending"]}</label>
-                    <div
-                        class="radio-group"
-                        role="group"
-                        aria-labelledby="attending-label"
-                    >
-                        <label class="radio-card accept">
+                <div class="field">
+                    <label class="label">{t["rsvp.attending"]}</label>
+                    <div class="options">
+                        <label class="option">
                             <input
                                 type="radio"
                                 name="attending"
                                 value="yes"
                                 checked
                             />
-                            <span class="radio-label">{t["rsvp.accept"]}</span>
+                            <span class="option-label accept"
+                                >{t["rsvp.accept"]}</span
+                            >
                         </label>
-                        <label class="radio-card decline">
+                        <label class="option">
                             <input type="radio" name="attending" value="no" />
-                            <span class="radio-label">{t["rsvp.decline"]}</span>
+                            <span class="option-label decline"
+                                >{t["rsvp.decline"]}</span
+                            >
                         </label>
                     </div>
                 </div>
 
-                <div class="expandable-wrapper expanded" id="guests-wrapper">
-                    <div class="expandable-content">
-                        <div class="form-group" id="guests-group">
-                            <label for="guests">{t["rsvp.guests"]}</label>
-                            <input
-                                type="number"
-                                id="guests"
-                                name="guests"
-                                min="0"
-                                max="10"
-                                value="0"
-                                inputmode="numeric"
-                                autocomplete="off"
-                                enterkeyhint="done"
-                            />
-                        </div>
+                <div id="guests-wrap" class="expand expanded">
+                    <div class="field">
+                        <label class="label" for="guests"
+                            >{t["rsvp.guests"]}</label
+                        >
+                        <input
+                            type="number"
+                            id="guests"
+                            name="guests"
+                            class="input"
+                            min="0"
+                            max="9"
+                            value="0"
+                            inputmode="numeric"
+                        />
                     </div>
                 </div>
 
-                <button type="submit" class="btn-primary" id="submitBtn">
-                    <span class="btn-text">{t["rsvp.submit"]}</span>
-                </button>
-
-                <p id="error-msg" class="error-message hidden" role="alert">
-                    {t["rsvp.error"]}
-                </p>
+                <button type="submit" class="btn">{t["rsvp.submit"]}</button>
+                <p id="error" class="error hidden">{t["rsvp.error"]}</p>
             </form>
         </div>
 
-        <!-- Full Page Loader Overlay -->
-        <div
-            id="full-page-loader"
-            class="loader-overlay hidden"
-            role="status"
-            aria-live="polite"
-        >
-            <div class="loader-spinner" aria-hidden="true"></div>
+        <!-- Loader -->
+        <div id="loader" class="loader hidden">
+            <div class="spinner"></div>
             <svg
-                class="success-icon"
+                class="check"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="3"
-                stroke-linecap="round"
-                stroke-linejoin="round"
             >
                 <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
@@ -125,513 +100,273 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 <script>
     import { navigate } from "astro:transitions/client";
 
-    document.addEventListener("astro:page-load", () => {
-        // REPLACE THIS WITH YOUR DEPLOYED GOOGLE APPS SCRIPT URL
-        const SCRIPT_URL =
-            "https://script.google.com/macros/s/AKfycbwq4PjP3sAEj2YTMTge5tZkwDx447v4T-0ySATyf3GImmpnZTaop-NGoxFj-lSyGnTl/exec";
+    const SCRIPT_URL =
+        "https://script.google.com/macros/s/AKfycbwq4PjP3sAEj2YTMTge5tZkwDx447v4T-0ySATyf3GImmpnZTaop-NGoxFj-lSyGnTl/exec";
+    const STORAGE_KEY = "rsvp_form";
 
-        const form = document.getElementById("rsvpForm") as HTMLFormElement;
-        // If form doesn't exist (we are on another page), exit
+    document.addEventListener("astro:page-load", () => {
+        const form = document.getElementById("form") as HTMLFormElement;
         if (!form) return;
 
-        const guestsWrapper = document.getElementById("guests-wrapper");
-        const guestsGroup = document.getElementById("guests-group");
-        const attendingRadios = document.getElementsByName("attending");
-        const submitBtn = document.getElementById(
-            "submitBtn",
-        ) as HTMLButtonElement;
-        const errorMsg = document.getElementById("error-msg");
-        const fullPageLoader = document.getElementById("full-page-loader");
+        const name = document.getElementById("name") as HTMLInputElement;
+        const guests = document.getElementById("guests") as HTMLInputElement;
+        const guestsWrap = document.getElementById("guests-wrap");
+        const radios = document.getElementsByName("attending");
+        const loader = document.getElementById("loader");
         const loaderText = document.getElementById("loader-text");
+        const error = document.getElementById("error");
+        const redirectUrl = form.dataset.redirect || "/countdown";
 
-        // Localized strings
-        const sendingText = form.dataset.sendingText || "Sending RSVP...";
-        const sentText = form.dataset.sentText || "RSVP sent!";
-        const redirectUrl = form.dataset.redirectUrl || "/countdown";
+        // Reset state
+        const reset = () => {
+            loader?.classList.add("hidden");
+            loader?.classList.remove("success");
+            error?.classList.add("hidden");
+        };
+        reset();
+        window.addEventListener("pageshow", reset);
 
-        // Helper to reset UI state
-        const resetUI = () => {
-            if (fullPageLoader) {
-                fullPageLoader.classList.add("hidden");
-                fullPageLoader.classList.remove("success");
-            }
-            if (submitBtn) submitBtn.disabled = false;
-            if (errorMsg) errorMsg.classList.add("hidden");
-
-            if (loaderText) loaderText.textContent = sendingText;
+        // Guest visibility
+        const updateGuests = (hide: boolean) => {
+            guestsWrap?.classList.toggle("expanded", !hide);
         };
 
-        // Reset on load (ViewTransitions)
-        resetUI();
-
-        // Reset on page show (Browser Back/Forward Cache)
-        window.addEventListener("pageshow", () => {
-            resetUI();
-        });
-
-        const nameInput = document.getElementById("name") as HTMLInputElement;
-        const guestsInput = document.getElementById(
-            "guests",
-        ) as HTMLInputElement;
-
-        // Smart input logic: allow 0-9, single char only, replace on type
-        guestsInput?.addEventListener("input", (e) => {
-            const val = guestsInput.value;
-
-            // If empty, allow (user deleting)
-            if (!val) return;
-
-            const num = parseInt(val);
-
-            // If not a number, clear or reset
-            if (isNaN(num)) {
-                guestsInput.value = "0";
-                return;
-            }
-
-            // If length > 1, take the last character entered
-            if (val.length > 1) {
-                const lastChar = val.slice(-1);
-                // If last char is valid digit, use it
-                if (/[0-9]/.test(lastChar)) {
-                    guestsInput.value = lastChar;
-                } else {
-                    // revert to previous char (essentially ignore non-digits)
-                    guestsInput.value = val.slice(0, -1);
-                }
-            }
-
-            // Force single digit 0-9
-            if (guestsInput.value.length > 1) {
-                guestsInput.value = guestsInput.value.slice(0, 1);
-            }
-
-            debouncedSaveState();
-        });
-
-        // --- PERSISTENCE LOGIC ---
-        const STORAGE_KEY = "rsvp_form_data";
-        let saveTimeout: ReturnType<typeof setTimeout>;
-
-        const saveState = () => {
-            const selectedRadio = document.querySelector(
-                'input[name="attending"]:checked',
-            ) as HTMLInputElement;
-
-            // Only save if elements exist
-            if (!nameInput || !selectedRadio) return;
-
-            const data = {
-                name: nameInput.value || "",
-                attending: selectedRadio.value || "yes",
-                guests: guestsInput?.value || "0",
-            };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        };
-
-        const debouncedSaveState = () => {
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(saveState, 500);
-        };
-
-        const loadState = () => {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                try {
-                    const data = JSON.parse(saved);
-                    if (nameInput) nameInput.value = data.name;
-                    if (guestsInput) guestsInput.value = data.guests;
-                    if (data.attending) {
-                        const radioToSelect = document.querySelector(
-                            `input[name="attending"][value="${data.attending}"]`,
-                        ) as HTMLInputElement;
-                        if (radioToSelect) {
-                            radioToSelect.checked = true;
-                            updateGuestVisibility(data.attending === "no");
-                        }
+        // Load saved data
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                if (name) name.value = data.name || "";
+                if (guests) guests.value = data.guests || "0";
+                if (data.attending) {
+                    const radio = document.querySelector(
+                        `input[value="${data.attending}"]`,
+                    ) as HTMLInputElement;
+                    if (radio) {
+                        radio.checked = true;
+                        updateGuests(data.attending === "no");
                     }
-                } catch (e) {
-                    console.error("Failed to load saved state", e);
                 }
-            }
-        };
-
-        // --- VISIBILITY LOGIC ---
-        const updateGuestVisibility = (isDecline: boolean) => {
-            if (!guestsWrapper || !guestsGroup) return;
-            if (isDecline) {
-                guestsWrapper.classList.remove("expanded");
-                guestsGroup.classList.remove("slide-in-left");
-            } else {
-                guestsWrapper.classList.add("expanded");
-                void guestsGroup.offsetWidth;
-                guestsGroup.classList.add("slide-in-left");
-            }
-        };
-
-        // Event Listeners for Persistence & UI
-        nameInput?.addEventListener("input", debouncedSaveState);
-
-        attendingRadios.forEach((radio) => {
-            (radio as HTMLInputElement).addEventListener(
-                "change",
-                (e: Event) => {
-                    const target = e.target as HTMLInputElement;
-                    updateGuestVisibility(target.value === "no");
-                    saveState(); // Immediate save on radio change is fine
-                },
-            );
-        });
-
-        // Initial Load
-        loadState();
-        // Double check visibility in case loadState didn't run (empty storage)
-        const currentRadio = document.querySelector(
-            'input[name="attending"]:checked',
-        ) as HTMLInputElement;
-        if (currentRadio) {
-            updateGuestVisibility(currentRadio.value === "no");
+            } catch {}
         }
 
+        // Save form data
+        let timeout: ReturnType<typeof setTimeout>;
+        const save = () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                const radio = document.querySelector(
+                    'input[name="attending"]:checked',
+                ) as HTMLInputElement;
+                localStorage.setItem(
+                    STORAGE_KEY,
+                    JSON.stringify({
+                        name: name?.value || "",
+                        attending: radio?.value || "yes",
+                        guests: guests?.value || "0",
+                    }),
+                );
+            }, 400);
+        };
+
+        name?.addEventListener("input", save);
+        guests?.addEventListener("input", () => {
+            if (guests.value.length > 1) guests.value = guests.value.slice(-1);
+            if (!/^[0-9]?$/.test(guests.value)) guests.value = "0";
+            save();
+        });
+
+        radios.forEach((r) =>
+            r.addEventListener("change", (e) => {
+                updateGuests((e.target as HTMLInputElement).value === "no");
+                save();
+            }),
+        );
+
+        // Submit
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
-            if (!submitBtn) return;
-            if (!fullPageLoader || !errorMsg) return;
+            loader?.classList.remove("hidden");
+            error?.classList.add("hidden");
 
-            // UI Loading State (Full Page)
-            fullPageLoader.classList.remove("hidden");
-            errorMsg.classList.add("hidden");
-            if (loaderText) loaderText.textContent = sendingText;
-
-            // Get values directly from elements to ensure accuracy
-            const nameValue = nameInput ? nameInput.value.trim() : "";
-
-            // Get selected radio by iterating through all radios (most reliable method)
-            let attendingValue = "no";
-            for (let i = 0; i < attendingRadios.length; i++) {
-                const radio = attendingRadios[i] as HTMLInputElement;
-                if (radio.checked) {
-                    attendingValue = radio.value;
-                    break;
-                }
-            }
-
-            const isAttending = attendingValue === "yes";
-            const guestsValue = guestsInput ? Number(guestsInput.value) : 0;
-
-            // Prepare data for Google Script
+            const attending =
+                (
+                    document.querySelector(
+                        'input[name="attending"]:checked',
+                    ) as HTMLInputElement
+                )?.value === "yes";
             const data = {
-                name: nameValue,
-                attending: isAttending ? "Yes" : "No",
-                guests: isAttending ? guestsValue : 0,
+                name: name?.value.trim() || "",
+                attending: attending ? "Yes" : "No",
+                guests: attending ? Number(guests?.value || 0) : 0,
             };
-
-            // Log for debugging
-            console.log("Submitting RSVP:", data);
 
             try {
                 await fetch(SCRIPT_URL, {
                     method: "POST",
                     mode: "no-cors",
-                    headers: {
-                        "Content-Type": "text/plain",
-                    },
+                    headers: { "Content-Type": "text/plain" },
                     body: JSON.stringify(data),
                 });
 
-                // Clear localStorage after successful submission
                 localStorage.removeItem(STORAGE_KEY);
-
-                // Show Success Animation
-                fullPageLoader.classList.add("success");
-                if (loaderText) loaderText.textContent = sentText;
-
-                // Redirect after animation
-                setTimeout(() => {
-                    navigate(redirectUrl);
-                }, 1000);
-            } catch (error) {
-                console.error("Error:", error);
-                errorMsg.classList.remove("hidden");
-                fullPageLoader.classList.add("hidden"); // Hide loader on error
+                loader?.classList.add("success");
+                if (loaderText) loaderText.textContent = "✓";
+                setTimeout(() => navigate(redirectUrl), 800);
+            } catch {
+                error?.classList.remove("hidden");
+                loader?.classList.add("hidden");
             }
         });
     });
 </script>
 
 <style>
-    .rsvp-page {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        width: 100%;
-        background: var(--color-bg);
-        display: flex;
-        flex-direction: column;
+    .rsvp {
         justify-content: flex-start;
-        align-items: center;
-        padding-top: calc(var(--header-height) + 12vh);
-        padding-bottom: var(--space-xl);
-        overflow: hidden;
-        contain: layout style paint size;
-        transform: translateZ(0);
-    }
-
-    .content-wrapper {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        padding: var(--card-padding);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-lg);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        width: calc(100% - var(--space-xl));
-        max-width: var(--max-width);
-        contain: layout style;
-        overflow: visible;
+        padding-top: calc(var(--header-h) + 10vh);
     }
 
     h2 {
-        color: var(--color-white);
-        font-family: var(--font-body);
-        font-size: var(--text-2xl);
-        margin-bottom: var(--space-xs);
-        text-align: center;
-        font-weight: 400;
+        font-size: var(--fs-2xl);
         font-style: italic;
+        text-align: center;
+        margin-bottom: var(--s-1);
     }
 
     .subtitle {
         text-align: center;
-        color: var(--color-white-muted);
-        margin-bottom: var(--space-lg);
-        font-size: var(--text-sm);
-        font-weight: 300;
+        color: var(--c-white-80);
+        font-size: var(--fs-sm);
+        margin-bottom: var(--s-6);
     }
 
-    .form-group {
-        margin-bottom: var(--space-md);
+    .field {
+        margin-bottom: var(--s-4);
     }
 
-    label {
-        display: block;
-        margin-bottom: var(--space-xs);
-        font-weight: 400;
-        color: var(--color-white);
-        font-size: var(--text-sm);
-        opacity: 0.9;
-    }
-
-    input[type="text"],
-    input[type="number"] {
-        width: 100%;
-        padding: var(--input-padding);
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: var(--radius-sm);
-        font-family: inherit;
-        font-size: var(--text-base);
-        color: var(--color-white);
-        box-sizing: border-box;
-        -webkit-appearance: none;
-        appearance: none;
-    }
-
-    input::placeholder {
-        color: var(--color-white-faint);
-    }
-
-    input:focus {
-        outline: none;
-        border-color: var(--color-white);
-        background: rgba(255, 255, 255, 0.15);
-        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
-    }
-
-    .radio-group {
+    .options {
         display: flex;
-        flex-direction: row;
-        gap: var(--space-sm);
+        gap: var(--s-2);
     }
 
-    .radio-card {
+    .option {
         flex: 1;
-        position: relative;
         cursor: pointer;
     }
 
-    .radio-card input {
+    .option input {
         position: absolute;
         opacity: 0;
+        pointer-events: none;
     }
 
-    .radio-label {
+    .option-label {
         display: block;
-        padding: var(--input-padding);
+        padding: var(--s-3);
         text-align: center;
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: var(--radius-sm);
-        transition:
-            background-color 0.2s ease,
-            border-color 0.2s ease,
-            box-shadow 0.2s ease;
-        font-size: var(--text-base);
-        color: var(--color-white);
+        background: var(--c-white-10);
+        border: 1px solid var(--c-white-20);
+        border-radius: var(--s-2);
+        font-size: var(--fs-base);
+        transition: all var(--transition);
     }
 
-    .radio-card.accept input:checked + .radio-label {
-        background-color: #2e7d32;
-        color: var(--color-white);
-        border-color: #2e7d32;
+    .option input:checked + .accept {
+        background: var(--c-success);
+        border-color: var(--c-success);
         font-weight: 600;
-        box-shadow: 0 0 15px rgba(27, 94, 32, 0.4);
+        box-shadow: 0 0 12px rgba(46, 125, 50, 0.4);
     }
 
-    .radio-card.decline input:checked + .radio-label {
-        background-color: #c62828;
-        color: var(--color-white);
-        border-color: #c62828;
+    .option input:checked + .decline {
+        background: var(--c-error);
+        border-color: var(--c-error);
         font-weight: 600;
-        box-shadow: 0 0 15px rgba(183, 28, 28, 0.4);
+        box-shadow: 0 0 12px rgba(198, 40, 40, 0.4);
     }
 
-    .hidden {
-        display: none !important;
+    .expand {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.35s ease;
     }
 
-    .error-message {
-        color: #ffcccc;
-        font-size: var(--text-sm);
+    .expand.expanded {
+        grid-template-rows: 1fr;
+    }
+
+    .expand > * {
+        overflow: hidden;
+    }
+
+    .btn {
+        margin-top: var(--s-4);
+    }
+
+    .error {
         text-align: center;
-        margin-top: var(--space-md);
+        color: #fcc;
+        font-size: var(--fs-sm);
+        margin-top: var(--s-4);
     }
 
-    .btn-primary {
-        margin-top: var(--space-lg);
-        width: 100%;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        color: var(--color-white);
-        padding: var(--space-md);
-        font-size: var(--text-base);
-        border-radius: var(--radius-full);
-        font-weight: 500;
-        cursor: pointer;
-        transition:
-            background-color 0.2s ease,
-            border-color 0.2s ease;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .btn-primary:hover {
-        background: rgba(255, 255, 255, 0.15);
-        border-color: var(--color-white);
-    }
-
-    .btn-primary:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-    }
-
-    /* Loader Overlay */
-    .loader-overlay {
+    /* Loader */
+    .loader {
         position: fixed;
         inset: 0;
-        background: rgba(75, 1, 1, 0.95);
-        z-index: 9999;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        color: var(--color-white);
-        contain: layout style paint;
-        opacity: 1;
-        visibility: visible;
-        transition:
-            opacity 0.2s ease-out,
-            visibility 0.2s ease-out;
+        background: rgba(75, 1, 1, 0.95);
+        z-index: 9999;
+        transition: opacity 0.2s;
     }
 
-    .loader-overlay.hidden {
+    .loader.hidden {
         opacity: 0;
-        visibility: hidden;
-        display: flex !important;
+        pointer-events: none;
     }
 
-    .loader-spinner {
-        width: var(--space-xl);
-        height: var(--space-xl);
-        border: 3px solid rgba(255, 255, 255, 0.2);
-        border-top-color: var(--color-white);
+    .spinner {
+        width: 2.5rem;
+        height: 2.5rem;
+        border: 3px solid var(--c-white-20);
+        border-top-color: var(--c-white);
         border-radius: 50%;
         animation: spin 0.6s linear infinite;
-        margin-bottom: var(--space-md);
-        will-change: transform;
+        margin-bottom: var(--s-4);
     }
 
-    .success-icon {
-        width: var(--space-2xl);
-        height: var(--space-2xl);
+    .check {
+        width: 3rem;
+        height: 3rem;
         color: #4ade80;
-        margin-bottom: var(--space-md);
-        display: none;
-        animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        shape-rendering: geometricPrecision;
-    }
-
-    .success .loader-spinner {
+        margin-bottom: var(--s-4);
         display: none;
     }
 
-    .success .success-icon {
+    .loader.success .spinner {
+        display: none;
+    }
+    .loader.success .check {
         display: block;
-    }
-
-    @keyframes scaleIn {
-        from {
-            transform: scale(0);
-            opacity: 0;
-        }
-        to {
-            transform: scale(1);
-            opacity: 1;
-        }
-    }
-
-    .btn-text {
-        width: 100%;
+        animation: pop 0.3s ease;
     }
 
     @keyframes spin {
-        from {
-            transform: rotate(0deg);
-        }
         to {
             transform: rotate(360deg);
         }
     }
 
-    /* Form Expansion Logic */
-    .expandable-wrapper {
-        display: grid;
-        grid-template-rows: 0fr;
-        transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .expandable-wrapper.expanded {
-        grid-template-rows: 1fr;
-    }
-
-    .expandable-content {
-        overflow: hidden;
-        min-height: 0;
-    }
-
-    .slide-in-left {
-        animation: slideInLeft 0.5s ease-out forwards;
+    @keyframes pop {
+        from {
+            transform: scale(0);
+        }
+        to {
+            transform: scale(1);
+        }
     }
 </style>

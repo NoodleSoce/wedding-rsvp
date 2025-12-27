@@ -17,22 +17,26 @@ const fullTitle = `${title} | Zaid & Haya`;
 const description =
 	"You're invited to celebrate the wedding of Zaid & Haya. Please RSVP to confirm your attendance.";
 const dir = lang === "ar" ? "rtl" : "ltr";
+const path = Astro.url.pathname;
 ---
 
 <!doctype html>
 <html lang={lang} dir={dir}>
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="description" content={description} />
 		<meta
 			name="viewport"
 			content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no, interactive-widget=resizes-visual"
 		/>
-		<link rel="icon" type="image/webp" href="/favicon.webp" />
+		<meta name="description" content={description} />
+		<title>{fullTitle}</title>
+
+		<!-- Theme -->
 		<meta name="theme-color" content="#4b0101" />
 		<meta name="color-scheme" content="dark" />
-		<meta name="generator" content={Astro.generator} />
-		<!-- Mobile Web App Capable -->
+		<link rel="icon" type="image/webp" href="/favicon.webp" />
+
+		<!-- Mobile -->
 		<meta name="mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta
@@ -40,61 +44,44 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 			content="black-translucent"
 		/>
 		<meta name="format-detection" content="telephone=no" />
-		<title>{fullTitle}</title>
 
-		<!-- Open Graph / Social Sharing -->
+		<!-- Social -->
 		<meta property="og:type" content="website" />
 		<meta property="og:title" content={fullTitle} />
 		<meta property="og:description" content={description} />
-		<meta name="twitter:card" content="summary" />
-		<meta name="twitter:title" content={fullTitle} />
-		<meta name="twitter:description" content={description} />
 		<meta property="og:image" content="/hero-image.webp" />
-		<meta name="twitter:image" content="/hero-image.webp" />
+		<meta name="twitter:card" content="summary" />
 
-		<!-- Preconnect and DNS Prefetch -->
-		<link rel="dns-prefetch" href="https://script.google.com" />
-		<link rel="dns-prefetch" href="https://www.google.com" />
+		<!-- Preconnect -->
 		<link rel="preconnect" href="https://script.google.com" />
 		<link rel="preconnect" href="https://www.google.com" />
-		<link rel="preconnect" href="https://www.gstatic.com" crossorigin />
 		<link rel="preconnect" href="https://maps.googleapis.com" />
-		<link rel="preconnect" href="https://maps.gstatic.com" />
 
-		<!-- SEO: Language Alternates -->
+		<!-- i18n -->
 		<link
 			rel="alternate"
 			hreflang="en"
-			href={Astro.url.origin + Astro.url.pathname.replace("/ar", "")}
+			href={Astro.url.origin + path.replace("/ar", "")}
 		/>
 		<link
 			rel="alternate"
 			hreflang="ar"
-			href={Astro.url.origin +
-				"/ar" +
-				Astro.url.pathname.replace("/ar", "")}
+			href={Astro.url.origin + "/ar" + path.replace("/ar", "")}
 		/>
 
 		<ClientRouter />
 
 		<script is:inline>
-			// Auto-detect system language and redirect if no preference is set
 			(function () {
-				try {
-					if (window.localStorage.getItem("preferred_lang")) return;
-					const lang =
-						navigator.language || navigator.userLanguage || "en";
-					if (
-						lang.startsWith("ar") &&
-						document.documentElement.lang !== "ar"
-					) {
-						const path = window.location.pathname;
-						if (!path.startsWith("/ar")) {
-							window.location.href =
-								"/ar" + (path === "/" ? "" : path);
-						}
-					}
-				} catch (e) {}
+				if (localStorage.getItem("preferred_lang")) return;
+				if (
+					navigator.language?.startsWith("ar") &&
+					!location.pathname.startsWith("/ar")
+				) {
+					location.href =
+						"/ar" +
+						(location.pathname === "/" ? "" : location.pathname);
+				}
 			})();
 		</script>
 	</head>
@@ -103,4 +90,3 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 		<slot />
 	</body>
 </html>
-```

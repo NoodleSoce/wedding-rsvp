@@ -7,80 +7,59 @@ interface Props {
 }
 
 const { lang = "en" } = Astro.props;
-
 const currentPath = Astro.url.pathname;
-let targetPath = "/";
-const label = lang === "en" ? "AR" : "EN";
 
-if (lang === "en") {
-  // Switch to Arabic: prepend /ar
-  // Handle root specifically
-  if (currentPath === "/" || currentPath === "") {
-    targetPath = "/ar";
-  } else {
-    // avoid double slashes if any
-    targetPath = "/ar" + currentPath.replace(/\/$/, "");
-  }
-} else {
-  // Switch to English: remove /ar
-  targetPath = currentPath.replace("/ar", "") || "/";
-}
+// Calculate language switch path
+const targetPath =
+  lang === "en"
+    ? currentPath === "/"
+      ? "/ar"
+      : `/ar${currentPath}`
+    : currentPath.replace("/ar", "") || "/";
+const label = lang === "en" ? "AR" : "EN";
 ---
 
-<header class="app-header">
-  <div class="header-content">
+<header class="header">
+  <div class="header-inner">
     <Image
       src={logoImg}
-      alt="Zaid & Haya Wedding Logo"
-      class="logo-img"
+      alt="Zaid & Haya"
+      class="logo"
       width={300}
       height={100}
       loading="eager"
-      fetchpriority="high"
-      decoding="async"
     />
-    <a
-      href={targetPath}
-      class="lang-btn"
-      aria-label={`Switch to ${label === "AR" ? "Arabic" : "English"}`}
-      data-astro-prefetch
-    >
+    <a href={targetPath} class="lang-btn" data-astro-prefetch>
       {label}
     </a>
   </div>
 </header>
 
 <script>
-  // Save language preference when switching
   document.addEventListener("astro:page-load", () => {
     const btn = document.querySelector(".lang-btn");
-    if (btn) {
-      btn.addEventListener("click", () => {
-        const text = (btn.textContent || "").trim();
-        const target = text === "AR" ? "ar" : "en";
-        localStorage.setItem("preferred_lang", target);
-      });
-    }
+    btn?.addEventListener("click", () => {
+      const lang = btn.textContent?.trim() === "AR" ? "ar" : "en";
+      localStorage.setItem("preferred_lang", lang);
+    });
   });
 </script>
 
 <style>
-  .app-header {
-    padding: var(--space-lg) var(--space-lg) var(--space-md) var(--space-lg);
+  .header {
     position: absolute;
-    width: 100%;
     top: 0;
+    left: 0;
+    right: 0;
+    padding: var(--s-6) var(--s-4) var(--s-4);
     z-index: 100;
-    contain: layout style;
-    transform: translateZ(0);
     pointer-events: none;
   }
 
-  .header-content {
+  .header-inner {
     position: relative;
     max-width: 1200px;
     margin: 0 auto;
-    width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -88,10 +67,9 @@ if (lang === "en") {
     direction: ltr;
   }
 
-  .logo-img {
-    height: 84px;
+  .logo {
+    height: 80px;
     width: auto;
-    object-fit: contain;
   }
 
   .lang-btn {
@@ -99,23 +77,22 @@ if (lang === "en") {
     right: 0;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--color-white);
-    font-size: var(--text-sm);
+    padding: var(--s-1) var(--s-3);
+    font-family: var(--font);
+    font-size: var(--fs-sm);
     font-weight: 500;
-    text-decoration: none;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    padding: var(--space-xs) var(--space-sm);
+    color: var(--c-white);
+    background: var(--c-white-10);
+    border: 1px solid var(--c-white-20);
     border-radius: var(--radius-full);
-    background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(4px);
     transition:
-      background-color 0.2s ease,
-      border-color 0.2s ease;
-    font-family: var(--font-body);
+      background var(--transition),
+      border-color var(--transition);
   }
 
   .lang-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: var(--color-white-faint);
+    background: var(--c-white-20);
+    border-color: var(--c-white-50);
   }
 </style>

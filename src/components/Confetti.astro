@@ -1,83 +1,57 @@
 ---
+// Confetti animation for countdown page
 ---
-
-<canvas id="confetti-canvas"></canvas>
 
 <script>
   import confetti from "canvas-confetti";
 
-  let confettiInterval: number | undefined;
+  let interval: number;
 
-  function runConfetti() {
-    const canvas = document.getElementById("confetti-canvas") as HTMLCanvasElement;
-    if (!canvas) return;
+  function run() {
+    if (!document.querySelector(".countdown")) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    // Use a local instance on our canvas
-    const myConfetti = confetti.create(canvas, {
-      resize: true,
-      useWorker: true,
-    });
-
-    // Respect reduced motion preferences
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    if (prefersReducedMotion) return;
-
-    const duration = 3000;
-    const animationEnd = Date.now() + duration;
-    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
-
-    function randomInRange(min: number, max: number) {
-      return Math.random() * (max - min) + min;
-    }
-
-    // Clear any existing interval
-    if (confettiInterval) clearInterval(confettiInterval);
-
-    // Fire confetti
-    confettiInterval = setInterval(function () {
-      const timeLeft = animationEnd - Date.now();
-
-      if (timeLeft <= 0) {
-        if (confettiInterval) clearInterval(confettiInterval);
+    const end = Date.now() + 3000;
+    
+    if (interval) clearInterval(interval);
+    
+    interval = setInterval(() => {
+      if (Date.now() > end) {
+        clearInterval(interval);
         return;
       }
 
-      const particleCount = 40 * (timeLeft / duration);
-
-      myConfetti({
-        ...defaults,
-        particleCount,
-        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+      confetti({
+        particleCount: 30,
+        spread: 360,
+        startVelocity: 25,
+        ticks: 50,
+        origin: { x: Math.random() * 0.4 + 0.1, y: Math.random() * 0.3 },
+        zIndex: 0,
       });
-      myConfetti({
-        ...defaults,
-        particleCount,
-        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+      
+      confetti({
+        particleCount: 30,
+        spread: 360,
+        startVelocity: 25,
+        ticks: 50,
+        origin: { x: Math.random() * 0.4 + 0.5, y: Math.random() * 0.3 },
+        zIndex: 0,
       });
     }, 250) as unknown as number;
   }
 
-  function scheduleConfetti() {
-      // Run immediately
-      runConfetti();
+  function schedule() {
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(() => run(), { timeout: 500 });
+    } else {
+      setTimeout(run, 100);
+    }
   }
 
-  document.addEventListener("astro:page-load", scheduleConfetti);
+  document.addEventListener("astro:page-load", schedule);
   document.addEventListener("astro:before-swap", () => {
-    if (confettiInterval) clearInterval(confettiInterval);
+    clearInterval(interval);
+    try { (confetti as any).reset(); } catch {}
   });
 </script>
-
-<style>
-  #confetti-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 9999; /* Ensure it is on top of everything */
-  }
-</style>
