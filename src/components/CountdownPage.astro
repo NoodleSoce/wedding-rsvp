@@ -163,7 +163,7 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
             contain: layout style paint size;
             transform: translateZ(0);
         }
-        /* Grouping: Content container spacing */
+
         .content {
             height: 100%;
             display: flex;
@@ -171,31 +171,31 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 1rem;
-            padding-top: 5rem; /* Shifted down for optical centering */
-            padding-bottom: calc(var(--header-height) - 1rem);
-            gap: 2rem;
+            padding: var(--page-padding);
+            padding-top: var(--space-3xl);
+            padding-bottom: calc(var(--header-height) - var(--space-md));
+            gap: var(--section-gap);
             content-visibility: auto;
         }
 
         @media (min-width: 768px) {
             .content {
                 padding-bottom: var(--header-height);
-                gap: 3.5rem;
+                gap: var(--space-2xl);
             }
         }
 
         .content h1 {
-            margin-bottom: 0.5rem;
+            margin-bottom: var(--space-sm);
         }
 
         h1 {
             color: var(--color-white);
-            margin-bottom: 0.5rem;
+            margin-bottom: var(--space-sm);
             font-size: clamp(1.58rem, 4.6vw, 2.58rem);
             line-height: 1.15;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            padding: 0 0.5rem;
+            padding: 0 var(--space-sm);
             font-weight: 300;
             max-width: 740px;
             width: 100%;
@@ -206,7 +206,7 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
             justify-content: center;
             align-items: center;
             margin: 0 auto;
-            gap: 0.5rem;
+            gap: var(--space-sm);
             width: fit-content;
             max-width: 100%;
         }
@@ -217,7 +217,7 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
             align-items: center;
             width: auto;
             min-width: 40px;
-            padding: 0 0.25rem;
+            padding: 0 var(--space-xs);
         }
 
         .time-unit span {
@@ -226,29 +226,29 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
             color: var(--color-white);
             line-height: 1;
             text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            font-variant-numeric: tabular-nums; /* Stable number widths */
-            contain: content; /* Isolate repaints */
+            font-variant-numeric: tabular-nums;
+            contain: content;
         }
 
         .time-unit label {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.8);
-            margin-top: 0.25rem;
+            font-size: var(--text-sm);
+            color: var(--color-white-muted);
+            margin-top: var(--space-xs);
         }
 
         .separator {
             font-size: clamp(1.3rem, 3.5vw, 2.3rem);
             margin: 0;
-            padding-bottom: 1.5rem;
-            color: rgba(255, 255, 255, 0.3);
+            padding-bottom: var(--space-lg);
+            color: var(--color-white-faint);
         }
 
         .location-section {
             width: 100%;
-            max-width: 600px;
+            max-width: var(--max-width);
             text-align: center;
             background: rgba(0, 0, 0, 0.2);
-            padding: 1rem;
+            padding: var(--space-md);
             border-radius: var(--radius-lg);
             backdrop-filter: blur(10px);
             margin: 0 auto;
@@ -257,23 +257,23 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
 
         .location-section h2 {
             font-size: var(--text-lg);
-            margin-bottom: 0.25rem;
+            margin-bottom: var(--space-xs);
             color: var(--color-white);
             font-weight: 400;
         }
 
         .location-section p {
             font-size: var(--text-base);
-            color: white;
-            margin-bottom: 0.5rem;
+            color: var(--color-white);
+            margin-bottom: var(--space-sm);
             opacity: 0.9;
         }
 
         .map-container {
-            border-radius: 0.5rem;
+            border-radius: var(--radius-sm);
             overflow: hidden;
-            margin: 1rem auto 3%; /* 3% approximates the side gap ((100-94)/2) */
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            margin: var(--space-md) auto var(--space-sm);
+            box-shadow: var(--shadow-md);
             border: 1px solid rgba(255, 255, 255, 0.1);
             height: 25vh;
             max-height: 200px;

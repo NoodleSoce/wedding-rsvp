@@ -361,7 +361,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 
 <style>
     .rsvp-page {
-        /* Fixed positioning anchored to viewport edges - immune to keyboard resize */
         position: fixed;
         top: 0;
         left: 0;
@@ -371,12 +370,10 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         background: var(--color-bg);
         display: flex;
         flex-direction: column;
-        /* Position from top with padding - stable anchor that doesn't shift */
         justify-content: flex-start;
         align-items: center;
-        /* Generous top padding: header height + space to visually center the form */
         padding-top: calc(var(--header-height) + 12vh);
-        padding-bottom: 2rem;
+        padding-bottom: var(--space-xl);
         overflow: hidden;
         contain: layout style paint size;
         transform: translateZ(0);
@@ -385,13 +382,12 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
     .content-wrapper {
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
-        padding: 1.5rem;
+        padding: var(--card-padding);
         border-radius: var(--radius-lg);
         box-shadow: var(--shadow-lg);
         border: 1px solid rgba(255, 255, 255, 0.2);
-        width: calc(100% - 2rem);
-        max-width: 600px;
-        /* Prevent any resize/layout shift */
+        width: calc(100% - var(--space-xl));
+        max-width: var(--max-width);
         contain: layout style;
         overflow: visible;
     }
@@ -400,7 +396,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         color: var(--color-white);
         font-family: var(--font-body);
         font-size: var(--text-2xl);
-        margin-bottom: 0.25rem;
+        margin-bottom: var(--space-xs);
         text-align: center;
         font-weight: 400;
         font-style: italic;
@@ -408,19 +404,19 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 
     .subtitle {
         text-align: center;
-        color: rgba(255, 255, 255, 0.8);
-        margin-bottom: 1.5rem;
+        color: var(--color-white-muted);
+        margin-bottom: var(--space-lg);
         font-size: var(--text-sm);
         font-weight: 300;
     }
 
     .form-group {
-        margin-bottom: 2vh;
+        margin-bottom: var(--space-md);
     }
 
     label {
         display: block;
-        margin-bottom: 0.25rem;
+        margin-bottom: var(--space-xs);
         font-weight: 400;
         color: var(--color-white);
         font-size: var(--text-sm);
@@ -430,35 +426,33 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
     input[type="text"],
     input[type="number"] {
         width: 100%;
-        padding: 0.8rem;
+        padding: var(--input-padding);
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 0.5rem;
+        border-radius: var(--radius-sm);
         font-family: inherit;
         font-size: var(--text-base);
-        color: white;
-        /* Prevent layout shift on focus by keeping consistent box model */
+        color: var(--color-white);
         box-sizing: border-box;
         -webkit-appearance: none;
         appearance: none;
     }
 
     input::placeholder {
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--color-white-faint);
     }
 
     input:focus {
         outline: none;
         border-color: var(--color-white);
         background: rgba(255, 255, 255, 0.15);
-        /* Use box-shadow for visual feedback instead of anything that causes reflow */
         box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
     }
 
     .radio-group {
         display: flex;
         flex-direction: row;
-        gap: 0.5rem;
+        gap: var(--space-sm);
     }
 
     .radio-card {
@@ -474,31 +468,30 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 
     .radio-label {
         display: block;
-        padding: 0.75rem;
+        padding: var(--input-padding);
         text-align: center;
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 0.5rem;
+        border-radius: var(--radius-sm);
         transition:
             background-color 0.2s ease,
             border-color 0.2s ease,
             box-shadow 0.2s ease;
-        font-size: 1rem;
-        color: white;
+        font-size: var(--text-base);
+        color: var(--color-white);
     }
 
-    /* Logic for colors - Slightly Lighter than previous Dark but still elegant */
     .radio-card.accept input:checked + .radio-label {
-        background-color: #2e7d32; /* Green 800 - Good balance */
-        color: white;
+        background-color: #2e7d32;
+        color: var(--color-white);
         border-color: #2e7d32;
         font-weight: 600;
         box-shadow: 0 0 15px rgba(27, 94, 32, 0.4);
     }
 
     .radio-card.decline input:checked + .radio-label {
-        background-color: #c62828; /* Red 800 - Good balance */
-        color: white;
+        background-color: #c62828;
+        color: var(--color-white);
         border-color: #c62828;
         font-weight: 600;
         box-shadow: 0 0 15px rgba(183, 28, 28, 0.4);
@@ -510,24 +503,24 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 
     .error-message {
         color: #ffcccc;
-        font-size: 0.9rem;
+        font-size: var(--text-sm);
         text-align: center;
-        margin-top: 1rem;
+        margin-top: var(--space-md);
     }
 
     .btn-primary {
-        margin-top: 1.5rem;
+        margin-top: var(--space-lg);
         width: 100%;
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.3);
         color: var(--color-white);
-        padding: 1rem;
-        font-size: 1.1rem;
+        padding: var(--space-md);
+        font-size: var(--text-base);
         border-radius: var(--radius-full);
         font-weight: 500;
         cursor: pointer;
         transition:
-            background 0.2s ease,
+            background-color 0.2s ease,
             border-color 0.2s ease;
         display: flex;
         justify-content: center;
@@ -536,7 +529,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 
     .btn-primary:hover {
         background: rgba(255, 255, 255, 0.15);
-        border-color: white;
+        border-color: var(--color-white);
     }
 
     .btn-primary:disabled {
@@ -544,7 +537,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         cursor: not-allowed;
     }
 
-    /* Loader Overlay - Optimized for performance */
+    /* Loader Overlay */
     .loader-overlay {
         position: fixed;
         inset: 0;
@@ -554,7 +547,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        color: white;
+        color: var(--color-white);
         contain: layout style paint;
         opacity: 1;
         visibility: visible;
@@ -566,25 +559,25 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
     .loader-overlay.hidden {
         opacity: 0;
         visibility: hidden;
-        display: flex !important; /* Keep display for transition */
+        display: flex !important;
     }
 
     .loader-spinner {
-        width: 2.5rem;
-        height: 2.5rem;
+        width: var(--space-xl);
+        height: var(--space-xl);
         border: 3px solid rgba(255, 255, 255, 0.2);
-        border-top-color: white;
+        border-top-color: var(--color-white);
         border-radius: 50%;
         animation: spin 0.6s linear infinite;
-        margin-bottom: 1rem;
+        margin-bottom: var(--space-md);
         will-change: transform;
     }
 
     .success-icon {
-        width: 3rem;
-        height: 3rem;
-        color: #4ade80; /* bright green */
-        margin-bottom: 1rem;
+        width: var(--space-2xl);
+        height: var(--space-2xl);
+        color: #4ade80;
+        margin-bottom: var(--space-md);
         display: none;
         animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         shape-rendering: geometricPrecision;
