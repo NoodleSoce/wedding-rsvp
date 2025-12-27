@@ -76,9 +76,31 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 		/>
 
 		<ClientRouter />
+
+		<script is:inline>
+			// Auto-detect system language and redirect if no preference is set
+			(function () {
+				try {
+					if (window.localStorage.getItem("preferred_lang")) return;
+					const lang =
+						navigator.language || navigator.userLanguage || "en";
+					if (
+						lang.startsWith("ar") &&
+						document.documentElement.lang !== "ar"
+					) {
+						const path = window.location.pathname;
+						if (!path.startsWith("/ar")) {
+							window.location.href =
+								"/ar" + (path === "/" ? "" : path);
+						}
+					}
+				} catch (e) {}
+			})();
+		</script>
 	</head>
 	<body>
 		<Header lang={lang} />
 		<slot />
 	</body>
 </html>
+```

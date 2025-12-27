@@ -43,11 +43,26 @@ if (lang === "en") {
       href={targetPath}
       class="lang-btn"
       aria-label={`Switch to ${label === "AR" ? "Arabic" : "English"}`}
+      data-astro-prefetch
     >
       {label}
     </a>
   </div>
 </header>
+
+<script>
+  // Save language preference when switching
+  document.addEventListener("astro:page-load", () => {
+    const btn = document.querySelector(".lang-btn");
+    if (btn) {
+      btn.addEventListener("click", () => {
+        const text = (btn.textContent || "").trim();
+        const target = text === "AR" ? "ar" : "en";
+        localStorage.setItem("preferred_lang", target);
+      });
+    }
+  });
+</script>
 
 <style>
   .app-header {
