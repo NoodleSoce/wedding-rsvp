@@ -41,6 +41,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                         required
                         placeholder={t["rsvp.namePlaceholder"]}
                         autocomplete="name"
+                        enterkeyhint="next"
                         autocapitalize="words"
                     />
                 </div>
@@ -80,6 +81,8 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                                 max="10"
                                 value="0"
                                 inputmode="numeric"
+                                autocomplete="off"
+                                enterkeyhint="done"
                             />
                         </div>
                     </div>
@@ -131,6 +134,9 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         // If form doesn't exist (we are on another page), exit
         if (!form) return;
 
+        const mainContainer = document.querySelector(
+            ".rsvp-page",
+        ) as HTMLElement;
         const guestsWrapper = document.getElementById("guests-wrapper");
         const guestsGroup = document.getElementById("guests-group");
         const attendingRadios = document.getElementsByName("attending");
@@ -171,26 +177,37 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             "guests",
         ) as HTMLInputElement;
 
-        // Scroll name input into view when focused (scrolls up if needed)
-        nameInput?.addEventListener("focus", () => {
-            setTimeout(() => {
-                nameInput.scrollIntoView({
-                    behavior: "smooth",
-                    block: "nearest",
-                });
-            }, 100);
-        });
+        // --- MOBILE KEYBOARD HANDLING & SCROLLING ---
+        const handleFocus = (e: Event) => {
+            // Add class to force top alignment (prevents centering snap)
+            if (mainContainer) mainContainer.classList.add("keyboard-active");
 
-        // Scroll guests input into view when focused
-        guestsInput?.addEventListener("focus", () => {
-            // Faster delay and minimal scroll movement
+            // Wait for keyboard animation
             setTimeout(() => {
-                guestsInput.scrollIntoView({
+                const target = e.target as HTMLElement;
+                // Scroll the input into view comfortably
+                target.scrollIntoView({
                     behavior: "smooth",
-                    block: "nearest",
+                    block: "center", // Center it to ensure visibility
                 });
+            }, 300);
+        };
+
+        const handleBlur = (e: Event) => {
+            // Small delay to check if focus moved to another element in form
+            setTimeout(() => {
+                const active = document.activeElement;
+                if (!form.contains(active)) {
+                    if (mainContainer)
+                        mainContainer.classList.remove("keyboard-active");
+                }
             }, 100);
-        });
+        };
+
+        nameInput?.addEventListener("focus", handleFocus);
+        nameInput?.addEventListener("blur", handleBlur);
+        guestsInput?.addEventListener("focus", handleFocus);
+        guestsInput?.addEventListener("blur", handleBlur);
 
         // Smart input logic: allow 0-9, single char only, replace on type
         guestsInput?.addEventListener("input", (e) => {
@@ -394,6 +411,13 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         contain: layout style paint size;
         transform: translateZ(0);
         will-change: contents;
+        transition: padding-top 0.3s ease; /* Smooth transition for alignment change */
+    }
+
+    /* When keyboard is open (input focused), align to top to maximize space */
+    .rsvp-page.keyboard-active {
+        justify-content: flex-start;
+        padding-top: calc(var(--header-height) + 1rem);
     }
 
     .content-wrapper {
