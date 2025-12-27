@@ -183,7 +183,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             if (!wrapper) return;
 
             wrapper.scrollIntoView({
-                behavior: "smooth",
+                behavior: "auto",
                 block: "end", // Align bottom of wrapper to bottom of viewport (top of keyboard)
                 inline: "nearest",
             });
@@ -441,7 +441,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         color: var(--color-white);
         font-family: var(--font-body);
         font-size: var(--text-2xl);
-        margin-bottom: 1vh;
+        margin-bottom: 2vh; /* Increased from 1vh for better spacing above subtitle */
         text-align: center;
         font-weight: 400;
         font-style: italic;
@@ -450,7 +450,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
     .subtitle {
         text-align: center;
         color: rgba(255, 255, 255, 0.8);
-        margin-bottom: 2vh;
+        margin-bottom: 1vh; /* Reduced from 2vh */
         font-size: var(--text-sm);
         font-weight: 300;
     }

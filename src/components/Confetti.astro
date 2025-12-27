@@ -53,14 +53,9 @@
     }, 250) as unknown as number;
   }
 
-  // Defer confetti to avoid blocking the main thread during page load
+  // Run immediately on load with small delay to ensure DOM readiness
   function scheduleConfetti() {
-    if ("requestIdleCallback" in window) {
-      requestIdleCallback(() => runConfetti(), { timeout: 500 });
-    } else {
-      // Fallback for browsers without requestIdleCallback (Safari)
-      setTimeout(runConfetti, 100);
-    }
+    setTimeout(runConfetti, 100);
   }
 
   // Run on initial load and View Transitions
