@@ -177,36 +177,34 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         // --- MOBILE KEYBOARD & SCROLLING OPTIMIZATION ---
         const viewport = window.visualViewport;
 
-        // Function to ensure the focused element is centered in the visible area
-        const scrollToCenter = (target: HTMLElement) => {
-            if (!target) return;
+        // Function to ensure the form is comfortable above the keyboard
+        const scrollToKeyboardSafe = () => {
+            const wrapper = document.querySelector(".content-wrapper");
+            if (!wrapper) return;
 
-            // Smoothly scroll the input into the center of the scrollable wrapper
-            target.scrollIntoView({
+            wrapper.scrollIntoView({
                 behavior: "smooth",
-                block: "center",
-                inline: "center",
+                block: "end", // Align bottom of wrapper to bottom of viewport (top of keyboard)
+                inline: "nearest",
             });
         };
 
         const handleFocus = (e: Event) => {
-            // Do NOT change layout structure (prevent jumping)
-            // Just ensure visibility
+            // Delay to allow keyboard to appear
             setTimeout(() => {
-                scrollToCenter(e.target as HTMLElement);
-            }, 300); // Small delay for keyboard animation
+                scrollToKeyboardSafe();
+            }, 300);
         };
 
         // Listen to visual viewport changes to detect keyboard interaction accurately
         if (viewport) {
             viewport.addEventListener("resize", () => {
-                // If height shrinks significantly, keyboard is likely open
-                // Check active element and ensure it's visible
+                // If keyboard opens/resizes, maintain alignment
                 if (
                     document.activeElement &&
                     form.contains(document.activeElement)
                 ) {
-                    scrollToCenter(document.activeElement as HTMLElement);
+                    scrollToKeyboardSafe();
                 }
             });
 
