@@ -91,15 +91,11 @@
 
 [class*="stagger-"] {
     opacity: 0;
-    will-change: transform, opacity;
-    /* GPU acceleration for animations */
+    /* GPU acceleration during animation */
     backface-visibility: hidden;
 }
 
-/* Clean up will-change after animation completes */
-[class*="stagger-"]:not(:global(.animating)) {
-    animation-fill-mode: forwards;
-}
+/* will-change is applied only during animation, then removed via animation-fill-mode */
 
 .fade-in {
     animation: fadeIn 0.3s ease-out forwards;

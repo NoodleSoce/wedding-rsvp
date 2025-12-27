@@ -134,6 +134,14 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         // If form doesn't exist (we are on another page), exit
         if (!form) return;
 
+        // Lock viewport height on page load to prevent keyboard shift
+        const rsvpPage = document.querySelector(".rsvp-page") as HTMLElement;
+        if (rsvpPage) {
+            // Use visualViewport if available for more accurate height
+            const vh = window.visualViewport?.height || window.innerHeight;
+            rsvpPage.style.setProperty("--locked-vh", `${vh}px`);
+        }
+
         const guestsWrapper = document.getElementById("guests-wrapper");
         const guestsGroup = document.getElementById("guests-group");
         const attendingRadios = document.getElementsByName("attending");
@@ -173,85 +181,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         const guestsInput = document.getElementById(
             "guests",
         ) as HTMLInputElement;
-
-        // --- MOBILE KEYBOARD & SCROLLING OPTIMIZATION ---
-        const viewport = window.visualViewport;
-
-        // Custom fast smooth scroll helper
-        const animateScroll = (
-            element: HTMLElement,
-            to: number,
-            duration: number,
-        ) => {
-            const start = element.scrollTop;
-            const change = to - start;
-            const startTime = performance.now();
-
-            const animate = (currentTime: number) => {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                // Ease out cubic
-                const ease = 1 - Math.pow(1 - progress, 3);
-
-                element.scrollTop = start + change * ease;
-
-                if (progress < 1) {
-                    requestAnimationFrame(animate);
-                }
-            };
-            requestAnimationFrame(animate);
-        };
-
-        // Function to ensure the form is comfortable above the keyboard
-        const scrollToKeyboardSafe = () => {
-            const wrapper = document.querySelector(
-                ".content-wrapper",
-            ) as HTMLElement;
-            if (!wrapper) return;
-
-            // Scroll the wrapper's content to the bottom
-            const targetScroll = wrapper.scrollHeight - wrapper.clientHeight;
-            if (
-                targetScroll > 0 &&
-                Math.abs(wrapper.scrollTop - targetScroll) > 5
-            ) {
-                animateScroll(wrapper, targetScroll, 250); // 250ms fast smooth
-            }
-
-            // Also align the wrapper itself in the viewport instantly
-            wrapper.scrollIntoView({
-                behavior: "auto",
-                block: "end",
-                inline: "nearest",
-            });
-        };
-
-        const handleFocus = (e: Event) => {
-            // Delay to allow keyboard to appear
-            setTimeout(() => {
-                scrollToKeyboardSafe();
-            }, 300);
-        };
-
-        // Listen to visual viewport changes to detect keyboard interaction accurately
-        if (viewport) {
-            viewport.addEventListener("resize", () => {
-                // If keyboard opens/resizes, maintain alignment
-                if (
-                    document.activeElement &&
-                    form.contains(document.activeElement)
-                ) {
-                    scrollToKeyboardSafe();
-                }
-            });
-
-            viewport.addEventListener("scroll", () => {
-                // Keep header fixed visual logic if needed, but CSS fixed handles it
-            });
-        }
-
-        nameInput?.addEventListener("focus", handleFocus);
-        guestsInput?.addEventListener("focus", handleFocus);
 
         // Smart input logic: allow 0-9, single char only, replace on type
         guestsInput?.addEventListener("input", (e) => {
@@ -440,8 +369,9 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 
 <style>
     .rsvp-page {
-        height: 100vh;
-        height: 100dvh;
+        /* Use locked viewport height to prevent keyboard shift */
+        --locked-vh: 100vh;
+        height: var(--locked-vh);
         width: 100%;
         background: var(--color-bg);
         padding-top: var(--header-height);
@@ -454,7 +384,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         inset: 0;
         contain: layout style paint size;
         transform: translateZ(0);
-        will-change: contents;
     }
 
     /* Use margin: auto on the child to achieve centering that respects top/bottom constraints (safe centering) */
@@ -601,12 +530,11 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         font-weight: 500;
         cursor: pointer;
         transition:
-            background 0.2s,
-            border-color 0.2s;
+            background 0.2s ease,
+            border-color 0.2s ease;
         display: flex;
         justify-content: center;
         align-items: center;
-        will-change: background, border-color;
     }
 
     .btn-primary:hover {
