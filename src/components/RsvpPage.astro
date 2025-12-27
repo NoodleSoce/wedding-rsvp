@@ -134,9 +134,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         // If form doesn't exist (we are on another page), exit
         if (!form) return;
 
-        const mainContainer = document.querySelector(
-            ".rsvp-page",
-        ) as HTMLElement;
         const guestsWrapper = document.getElementById("guests-wrapper");
         const guestsGroup = document.getElementById("guests-group");
         const attendingRadios = document.getElementsByName("attending");
@@ -177,37 +174,49 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             "guests",
         ) as HTMLInputElement;
 
-        // --- MOBILE KEYBOARD HANDLING & SCROLLING ---
+        // --- MOBILE KEYBOARD & SCROLLING OPTIMIZATION ---
+        const viewport = window.visualViewport;
+
+        // Function to ensure the focused element is centered in the visible area
+        const scrollToCenter = (target: HTMLElement) => {
+            if (!target) return;
+
+            // Smoothly scroll the input into the center of the scrollable wrapper
+            target.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+                inline: "center",
+            });
+        };
+
         const handleFocus = (e: Event) => {
-            // Add class to force top alignment (prevents centering snap)
-            if (mainContainer) mainContainer.classList.add("keyboard-active");
-
-            // Wait for keyboard animation
+            // Do NOT change layout structure (prevent jumping)
+            // Just ensure visibility
             setTimeout(() => {
-                const target = e.target as HTMLElement;
-                // Scroll the input into view comfortably
-                target.scrollIntoView({
-                    behavior: "smooth",
-                    block: "center", // Center it to ensure visibility
-                });
-            }, 300);
+                scrollToCenter(e.target as HTMLElement);
+            }, 300); // Small delay for keyboard animation
         };
 
-        const handleBlur = (e: Event) => {
-            // Small delay to check if focus moved to another element in form
-            setTimeout(() => {
-                const active = document.activeElement;
-                if (!form.contains(active)) {
-                    if (mainContainer)
-                        mainContainer.classList.remove("keyboard-active");
+        // Listen to visual viewport changes to detect keyboard interaction accurately
+        if (viewport) {
+            viewport.addEventListener("resize", () => {
+                // If height shrinks significantly, keyboard is likely open
+                // Check active element and ensure it's visible
+                if (
+                    document.activeElement &&
+                    form.contains(document.activeElement)
+                ) {
+                    scrollToCenter(document.activeElement as HTMLElement);
                 }
-            }, 100);
-        };
+            });
+
+            viewport.addEventListener("scroll", () => {
+                // Keep header fixed visual logic if needed, but CSS fixed handles it
+            });
+        }
 
         nameInput?.addEventListener("focus", handleFocus);
-        nameInput?.addEventListener("blur", handleBlur);
         guestsInput?.addEventListener("focus", handleFocus);
-        guestsInput?.addEventListener("blur", handleBlur);
 
         // Smart input logic: allow 0-9, single char only, replace on type
         guestsInput?.addEventListener("input", (e) => {
@@ -403,7 +412,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         padding-top: var(--header-height);
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: flex-start; /* Ensure padding is always respected */
         align-items: center;
         overflow: hidden;
         position: fixed;
@@ -411,15 +420,9 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         contain: layout style paint size;
         transform: translateZ(0);
         will-change: contents;
-        transition: padding-top 0.3s ease; /* Smooth transition for alignment change */
     }
 
-    /* When keyboard is open (input focused), align to top to maximize space */
-    .rsvp-page.keyboard-active {
-        justify-content: flex-start;
-        padding-top: calc(var(--header-height) + 1rem);
-    }
-
+    /* Use margin: auto on the child to achieve centering that respects top/bottom constraints (safe centering) */
     .content-wrapper {
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
@@ -429,7 +432,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         border: 1px solid rgba(255, 255, 255, 0.2);
         width: calc(100% - 2rem); /* Full width minus margins */
         max-width: 600px;
-        margin: 0 auto;
+        margin: auto; /* This centers it vertically and respects boundaries */
         max-height: 90vh;
         overflow-y: auto;
         scroll-behavior: smooth;
