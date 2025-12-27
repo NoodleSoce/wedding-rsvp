@@ -7,7 +7,7 @@
     --color-white: #FFFFFF;
 
     /* Fluid Typography */
-    --font-body: 'Libre Baskerville', 'Geeza Pro', 'Nadeem', 'Al Bayan', 'DecoType Naskh', 'Traditional Arabic', serif;
+    --font-body: 'Libre Baskerville', 'Amiri', 'Geeza Pro', 'Nadeem', 'Al Bayan', 'DecoType Naskh', 'Traditional Arabic', serif;
     --text-sm: clamp(0.75rem, 1.5vw, 0.9rem);
     --text-base: clamp(0.95rem, 2.5vw, 1.1rem);
     --text-lg: clamp(1.2rem, 3.5vw, 1.4rem);
