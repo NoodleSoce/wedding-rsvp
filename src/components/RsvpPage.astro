@@ -89,26 +89,26 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             </div>
         </div>
 
-        <!-- Loading overlay -->
-        <div id="loading-overlay" class="loading-overlay" hidden>
+        <!-- Loading overlay with smooth transition -->
+        <div id="loading-overlay" class="loading-overlay">
             <div class="loading-content">
                 <div id="spinner" class="spinner"></div>
                 <svg
                     id="checkmark"
                     class="checkmark"
-                    viewBox="0 0 40 40"
+                    viewBox="0 0 52 52"
                     style="display: none;"
                 >
                     <circle
                         class="checkmark-circle"
-                        cx="20"
-                        cy="20"
-                        r="18"
+                        cx="26"
+                        cy="26"
+                        r="24"
                         fill="none"></circle>
                     <path
                         class="checkmark-check"
                         fill="none"
-                        d="M11 20l6 6 12-12"></path>
+                        d="M14 27l8 8 16-16"></path>
                 </svg>
             </div>
         </div>
@@ -144,12 +144,15 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         let keyboardOpen = false;
 
         function resetState() {
-            if (loadingOverlay) loadingOverlay.hidden = true;
+            if (loadingOverlay) loadingOverlay.classList.remove("visible");
             if (spinner) {
                 spinner.style.display = "";
                 spinner.classList.remove("fade-out");
             }
-            if (checkmark) checkmark.style.display = "none";
+            if (checkmark) {
+                checkmark.style.display = "none";
+                checkmark.classList.remove("animate");
+            }
             if (errorMsg) errorMsg.hidden = true;
             if (submitBtn) submitBtn.disabled = false;
         }
@@ -162,7 +165,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             }, 150);
         }
 
-        // Blur when keyboard collapses
         let lastHeight = window.visualViewport?.height || window.innerHeight;
 
         if (window.visualViewport) {
@@ -277,12 +279,16 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             (document.activeElement as HTMLElement)?.blur();
             keyboardOpen = false;
 
-            if (loadingOverlay) loadingOverlay.hidden = false;
+            // Show loading with smooth transition
+            if (loadingOverlay) loadingOverlay.classList.add("visible");
             if (spinner) {
                 spinner.style.display = "";
                 spinner.classList.remove("fade-out");
             }
-            if (checkmark) checkmark.style.display = "none";
+            if (checkmark) {
+                checkmark.style.display = "none";
+                checkmark.classList.remove("animate");
+            }
             if (errorMsg) errorMsg.hidden = true;
             if (submitBtn) submitBtn.disabled = true;
 
@@ -309,11 +315,11 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                         checkmark.style.display = "";
                         checkmark.classList.add("animate");
                     }
-                }, 250);
+                }, 300);
 
-                setTimeout(() => navigate(redirect), 800);
+                setTimeout(() => navigate(redirect), 900);
             } catch {
-                if (loadingOverlay) loadingOverlay.hidden = true;
+                if (loadingOverlay) loadingOverlay.classList.remove("visible");
                 if (errorMsg) errorMsg.hidden = false;
                 if (submitBtn) submitBtn.disabled = false;
             }
@@ -494,7 +500,7 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         margin-top: var(--space-4);
     }
 
-    /* Loading overlay */
+    /* Loading overlay with smooth fade transition */
     .loading-overlay {
         position: fixed;
         inset: 0;
@@ -503,10 +509,16 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         align-items: center;
         background: rgba(75, 1, 1, 0.96);
         z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition:
+            opacity 0.2s ease,
+            visibility 0.2s ease;
     }
 
-    .loading-overlay[hidden] {
-        display: none;
+    .loading-overlay.visible {
+        opacity: 1;
+        visibility: visible;
     }
 
     .loading-content {
@@ -515,15 +527,15 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         align-items: center;
     }
 
-    /* Spinner - proper circle with explicit sizing */
+    /* Bigger spinner */
     .spinner {
-        width: 40px;
-        height: 40px;
+        width: 52px;
+        height: 52px;
         border: 3px solid var(--white-20);
         border-top-color: var(--white);
         border-radius: 50%;
         animation: spin 0.7s linear infinite;
-        transition: opacity 0.25s ease;
+        transition: opacity 0.3s ease;
         flex-shrink: 0;
     }
 
@@ -537,36 +549,36 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         }
     }
 
-    /* Checkmark - same size as spinner */
+    /* Bigger checkmark */
     .checkmark {
-        width: 40px;
-        height: 40px;
+        width: 52px;
+        height: 52px;
         flex-shrink: 0;
     }
 
     .checkmark-circle {
         stroke: #4ade80;
         stroke-width: 2;
-        stroke-dasharray: 113;
-        stroke-dashoffset: 113;
+        stroke-dasharray: 151;
+        stroke-dashoffset: 151;
     }
 
     .checkmark-check {
         stroke: #4ade80;
-        stroke-width: 2.5;
+        stroke-width: 3;
         stroke-linecap: round;
         stroke-linejoin: round;
-        stroke-dasharray: 30;
-        stroke-dashoffset: 30;
+        stroke-dasharray: 36;
+        stroke-dashoffset: 36;
     }
 
     .checkmark.animate .checkmark-circle {
-        animation: checkCircle 0.4s ease forwards;
+        animation: checkCircle 0.5s ease forwards;
     }
 
     .checkmark.animate .checkmark-check {
-        animation: checkMark 0.25s ease forwards;
-        animation-delay: 0.15s;
+        animation: checkMark 0.3s ease forwards;
+        animation-delay: 0.2s;
     }
 
     @keyframes checkCircle {

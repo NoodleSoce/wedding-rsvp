@@ -46,9 +46,9 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
         gap: var(--space-5);
     }
 
-    /* Title with more horizontal padding */
+    /* Slightly smaller title */
     .title {
-        font-size: var(--fs-2xl);
+        font-size: clamp(1.5rem, 1.25rem + 1.25vw, 2.25rem);
         font-style: italic;
         padding: 0 var(--space-5);
         max-width: 95%;

@@ -1,5 +1,5 @@
 ---
-// Confetti - slower, content area only, respects reduced motion
+// Confetti - random positions in content area
 ---
 
 <script>
@@ -12,52 +12,39 @@
     if (!page) return;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    // Get the content area bounds
+    // Get content area bounds
     const content = page.querySelector(".content");
     const rect = content?.getBoundingClientRect();
 
-    // Calculate origin based on content position
-    const originY = rect
-      ? (rect.top + rect.height * 0.3) / window.innerHeight
-      : 0.2;
-    const leftX = rect ? rect.left / window.innerWidth : 0.2;
-    const rightX = rect ? rect.right / window.innerWidth : 0.8;
+    if (!rect) return;
 
-    // Slower: 4.5 seconds duration, 400ms interval
+    // Calculate content area in viewport percentages
+    const contentLeft = rect.left / window.innerWidth;
+    const contentRight = rect.right / window.innerWidth;
+    const contentWidth = contentRight - contentLeft;
+    const contentTop = rect.top / window.innerHeight;
+
+    // Duration and interval
     const end = Date.now() + 4500;
 
     clearInterval(timer);
     timer = setInterval(() => {
       if (Date.now() > end) return clearInterval(timer);
 
-      // Left burst - within content area
-      confetti({
-        particleCount: 15,
-        spread: 70,
-        startVelocity: 12,
-        ticks: 80,
-        gravity: 0.7,
-        origin: {
-          x: leftX + Math.random() * 0.15,
-          y: originY + Math.random() * 0.1,
-        },
-        zIndex: 0,
-      });
+      // Random position within content area
+      const randomX = contentLeft + Math.random() * contentWidth;
+      const randomY = contentTop + Math.random() * 0.3;
 
-      // Right burst - within content area
       confetti({
-        particleCount: 15,
-        spread: 70,
-        startVelocity: 12,
+        particleCount: 12,
+        spread: 50,
+        startVelocity: 10,
         ticks: 80,
-        gravity: 0.7,
-        origin: {
-          x: rightX - Math.random() * 0.15,
-          y: originY + Math.random() * 0.1,
-        },
+        gravity: 0.6,
+        origin: { x: randomX, y: randomY },
         zIndex: 0,
       });
-    }, 400) as unknown as number;
+    }, 300) as unknown as number;
   }
 
   document.addEventListener("astro:page-load", () => {
