@@ -16,8 +16,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         <div class="form-wrap" id="form-wrap">
             <div class="card form-card" id="form-card">
                 <form id="form" data-redirect={redirectUrl}>
-                    <a href={redirectUrl} data-astro-prefetch="load" hidden></a>
-
                     <div class="field">
                         <label class="label" for="name">{t["rsvp.name"]}</label>
                         <input
@@ -119,10 +117,20 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
     const API =
         "https://script.google.com/macros/s/AKfycbwq4PjP3sAEj2YTMTge5tZkwDx447v4T-0ySATyf3GImmpnZTaop-NGoxFj-lSyGnTl/exec";
     const KEY = "rsvp";
+    const SUBMITTED_KEY = "rsvp_submitted";
 
     function init() {
         const form = document.getElementById("form") as HTMLFormElement | null;
         if (!form) return;
+
+        const redirect = form.dataset.redirect || "/countdown";
+
+        // Check if we just submitted - redirect immediately
+        if (sessionStorage.getItem(SUBMITTED_KEY) === "true") {
+            sessionStorage.removeItem(SUBMITTED_KEY);
+            window.location.replace(redirect);
+            return;
+        }
 
         const submitBtn = document.getElementById(
             "submit-btn",
@@ -137,7 +145,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         const loadingOverlay = document.getElementById("loading-overlay");
         const spinner = document.getElementById("spinner");
         const checkmark = document.getElementById("checkmark");
-        const redirect = form.dataset.redirect || "/countdown";
 
         let keyboardOpen = false;
 
@@ -155,7 +162,10 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             if (submitBtn) submitBtn.disabled = false;
         }
         resetState();
-        window.addEventListener("pageshow", resetState);
+        window.addEventListener("pageshow", (e) => {
+            // If back button was used (page was cached), reset
+            if (e.persisted) resetState();
+        });
 
         function scrollToShowForm() {
             setTimeout(() => {
@@ -168,7 +178,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         if (window.visualViewport) {
             window.visualViewport.addEventListener("resize", () => {
                 const currentHeight = window.visualViewport!.height;
-
                 if (currentHeight > lastHeight + 100) {
                     const active = document.activeElement as HTMLElement;
                     if (active === nameEl || active === guestsEl) {
@@ -177,7 +186,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                         window.scrollTo({ top: 0, behavior: "smooth" });
                     }
                 }
-
                 lastHeight = currentHeight;
             });
         }
@@ -190,7 +198,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         guestsEl?.addEventListener("focus", () => {
             keyboardOpen = true;
             scrollToShowForm();
-            // Delay select to let keyboard fully open first
             setTimeout(() => guestsEl.select(), 50);
         });
 
@@ -199,7 +206,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                 const active = document.activeElement;
                 const isInForm =
                     active?.closest("#form") || active?.closest(".radio-label");
-
                 if (!isInForm) {
                     keyboardOpen = false;
                     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -229,13 +235,11 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             r.addEventListener("change", () => {
                 updateGuestsVisibility();
                 saveData();
-
-                if (keyboardOpen) {
-                    nameEl?.focus();
-                }
+                if (keyboardOpen) nameEl?.focus();
             });
         });
 
+        // Load saved data
         try {
             const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
             if (saved.name && nameEl) nameEl.value = saved.name;
@@ -273,14 +277,10 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
             saveData();
         });
 
-        let isSubmitting = false;
-
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
 
-            // Prevent double submit
-            if (isSubmitting) return;
-            isSubmitting = true;
+            if (submitBtn?.disabled) return;
 
             (document.activeElement as HTMLElement)?.blur();
             keyboardOpen = false;
@@ -328,9 +328,10 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
                     }
                 }, 300);
 
-                // Navigate directly (bypass Astro transitions to prevent double load)
+                // Mark as submitted and navigate with replace (so back button skips RSVP)
                 setTimeout(() => {
-                    window.location.href = redirect;
+                    sessionStorage.setItem(SUBMITTED_KEY, "true");
+                    window.location.replace(redirect);
                 }, 900);
             } catch {
                 if (loadingOverlay) loadingOverlay.classList.remove("visible");
@@ -345,7 +346,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 </script>
 
 <style>
-    /* RSVP page - scrollable, content doesn't overlap header */
     .rsvp-page {
         min-height: 100vh;
         min-height: 100dvh;
@@ -516,7 +516,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         margin-top: var(--space-4);
     }
 
-    /* Loading overlay */
     .loading-overlay {
         position: fixed;
         inset: 0;

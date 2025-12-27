@@ -38,23 +38,7 @@ A beautiful, mobile-first wedding invitation and RSVP website built with Astro.
 - **Fonts**: Libre Baskerville (English) + Amiri (Arabic)
 - **Animations**: canvas-confetti, CSS keyframes
 - **Backend**: Google Apps Script for form submissions
-- **Deployment**: Static site (GitHub Pages / Vercel / Netlify)
-
-## 🚀 Getting Started
-
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-```
+- **Deployment**: Vercel
 
 ## 📁 Project Structure
 

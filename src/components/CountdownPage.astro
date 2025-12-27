@@ -18,7 +18,6 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         class="page fade"
         data-target={targetDate}
         data-expired={t["countdown.expired"]}
-        data-title={t["countdown.title"]}
         data-title-declined={t["countdown.titleDeclined"]}
     >
         <div class="content countdown">
@@ -28,22 +27,22 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
 
             <div class="timer anim anim-2" id="timer" role="timer">
                 <div class="unit">
-                    <span id="days">00</span>
+                    <span id="days">--</span>
                     <small>{t["countdown.days"]}</small>
                 </div>
-                <span class="sep" aria-hidden="true">:</span>
+                <span class="sep">:</span>
                 <div class="unit">
-                    <span id="hours">00</span>
+                    <span id="hours">--</span>
                     <small>{t["countdown.hours"]}</small>
                 </div>
-                <span class="sep" aria-hidden="true">:</span>
+                <span class="sep">:</span>
                 <div class="unit">
-                    <span id="minutes">00</span>
+                    <span id="minutes">--</span>
                     <small>{t["countdown.minutes"]}</small>
                 </div>
-                <span class="sep" aria-hidden="true">:</span>
+                <span class="sep">:</span>
                 <div class="unit">
-                    <span id="seconds">00</span>
+                    <span id="seconds">--</span>
                     <small>{t["countdown.seconds"]}</small>
                 </div>
             </div>
@@ -51,11 +50,10 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
             <div class="card location anim anim-3">
                 <h2>{t["countdown.location"]}</h2>
                 <p class="city">{t["countdown.city"]}</p>
-                <div class="map">
-                    <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3610.178!2d55.2744!3d25.1972!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f43348a67e24b%3A0xff45e502e1ceb7e2!2sBurj%20Khalifa!5e0!3m2!1sen!2sae!4v1703634000000!5m2!1sen!2sae"
-                        loading="lazy"
-                        title={t["countdown.location"]}></iframe>
+                <div class="map" id="map-container">
+                    <div class="map-placeholder" id="map-placeholder">
+                        Loading map...
+                    </div>
                 </div>
             </div>
         </div>
@@ -67,7 +65,6 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
     let initialized = false;
 
     function init() {
-        // Prevent double initialization
         if (initialized) return;
 
         const page = document.querySelector(
@@ -77,18 +74,16 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
 
         initialized = true;
 
-        const target = Number(page.dataset.target);
-        const expired = page.dataset.expired || "Started!";
+        // Update title if declined
         const titleEl = document.getElementById("countdown-title");
-
-        // Check if user declined (stored in sessionStorage)
-        const declined = sessionStorage.getItem("rsvp_declined") === "true";
-
-        if (declined && titleEl) {
+        if (sessionStorage.getItem("rsvp_declined") === "true" && titleEl) {
             titleEl.textContent =
                 page.dataset.titleDeclined || titleEl.textContent;
         }
 
+        // Start countdown immediately
+        const target = Number(page.dataset.target);
+        const expired = page.dataset.expired || "Started!";
         const el = {
             timer: document.getElementById("timer"),
             d: document.getElementById("days"),
@@ -96,8 +91,6 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
             m: document.getElementById("minutes"),
             s: document.getElementById("seconds"),
         };
-
-        let last = { d: -1, h: -1, m: -1, s: -1 };
 
         function tick() {
             const diff = target - Date.now();
@@ -113,36 +106,47 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
             const m = Math.floor((diff % 3600000) / 60000);
             const s = Math.floor((diff % 60000) / 1000);
 
-            if (d !== last.d && el.d) {
-                el.d.textContent = String(d).padStart(2, "0");
-                last.d = d;
-            }
-            if (h !== last.h && el.h) {
-                el.h.textContent = String(h).padStart(2, "0");
-                last.h = h;
-            }
-            if (m !== last.m && el.m) {
-                el.m.textContent = String(m).padStart(2, "0");
-                last.m = m;
-            }
-            if (s !== last.s && el.s) {
-                el.s.textContent = String(s).padStart(2, "0");
-                last.s = s;
-            }
+            if (el.d) el.d.textContent = String(d).padStart(2, "0");
+            if (el.h) el.h.textContent = String(h).padStart(2, "0");
+            if (el.m) el.m.textContent = String(m).padStart(2, "0");
+            if (el.s) el.s.textContent = String(s).padStart(2, "0");
         }
 
         tick();
         if (timer) clearInterval(timer);
         timer = setInterval(tick, 1000) as unknown as number;
+
+        // Lazy load map after page is interactive
+        requestIdleCallback(
+            () => {
+                const mapContainer = document.getElementById("map-container");
+                const placeholder = document.getElementById("map-placeholder");
+                if (mapContainer && placeholder) {
+                    const iframe = document.createElement("iframe");
+                    iframe.src =
+                        "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3610.178!2d55.2744!3d25.1972!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f43348a67e24b%3A0xff45e502e1ceb7e2!2sBurj%20Khalifa!5e0!3m2!1sen!2sae!4v1703634000000!5m2!1sen!2sae";
+                    iframe.loading = "lazy";
+                    iframe.title = "Location";
+                    iframe.style.cssText = "width:100%;height:100%;border:0;";
+                    placeholder.remove();
+                    mapContainer.appendChild(iframe);
+                }
+            },
+            { timeout: 1000 },
+        );
     }
 
-    // Reset on before-swap (navigation away)
+    // Polyfill for requestIdleCallback
+    if (!window.requestIdleCallback) {
+        (window as any).requestIdleCallback = (cb: Function) =>
+            setTimeout(cb, 100);
+    }
+
     document.addEventListener("astro:before-swap", () => {
         if (timer) clearInterval(timer);
         initialized = false;
     });
 
-    // Only use astro:page-load for initialization
     document.addEventListener("astro:page-load", init);
 </script>
 
@@ -185,7 +189,6 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         margin-top: var(--space-2);
     }
 
-    /* Bigger, more consistent colons */
     .sep {
         font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
         font-weight: 700;
@@ -212,18 +215,23 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         height: clamp(120px, 20vh, 180px);
         min-height: 100px;
         box-shadow: var(--shadow);
+        background: var(--white-10);
+    }
+
+    .map-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--white-50);
+        font-size: var(--fs-sm);
     }
 
     @media (orientation: landscape) and (max-height: 500px) {
         .map {
             height: clamp(100px, 30vw, 160px);
         }
-    }
-
-    .map iframe {
-        width: 100%;
-        height: 100%;
-        border: 0;
     }
 
     .done {
