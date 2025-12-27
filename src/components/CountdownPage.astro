@@ -64,12 +64,18 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
 
 <script>
     let timer: number | undefined;
+    let initialized = false;
 
     function init() {
+        // Prevent double initialization
+        if (initialized) return;
+
         const page = document.querySelector(
             ".page[data-target]",
         ) as HTMLElement;
         if (!page) return;
+
+        initialized = true;
 
         const target = Number(page.dataset.target);
         const expired = page.dataset.expired || "Started!";
@@ -130,12 +136,14 @@ const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
         timer = setInterval(tick, 1000) as unknown as number;
     }
 
-    init();
+    // Reset on before-swap (navigation away)
+    document.addEventListener("astro:before-swap", () => {
+        if (timer) clearInterval(timer);
+        initialized = false;
+    });
+
+    // Only use astro:page-load for initialization
     document.addEventListener("astro:page-load", init);
-    document.addEventListener(
-        "astro:before-swap",
-        () => timer && clearInterval(timer),
-    );
 </script>
 
 <style>

@@ -6,14 +6,20 @@
   import confetti from "canvas-confetti";
 
   let timer: number;
+  let hasPlayed = false;
 
   function run() {
+    // Prevent running twice
+    if (hasPlayed) return;
+
     const page = document.querySelector(".page[data-target]");
     if (!page) return;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     // Don't play confetti if user declined
     if (sessionStorage.getItem("rsvp_declined") === "true") return;
+
+    hasPlayed = true;
 
     // Get content area bounds
     const content = page.querySelector(".content");
@@ -47,12 +53,13 @@
     }, 300) as unknown as number;
   }
 
-  document.addEventListener("astro:page-load", () => {
-    requestAnimationFrame(() => setTimeout(run, 300));
-  });
-
   document.addEventListener("astro:before-swap", () => {
     clearInterval(timer);
     confetti.reset?.();
+    hasPlayed = false;
+  });
+
+  document.addEventListener("astro:page-load", () => {
+    requestAnimationFrame(() => setTimeout(run, 300));
   });
 </script>
