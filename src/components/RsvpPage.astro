@@ -134,14 +134,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         // If form doesn't exist (we are on another page), exit
         if (!form) return;
 
-        // Lock viewport height on page load to prevent keyboard shift
-        const rsvpPage = document.querySelector(".rsvp-page") as HTMLElement;
-        if (rsvpPage) {
-            // Use visualViewport if available for more accurate height
-            const vh = window.visualViewport?.height || window.innerHeight;
-            rsvpPage.style.setProperty("--locked-vh", `${vh}px`);
-        }
-
         const guestsWrapper = document.getElementById("guests-wrapper");
         const guestsGroup = document.getElementById("guests-group");
         const attendingRadios = document.getElementsByName("attending");
@@ -369,19 +361,23 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 
 <style>
     .rsvp-page {
-        /* Use locked viewport height to prevent keyboard shift */
-        --locked-vh: 100vh;
-        height: var(--locked-vh);
+        /* Fixed positioning anchored to viewport edges - immune to keyboard resize */
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
         width: 100%;
         background: var(--color-bg);
-        padding-top: var(--header-height);
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        /* Position from top with padding - stable anchor that doesn't shift */
+        justify-content: flex-start;
         align-items: center;
+        /* Generous top padding: header height + space to visually center the form */
+        padding-top: calc(var(--header-height) + 12vh);
+        padding-bottom: 2rem;
         overflow: hidden;
-        position: fixed;
-        inset: 0;
         contain: layout style paint size;
         transform: translateZ(0);
     }
@@ -397,7 +393,6 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
         max-width: 600px;
         /* Prevent any resize/layout shift */
         contain: layout style;
-        /* Remove auto scrolling that causes jitter */
         overflow: visible;
     }
 

@@ -134,11 +134,19 @@
 html {
     height: 100%;
     height: -webkit-fill-available;
-    scroll-behavior: smooth;
+    /* Use auto scroll behavior to prevent jarring scroll-into-view on input focus */
+    scroll-behavior: auto;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     /* Prevent overscroll bounce effects */
     overscroll-behavior: none;
+}
+
+/* Prevent browser auto-scroll when inputs are focused */
+input,
+textarea,
+select {
+    scroll-margin: 0;
 }
 
 body {
