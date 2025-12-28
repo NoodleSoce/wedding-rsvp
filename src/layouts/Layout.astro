@@ -58,31 +58,43 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 
 		<ClientRouter />
 
-		<!-- CRITICAL: Inline styles to prevent ANY flash - loads before anything else -->
+		<!-- CRITICAL: These styles MUST load first and lock ALL dimensions -->
 		<style is:inline>
+			/* Set background immediately */
 			html {
 				background: #4b0101;
+				height: 100%;
 			}
-			/* Lock header logo dimensions BEFORE image loads */
-			.header-logo {
+			body {
+				background: #4b0101;
+				margin: 0;
+			}
+
+			/* FIXED container that CLIPS everything - nothing can escape */
+			.logo-box {
 				display: block;
-				height: 72px;
 				width: 217px;
-				object-fit: contain;
+				height: 72px;
+				overflow: hidden;
+				position: relative;
 			}
-			.header-logo-wrap {
+			/* Image fills container exactly */
+			.logo-box img {
+				display: block;
+				width: 100%;
+				height: 100%;
+				object-fit: contain;
+				position: absolute;
+				top: 0;
+				left: 0;
+			}
+			/* Button with ALL styles inline */
+			.lang-box {
 				display: flex;
 				justify-content: center;
 				align-items: center;
-				height: 72px;
-				width: 217px;
-			}
-			.header-lang {
 				width: 44px;
 				height: 44px;
-				display: flex;
-				justify-content: center;
-				align-items: center;
 				font-family: "Libre Baskerville", Georgia, serif;
 				font-size: 0.875rem;
 				font-weight: 600;
@@ -91,32 +103,35 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 				border: 1px solid rgba(255, 255, 255, 0.2);
 				border-radius: 50%;
 				text-decoration: none;
+				position: absolute;
+				right: 0;
+				top: 50%;
+				transform: translateY(-50%);
 			}
-			.header-lang-ar {
+			.lang-box.is-ar {
 				font-family: "Amiri", Georgia, serif;
 				font-size: 1.25rem;
 				font-weight: 400;
+				line-height: 1;
 				padding-top: 2px;
 			}
+			/* Responsive */
 			@media (min-width: 400px) {
-				.header-logo,
-				.header-logo-wrap {
-					height: 80px;
+				.logo-box {
 					width: 241px;
+					height: 80px;
 				}
 			}
 			@media (min-width: 600px) {
-				.header-logo,
-				.header-logo-wrap {
-					height: 88px;
+				.logo-box {
 					width: 265px;
+					height: 88px;
 				}
 			}
 			@media (orientation: landscape) and (max-height: 500px) {
-				.header-logo,
-				.header-logo-wrap {
-					height: 52px;
+				.logo-box {
 					width: 156px;
+					height: 52px;
 				}
 			}
 		</style>
@@ -126,7 +141,6 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 		<slot />
 
 		<script is:inline>
-			// Language detection - runs once on first visit
 			(function () {
 				var k = "lang_set";
 				if (sessionStorage.getItem(k)) return;

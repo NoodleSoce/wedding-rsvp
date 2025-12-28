@@ -16,39 +16,33 @@ const targetPath =
       : `/ar${path}`
     : path.replace("/ar", "") || "/";
 
-// Pre-optimize the logo image at build time
 const optimizedLogo = await getImage({
   src: logoImg,
   width: 400,
   height: 133,
   format: "webp",
 });
-
-// Determine button text and class based on current language
 const buttonText = lang === "en" ? "ع" : "EN";
-const isArabicButton = lang === "en"; // Shows Arabic letter when on English page
+const isArabicButton = lang === "en";
 ---
 
 <header
-  class="header"
+  class="hdr"
   id="site-header"
   data-animate={showAnimation ? "true" : "false"}
 >
-  <div class="header-inner">
-    <div class="header-logo-wrap">
+  <div class="hdr-inner">
+    <div class="logo-box">
       <img
         src={optimizedLogo.src}
         alt="Z & H"
-        width="217"
-        height="72"
-        class="header-logo"
         fetchpriority="high"
         decoding="sync"
       />
     </div>
     <a
       href={targetPath}
-      class:list={["header-lang", { "header-lang-ar": isArabicButton }]}
+      class:list={["lang-box", { "is-ar": isArabicButton }]}
       data-astro-prefetch
       aria-label={lang === "en" ? "Switch to Arabic" : "Switch to English"}
     >
@@ -58,24 +52,23 @@ const isArabicButton = lang === "en"; // Shows Arabic letter when on English pag
 </header>
 
 <script>
-  // Handle language preference on click
   document.addEventListener(
     "click",
     (e) => {
-      const btn = (e.target as HTMLElement).closest(".header-lang");
+      const btn = (e.target as HTMLElement).closest(".lang-box");
       if (btn) {
-        const isArabic = btn.classList.contains("header-lang-ar");
-        localStorage.setItem("preferred_lang", isArabic ? "ar" : "en");
+        localStorage.setItem(
+          "preferred_lang",
+          btn.classList.contains("is-ar") ? "ar" : "en",
+        );
       }
     },
     { passive: true },
   );
 
-  // Handle animation on first load only
   function initHeaderAnimation() {
     const header = document.getElementById("site-header");
     if (!header) return;
-
     if (header.dataset.animate === "true" && !header.dataset.animated) {
       header.classList.add("animated");
       header.dataset.animated = "true";
@@ -87,7 +80,7 @@ const isArabicButton = lang === "en"; // Shows Arabic letter when on English pag
 </script>
 
 <style>
-  .header {
+  .hdr {
     position: absolute;
     top: 0;
     left: 0;
@@ -97,7 +90,7 @@ const isArabicButton = lang === "en"; // Shows Arabic letter when on English pag
     pointer-events: none;
   }
 
-  .header-inner {
+  .hdr-inner {
     max-width: 600px;
     margin: 0 auto;
     display: flex;
@@ -109,41 +102,34 @@ const isArabicButton = lang === "en"; // Shows Arabic letter when on English pag
     padding: 0 1rem;
   }
 
-  /* Logo dimensions are set in Layout.astro critical CSS */
-
-  .header-lang {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
+  .lang-box {
     transition: background 0.12s ease;
     pointer-events: auto;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
   }
 
-  .header-lang:active {
+  .lang-box:active {
     background: rgba(255, 255, 255, 0.2);
   }
 
   @media (hover: hover) {
-    .header-lang:hover {
+    .lang-box:hover {
       background: rgba(255, 255, 255, 0.2);
     }
   }
 
   @media (orientation: landscape) and (max-height: 500px) {
-    .header {
+    .hdr {
       padding: 0.75rem 1rem;
     }
   }
 
-  /* Animation ONLY when .animated class is added via JS */
-  .header.animated .header-logo-wrap {
+  .hdr.animated .logo-box {
     animation: fadeSlideDown 0.35s ease-out both;
   }
 
-  .header.animated .header-lang {
+  .hdr.animated .lang-box {
     animation: fadeSlideDownBtn 0.35s ease-out 0.1s both;
   }
 
