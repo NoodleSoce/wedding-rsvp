@@ -15,6 +15,13 @@ const targetPath =
       ? "/ar"
       : `/ar${path}`
     : path.replace("/ar", "") || "/";
+
+// Logo aspect ratio: 400/133 = 3.0075
+// Calculate widths for each height to prevent layout shift
+// height 72px -> width 216.54px
+// height 80px -> width 240.6px
+// height 88px -> width 264.66px
+// height 52px -> width 156.39px
 ---
 
 <header
@@ -105,28 +112,49 @@ const targetPath =
     display: flex;
     justify-content: center;
     align-items: center;
+    /* Fixed dimensions to prevent any layout shift */
+    height: 72px;
+    width: 217px;
   }
 
   .logo {
+    /* Use fixed dimensions matching the container - no auto */
     height: 72px;
-    width: auto;
+    width: 217px;
+    /* Maintain aspect ratio within container */
+    object-fit: contain;
   }
 
   @media (min-width: 400px) {
+    .logo-wrap {
+      height: 80px;
+      width: 241px;
+    }
     .logo {
       height: 80px;
+      width: 241px;
     }
   }
 
   @media (min-width: 600px) {
+    .logo-wrap {
+      height: 88px;
+      width: 265px;
+    }
     .logo {
       height: 88px;
+      width: 265px;
     }
   }
 
   @media (orientation: landscape) and (max-height: 500px) {
+    .logo-wrap {
+      height: 52px;
+      width: 156px;
+    }
     .logo {
       height: 52px;
+      width: 156px;
     }
     .header {
       padding: 0.75rem 1rem;
