@@ -61,7 +61,7 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 
 		<ClientRouter />
 
-		<!-- Critical inline styles - instant background, no delay -->
+		<!-- Critical inline styles - instant background -->
 		<style is:inline>
 			html {
 				background: #4b0101;
@@ -69,7 +69,10 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 		</style>
 	</head>
 	<body>
-		<Header lang={lang} showAnimation={headerAnimation} />
+		<!-- Header persists across page transitions - no re-render, no flash -->
+		<div transition:persist="header">
+			<Header lang={lang} showAnimation={headerAnimation} />
+		</div>
 		<slot />
 
 		<script is:inline>

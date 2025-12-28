@@ -17,7 +17,11 @@ const targetPath =
     : path.replace("/ar", "") || "/";
 ---
 
-<header class:list={["header", { animated: showAnimation }]}>
+<header
+  class="header"
+  id="site-header"
+  data-animate={showAnimation ? "true" : "false"}
+>
   <div class="inner">
     <div class="logo-wrap">
       <Image
@@ -42,7 +46,7 @@ const targetPath =
 </header>
 
 <script>
-  // Handle language preference on click - passive event
+  // Handle language preference on click
   document.addEventListener(
     "click",
     (e) => {
@@ -56,6 +60,22 @@ const targetPath =
     },
     { passive: true },
   );
+
+  // Handle animation on first load only
+  function initHeaderAnimation() {
+    const header = document.getElementById("site-header");
+    if (!header) return;
+
+    // Only animate on landing page, and only on first visit (not persisted navigations)
+    if (header.dataset.animate === "true" && !header.dataset.animated) {
+      header.classList.add("animated");
+      header.dataset.animated = "true";
+    }
+  }
+
+  // Run immediately
+  initHeaderAnimation();
+  document.addEventListener("astro:page-load", initHeaderAnimation);
 </script>
 
 <style>
@@ -67,9 +87,6 @@ const targetPath =
     padding: 1rem;
     z-index: 100;
     pointer-events: none;
-    /* Always visible - no flash */
-    opacity: 1;
-    transform: translateZ(0);
   }
 
   .inner {
@@ -88,9 +105,6 @@ const targetPath =
     display: flex;
     justify-content: center;
     align-items: center;
-    /* Default visible state */
-    opacity: 1;
-    transform: translateZ(0);
   }
 
   .logo {
@@ -137,12 +151,10 @@ const targetPath =
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     text-decoration: none;
-    transition: background 0.15s ease;
+    transition: background 0.12s ease;
     pointer-events: auto;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    /* Default visible state */
-    opacity: 1;
   }
 
   .lang-btn.arabic {
@@ -163,36 +175,34 @@ const targetPath =
     }
   }
 
-  /* Animation ONLY when explicitly enabled (landing page only) */
+  /* Animation ONLY when .animated class is added via JS */
   .header.animated .logo-wrap {
-    opacity: 0;
-    animation: fadeSlideDown 0.4s ease 0.05s forwards;
+    animation: fadeSlideDown 0.35s ease-out both;
   }
 
   .header.animated .lang-btn {
-    opacity: 0;
-    animation: fadeSlideDownBtn 0.4s ease 0.15s forwards;
+    animation: fadeSlideDownBtn 0.35s ease-out 0.1s both;
   }
 
   @keyframes fadeSlideDown {
     from {
       opacity: 0;
-      transform: translate3d(0, -10px, 0);
+      transform: translateY(-12px);
     }
     to {
       opacity: 1;
-      transform: translate3d(0, 0, 0);
+      transform: translateY(0);
     }
   }
 
   @keyframes fadeSlideDownBtn {
     from {
       opacity: 0;
-      transform: translate3d(0, calc(-50% - 10px), 0);
+      transform: translateY(calc(-50% - 12px));
     }
     to {
       opacity: 1;
-      transform: translate3d(0, -50%, 0);
+      transform: translateY(-50%);
     }
   }
 </style>

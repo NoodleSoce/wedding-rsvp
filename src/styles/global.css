@@ -1,6 +1,6 @@
 /* ========================================
    WEDDING RSVP - Optimized Design System
-   Mobile-first, GPU-accelerated
+   Mobile-first, instant responsiveness
    ======================================== */
 
 :root {
@@ -44,9 +44,9 @@
     --radius-sm: clamp(8px, 6px + 0.75vw, 12px);
     --radius-full: 100px;
 
-    /* Motion - faster for responsiveness */
-    --ease: cubic-bezier(0.4, 0, 0.2, 1);
-    --duration: 0.12s;
+    /* Motion - instant feel */
+    --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+    --duration: 0.1s;
 }
 
 /* ========================================
@@ -147,7 +147,7 @@ h2 {
 }
 
 /* ========================================
-   BUTTON - Fast responsive
+   BUTTON - Instant feedback
    ======================================== */
 .btn {
     display: flex;
@@ -165,9 +165,7 @@ h2 {
     border-radius: var(--radius-full);
     cursor: pointer;
     text-decoration: none;
-    transition: background var(--duration) ease,
-        border-color var(--duration) ease,
-        transform 0.08s ease;
+    transition: background var(--duration) ease, transform 0.05s ease;
     -webkit-user-select: none;
     user-select: none;
     touch-action: manipulation;
@@ -192,7 +190,7 @@ h2 {
 }
 
 /* ========================================
-   INPUT - Faster focus response
+   INPUT - Instant focus
    ======================================== */
 .input {
     width: 100%;
@@ -204,7 +202,7 @@ h2 {
     background: rgba(0, 0, 0, 0.15);
     border: 1px solid var(--white-20);
     border-radius: var(--radius-sm);
-    transition: border-color 0.1s ease;
+    transition: border-color 0.05s ease;
     -webkit-appearance: none;
     appearance: none;
 }
@@ -231,12 +229,12 @@ h2 {
 }
 
 /* ========================================
-   ANIMATIONS - Faster, snappier
+   ANIMATIONS - Snappy entrance
    ======================================== */
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(8px);
+        transform: translateY(6px);
     }
 
     to {
@@ -248,7 +246,7 @@ h2 {
 @keyframes slideIn {
     from {
         opacity: 0;
-        transform: translateX(-10px);
+        transform: translateX(-8px);
     }
 
     to {
@@ -260,7 +258,7 @@ h2 {
 @keyframes slideInRTL {
     from {
         opacity: 0;
-        transform: translateX(10px);
+        transform: translateX(8px);
     }
 
     to {
@@ -270,38 +268,38 @@ h2 {
 }
 
 .fade {
-    animation: fadeIn 0.2s ease-out both;
+    animation: fadeIn 0.15s ease-out both;
 }
 
 .anim {
-    opacity: 0;
-    animation: slideIn 0.2s ease-out forwards;
+    animation: slideIn 0.15s ease-out both;
 }
 
 [dir="rtl"] .anim {
     animation-name: slideInRTL;
 }
 
-/* Shorter stagger delays for snappier feel */
+/* Very short stagger for snappy feel */
 .anim-1 {
-    animation-delay: 0.02s;
+    animation-delay: 0.01s;
 }
 
 .anim-2 {
-    animation-delay: 0.04s;
+    animation-delay: 0.02s;
 }
 
 .anim-3 {
-    animation-delay: 0.06s;
+    animation-delay: 0.03s;
 }
 
 .anim-4 {
-    animation-delay: 0.08s;
+    animation-delay: 0.04s;
 }
 
+/* Fast view transitions */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-    animation-duration: 0.12s;
+    animation-duration: 0.1s;
 }
 
 @media (prefers-reduced-motion: reduce) {
