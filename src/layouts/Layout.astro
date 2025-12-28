@@ -52,27 +52,77 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 			content={lang === "ar" ? "ar_AE" : "en_US"}
 		/>
 
-		<!-- DNS prefetch for external resources -->
 		<link rel="dns-prefetch" href="https://script.google.com" />
 		<link rel="dns-prefetch" href="https://www.google.com" />
-
-		<!-- Preconnect only when needed -->
 		<link rel="preconnect" href="https://script.google.com" crossorigin />
 
 		<ClientRouter />
 
-		<!-- Critical inline styles - instant background -->
+		<!-- CRITICAL: Inline styles to prevent ANY flash - loads before anything else -->
 		<style is:inline>
 			html {
 				background: #4b0101;
 			}
+			/* Lock header logo dimensions BEFORE image loads */
+			.header-logo {
+				display: block;
+				height: 72px;
+				width: 217px;
+				object-fit: contain;
+			}
+			.header-logo-wrap {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				height: 72px;
+				width: 217px;
+			}
+			.header-lang {
+				width: 44px;
+				height: 44px;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				font-family: "Libre Baskerville", Georgia, serif;
+				font-size: 0.875rem;
+				font-weight: 600;
+				color: #fff;
+				background: rgba(255, 255, 255, 0.1);
+				border: 1px solid rgba(255, 255, 255, 0.2);
+				border-radius: 50%;
+				text-decoration: none;
+			}
+			.header-lang-ar {
+				font-family: "Amiri", Georgia, serif;
+				font-size: 1.25rem;
+				font-weight: 400;
+				padding-top: 2px;
+			}
+			@media (min-width: 400px) {
+				.header-logo,
+				.header-logo-wrap {
+					height: 80px;
+					width: 241px;
+				}
+			}
+			@media (min-width: 600px) {
+				.header-logo,
+				.header-logo-wrap {
+					height: 88px;
+					width: 265px;
+				}
+			}
+			@media (orientation: landscape) and (max-height: 500px) {
+				.header-logo,
+				.header-logo-wrap {
+					height: 52px;
+					width: 156px;
+				}
+			}
 		</style>
 	</head>
 	<body>
-		<!-- Header persists across page transitions - no re-render, no flash -->
-		<div transition:persist="header">
-			<Header lang={lang} showAnimation={headerAnimation} />
-		</div>
+		<Header lang={lang} showAnimation={headerAnimation} />
 		<slot />
 
 		<script is:inline>

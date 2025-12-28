@@ -23,42 +23,36 @@ const optimizedLogo = await getImage({
   height: 133,
   format: "webp",
 });
+
+// Determine button text and class based on current language
+const buttonText = lang === "en" ? "ع" : "EN";
+const isArabicButton = lang === "en"; // Shows Arabic letter when on English page
 ---
 
 <header
   class="header"
   id="site-header"
   data-animate={showAnimation ? "true" : "false"}
-  style="position:absolute;top:0;left:0;right:0;padding:1rem;z-index:100;pointer-events:none;"
 >
-  <div
-    class="inner"
-    style="max-width:600px;margin:0 auto;display:flex;justify-content:center;align-items:center;pointer-events:auto;direction:ltr;position:relative;padding:0 1rem;"
-  >
-    <div
-      class="logo-wrap"
-      style="display:flex;justify-content:center;align-items:center;height:72px;width:217px;"
-    >
-      <!-- Use regular img with inline styles to prevent any flash -->
+  <div class="header-inner">
+    <div class="header-logo-wrap">
       <img
         src={optimizedLogo.src}
         alt="Z & H"
         width="217"
         height="72"
-        class="logo"
-        style="height:72px;width:217px;object-fit:contain;display:block;"
+        class="header-logo"
         fetchpriority="high"
         decoding="sync"
       />
     </div>
     <a
       href={targetPath}
-      class:list={["lang-btn", { arabic: lang === "en" }]}
+      class:list={["header-lang", { "header-lang-ar": isArabicButton }]}
       data-astro-prefetch
       aria-label={lang === "en" ? "Switch to Arabic" : "Switch to English"}
-      style="position:absolute;right:0;top:50%;transform:translateY(-50%);width:44px;height:44px;display:flex;justify-content:center;align-items:center;font-size:0.875rem;font-weight:600;color:#fff;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:50%;text-decoration:none;pointer-events:auto;-webkit-tap-highlight-color:transparent;"
     >
-      {lang === "en" ? "ع" : "EN"}
+      {buttonText}
     </a>
   </div>
 </header>
@@ -68,12 +62,10 @@ const optimizedLogo = await getImage({
   document.addEventListener(
     "click",
     (e) => {
-      const btn = (e.target as HTMLElement).closest(".lang-btn");
+      const btn = (e.target as HTMLElement).closest(".header-lang");
       if (btn) {
-        localStorage.setItem(
-          "preferred_lang",
-          btn.classList.contains("arabic") ? "ar" : "en",
-        );
+        const isArabic = btn.classList.contains("header-lang-ar");
+        localStorage.setItem("preferred_lang", isArabic ? "ar" : "en");
       }
     },
     { passive: true },
@@ -95,74 +87,63 @@ const optimizedLogo = await getImage({
 </script>
 
 <style>
-  /* Responsive adjustments only - base styles are inline */
-  @media (min-width: 400px) {
-    .logo-wrap {
-      height: 80px !important;
-      width: 241px !important;
-    }
-    .logo {
-      height: 80px !important;
-      width: 241px !important;
-    }
+  .header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    z-index: 100;
+    pointer-events: none;
   }
 
-  @media (min-width: 600px) {
-    .logo-wrap {
-      height: 88px !important;
-      width: 265px !important;
-    }
-    .logo {
-      height: 88px !important;
-      width: 265px !important;
-    }
+  .header-inner {
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto;
+    direction: ltr;
+    position: relative;
+    padding: 0 1rem;
   }
 
-  @media (orientation: landscape) and (max-height: 500px) {
-    .logo-wrap {
-      height: 52px !important;
-      width: 156px !important;
-    }
-    .logo {
-      height: 52px !important;
-      width: 156px !important;
-    }
-    .header {
-      padding: 0.75rem 1rem !important;
-    }
-  }
+  /* Logo dimensions are set in Layout.astro critical CSS */
 
-  /* Lang button fonts - can't be inline due to font-family */
-  .lang-btn {
-    font-family: "Libre Baskerville", Georgia, serif;
-    touch-action: manipulation;
+  .header-lang {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
     transition: background 0.12s ease;
+    pointer-events: auto;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .lang-btn.arabic {
-    font-family: "Amiri", Georgia, serif;
-    font-size: 1.25rem;
-    font-weight: 400;
-    line-height: 1;
-    padding-top: 2px;
-  }
-
-  .lang-btn:active {
+  .header-lang:active {
     background: rgba(255, 255, 255, 0.2);
   }
 
   @media (hover: hover) {
-    .lang-btn:hover {
+    .header-lang:hover {
       background: rgba(255, 255, 255, 0.2);
     }
   }
 
+  @media (orientation: landscape) and (max-height: 500px) {
+    .header {
+      padding: 0.75rem 1rem;
+    }
+  }
+
   /* Animation ONLY when .animated class is added via JS */
-  .header.animated .logo-wrap {
+  .header.animated .header-logo-wrap {
     animation: fadeSlideDown 0.35s ease-out both;
   }
 
-  .header.animated .lang-btn {
+  .header.animated .header-lang {
     animation: fadeSlideDownBtn 0.35s ease-out 0.1s both;
   }
 
