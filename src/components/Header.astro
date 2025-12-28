@@ -26,8 +26,12 @@ const buttonText = lang === "en" ? "ع" : "EN";
 const isArabicButton = lang === "en";
 ---
 
+<!-- 
+  When showAnimation is true: header starts hidden, JS adds .animated class to trigger fade-in
+  When showAnimation is false: header is visible immediately, no animation
+-->
 <header
-  class="hdr"
+  class:list={["hdr", { "hdr-will-animate": showAnimation }]}
   id="site-header"
   data-animate={showAnimation ? "true" : "false"}
 >
@@ -70,8 +74,11 @@ const isArabicButton = lang === "en";
     const header = document.getElementById("site-header");
     if (!header) return;
     if (header.dataset.animate === "true" && !header.dataset.animated) {
-      header.classList.add("animated");
-      header.dataset.animated = "true";
+      // Small delay to ensure styles are applied, then animate
+      requestAnimationFrame(() => {
+        header.classList.add("animated");
+        header.dataset.animated = "true";
+      });
     }
   }
 
@@ -88,6 +95,13 @@ const isArabicButton = lang === "en";
     padding: 1rem;
     z-index: 100;
     pointer-events: none;
+  }
+
+  /* When animation is expected, START HIDDEN */
+  .hdr-will-animate .logo-box,
+  .hdr-will-animate .lang-box {
+    opacity: 0;
+    visibility: hidden;
   }
 
   .hdr-inner {
@@ -125,11 +139,16 @@ const isArabicButton = lang === "en";
     }
   }
 
+  /* Animation: from hidden to visible */
   .hdr.animated .logo-box {
+    opacity: 1;
+    visibility: visible;
     animation: fadeSlideDown 0.35s ease-out both;
   }
 
   .hdr.animated .lang-box {
+    opacity: 1;
+    visibility: visible;
     animation: fadeSlideDownBtn 0.35s ease-out 0.1s both;
   }
 

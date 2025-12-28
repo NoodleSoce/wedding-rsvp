@@ -178,8 +178,8 @@ const redirectUrl = lang === "ar" ? "/ar/countdown" : "/countdown";
 
         function scrollToShowForm() {
             setTimeout(() => {
-                submitBtn?.scrollIntoView({ behavior: "smooth", block: "end" });
-            }, 150);
+                submitBtn?.scrollIntoView({ behavior: "auto", block: "end" });
+            }, 50);
         }
 
         let lastHeight = window.visualViewport?.height || window.innerHeight;
