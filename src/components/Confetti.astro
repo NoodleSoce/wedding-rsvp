@@ -3,10 +3,12 @@
 ---
 
 <script>
-  let hasPlayed = false;
-  let confettiModule: typeof import("canvas-confetti") | null = null;
+  import confetti from "canvas-confetti";
 
-  async function run() {
+  let hasPlayed = false;
+  let intervalId: number | undefined;
+
+  function run() {
     // Prevent running twice
     if (hasPlayed) return;
 
@@ -21,77 +23,58 @@
 
     hasPlayed = true;
 
-    // Lazy load confetti only when needed
-    if (!confettiModule) {
-      confettiModule = await import("canvas-confetti");
-    }
-    const confetti = confettiModule.default;
-
-    // Get content area bounds once
-    const content = page.querySelector(".content");
-    const rect = content?.getBoundingClientRect();
-    if (!rect) return;
-
+    // Get viewport dimensions once
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const left = rect.left / vw;
-    const right = rect.right / vw;
-    const width = right - left;
-    const top = rect.top / vh;
 
-    // Reduced duration and particle count for better performance
-    const duration = 3000;
+    // Duration
+    const duration = 4000;
     const end = Date.now() + duration;
-
-    // Use requestAnimationFrame for smoother, battery-efficient animation
-    let frameId: number;
 
     function burst() {
       const now = Date.now();
       if (now > end) {
-        cancelAnimationFrame(frameId);
+        if (intervalId) clearInterval(intervalId);
         return;
       }
 
-      // Reduced particle count for performance
+      // Bigger confetti area - covers more of the screen
       confetti({
-        particleCount: 8,
-        spread: 45,
-        startVelocity: 8,
-        ticks: 60,
-        gravity: 0.7,
+        particleCount: 10,
+        spread: 70,
+        startVelocity: 12,
+        ticks: 80,
+        gravity: 0.6,
+        scalar: 1.1,
         origin: {
-          x: left + Math.random() * width,
-          y: top + Math.random() * 0.25,
+          x: 0.1 + Math.random() * 0.8, // 10% to 90% of screen width
+          y: 0.1 + Math.random() * 0.3, // 10% to 40% of screen height
         },
         zIndex: 0,
         disableForReducedMotion: true,
       });
-
-      // Burst every ~250ms using RAF timing
-      setTimeout(() => {
-        frameId = requestAnimationFrame(burst);
-      }, 250);
     }
 
+    // Start immediately then repeat
     burst();
+    intervalId = setInterval(burst, 280) as unknown as number;
   }
 
   // Cleanup on page swap
   document.addEventListener("astro:before-swap", () => {
     hasPlayed = false;
-    if (confettiModule?.default?.reset) {
-      confettiModule.default.reset();
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = undefined;
     }
+    confetti.reset();
   });
 
-  // Start after page load with minimal delay
+  // Start after page load - run immediately for responsiveness
   document.addEventListener("astro:page-load", () => {
-    // Use requestIdleCallback for non-blocking initialization
-    if ("requestIdleCallback" in window) {
-      requestIdleCallback(() => run(), { timeout: 500 });
-    } else {
-      setTimeout(run, 200);
-    }
+    // Small delay to let page render first
+    requestAnimationFrame(() => {
+      setTimeout(run, 100);
+    });
   });
 </script>

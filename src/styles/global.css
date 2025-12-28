@@ -15,7 +15,7 @@
     --success: #2e7d32;
     --error: #c62828;
 
-    /* Typography - using system font stack as fallback for faster initial paint */
+    /* Typography */
     --font: 'Libre Baskerville', 'Amiri', Georgia, serif;
     --fs-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.85rem);
     --fs-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
@@ -44,13 +44,13 @@
     --radius-sm: clamp(8px, 6px + 0.75vw, 12px);
     --radius-full: 100px;
 
-    /* Motion */
+    /* Motion - faster for responsiveness */
     --ease: cubic-bezier(0.4, 0, 0.2, 1);
-    --duration: 0.15s;
+    --duration: 0.12s;
 }
 
 /* ========================================
-   RESET & BASE - Optimized
+   RESET & BASE
    ======================================== */
 *,
 *::before,
@@ -67,7 +67,6 @@ html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     overscroll-behavior: none;
-    /* Optimize scrolling */
     scroll-behavior: auto;
 }
 
@@ -85,13 +84,10 @@ body {
     overflow-y: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Use optimizeSpeed for faster rendering */
     text-rendering: optimizeSpeed;
     overscroll-behavior-y: none;
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
-    /* CSS containment for better performance */
-    contain: layout style;
 }
 
 [dir="rtl"] body {
@@ -105,7 +101,7 @@ h2 {
 }
 
 /* ========================================
-   PAGE LAYOUT - GPU Optimized
+   PAGE LAYOUT
    ======================================== */
 .page {
     min-height: 100vh;
@@ -116,8 +112,6 @@ h2 {
     align-items: center;
     padding: var(--header-h) var(--page-pad) var(--page-pad);
     background: var(--bg);
-    /* CSS containment */
-    contain: layout style paint;
 }
 
 @media (orientation: landscape) and (max-height: 500px) {
@@ -139,7 +133,7 @@ h2 {
 }
 
 /* ========================================
-   CARD - Simplified blur
+   CARD
    ======================================== */
 .card {
     width: 100%;
@@ -148,13 +142,12 @@ h2 {
     border: 1px solid var(--white-20);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    /* Use will-change only when needed, lighter blur */
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 /* ========================================
-   BUTTON - Optimized transitions
+   BUTTON - Fast responsive
    ======================================== */
 .btn {
     display: flex;
@@ -172,18 +165,17 @@ h2 {
     border-radius: var(--radius-full);
     cursor: pointer;
     text-decoration: none;
-    /* GPU-accelerated transform */
-    transform: translateZ(0);
-    transition: background var(--duration) var(--ease),
-        border-color var(--duration) var(--ease),
-        transform var(--duration) var(--ease);
+    transition: background var(--duration) ease,
+        border-color var(--duration) ease,
+        transform 0.08s ease;
     -webkit-user-select: none;
     user-select: none;
     touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .btn:active {
-    transform: scale(0.97) translateZ(0);
+    transform: scale(0.97);
     background: var(--white-20);
 }
 
@@ -200,7 +192,7 @@ h2 {
 }
 
 /* ========================================
-   INPUT - Optimized
+   INPUT - Faster focus response
    ======================================== */
 .input {
     width: 100%;
@@ -212,7 +204,7 @@ h2 {
     background: rgba(0, 0, 0, 0.15);
     border: 1px solid var(--white-20);
     border-radius: var(--radius-sm);
-    transition: border-color var(--duration) var(--ease);
+    transition: border-color 0.1s ease;
     -webkit-appearance: none;
     appearance: none;
 }
@@ -239,87 +231,77 @@ h2 {
 }
 
 /* ========================================
-   ANIMATIONS - GPU Accelerated
+   ANIMATIONS - Faster, snappier
    ======================================== */
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translate3d(0, 10px, 0);
+        transform: translateY(8px);
     }
 
     to {
         opacity: 1;
-        transform: translate3d(0, 0, 0);
+        transform: translateY(0);
     }
 }
 
 @keyframes slideIn {
     from {
         opacity: 0;
-        transform: translate3d(-12px, 0, 0);
+        transform: translateX(-10px);
     }
 
     to {
         opacity: 1;
-        transform: translate3d(0, 0, 0);
+        transform: translateX(0);
     }
 }
 
 @keyframes slideInRTL {
     from {
         opacity: 0;
-        transform: translate3d(12px, 0, 0);
+        transform: translateX(10px);
     }
 
     to {
         opacity: 1;
-        transform: translate3d(0, 0, 0);
+        transform: translateX(0);
     }
 }
 
 .fade {
-    animation: fadeIn 0.25s var(--ease) both;
+    animation: fadeIn 0.2s ease-out both;
 }
 
 .anim {
     opacity: 0;
-    animation: slideIn 0.25s var(--ease) forwards;
-    /* Hint browser about upcoming animation */
-    will-change: opacity, transform;
+    animation: slideIn 0.2s ease-out forwards;
 }
 
 [dir="rtl"] .anim {
     animation-name: slideInRTL;
 }
 
-/* Staggered delays - reduced for faster perception */
+/* Shorter stagger delays for snappier feel */
 .anim-1 {
-    animation-delay: 0.03s;
+    animation-delay: 0.02s;
 }
 
 .anim-2 {
-    animation-delay: 0.06s;
+    animation-delay: 0.04s;
 }
 
 .anim-3 {
-    animation-delay: 0.09s;
+    animation-delay: 0.06s;
 }
 
 .anim-4 {
-    animation-delay: 0.12s;
-}
-
-/* Remove will-change after animation completes */
-.anim-1,
-.anim-2,
-.anim-3,
-.anim-4 {
-    animation-fill-mode: forwards;
+    animation-delay: 0.08s;
 }
 
 ::view-transition-old(root),
 ::view-transition-new(root) {
-    animation-duration: 0.15s;
+    animation-duration: 0.12s;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -347,7 +329,7 @@ button {
     scroll-margin: 0;
 }
 
-/* Optimize images */
 img {
-    content-visibility: auto;
+    max-width: 100%;
+    height: auto;
 }

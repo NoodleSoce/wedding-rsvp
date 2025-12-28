@@ -27,7 +27,7 @@ const targetPath =
         width={400}
         height={133}
         loading="eager"
-        decoding="async"
+        decoding="sync"
       />
     </div>
     <a
@@ -67,9 +67,9 @@ const targetPath =
     padding: 1rem;
     z-index: 100;
     pointer-events: none;
-    /* Promote to GPU layer */
+    /* Always visible - no flash */
+    opacity: 1;
     transform: translateZ(0);
-    contain: layout style;
   }
 
   .inner {
@@ -88,13 +88,14 @@ const targetPath =
     display: flex;
     justify-content: center;
     align-items: center;
+    /* Default visible state */
+    opacity: 1;
+    transform: translateZ(0);
   }
 
   .logo {
     height: 72px;
     width: auto;
-    /* Content visibility for off-screen optimization */
-    contain: layout;
   }
 
   @media (min-width: 400px) {
@@ -122,7 +123,7 @@ const targetPath =
     position: absolute;
     right: 0;
     top: 50%;
-    transform: translateY(-50%) translateZ(0);
+    transform: translateY(-50%);
     width: 44px;
     height: 44px;
     display: flex;
@@ -138,9 +139,10 @@ const targetPath =
     text-decoration: none;
     transition: background 0.15s ease;
     pointer-events: auto;
-    /* Optimize touch */
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    /* Default visible state */
+    opacity: 1;
   }
 
   .lang-btn.arabic {
@@ -161,16 +163,15 @@ const targetPath =
     }
   }
 
-  /* Animation - GPU accelerated */
+  /* Animation ONLY when explicitly enabled (landing page only) */
   .header.animated .logo-wrap {
-    animation: fadeSlideDown 0.4s ease both;
-    will-change: opacity, transform;
+    opacity: 0;
+    animation: fadeSlideDown 0.4s ease 0.05s forwards;
   }
 
   .header.animated .lang-btn {
-    animation: fadeSlideDownBtn 0.4s ease both;
-    animation-delay: 0.1s;
-    will-change: opacity, transform;
+    opacity: 0;
+    animation: fadeSlideDownBtn 0.4s ease 0.15s forwards;
   }
 
   @keyframes fadeSlideDown {
