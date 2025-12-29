@@ -12,10 +12,10 @@ const { lang } = Astro.props;
 const t = ui[lang];
 const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
 
-// Pre-optimize image for LCP
+// Pre-optimize image for LCP - Keep original aspect ratio
 const optimizedHero = await getImage({
     src: heroImg,
-    width: 800, // Higher resolution source
+    width: 800,
     format: "avif",
     quality: 85,
 });
@@ -41,8 +41,8 @@ const optimizedHero = await getImage({
                     src={optimizedHero.src}
                     srcset={`${optimizedHero.src} 1x, ${optimizedHero.src} 2x`}
                     alt="Zaid & Haya"
-                    width="400"
-                    height="400"
+                    width={optimizedHero.attributes.width}
+                    height={optimizedHero.attributes.height}
                     loading="eager"
                     fetchpriority="high"
                     decoding="async"
@@ -81,21 +81,20 @@ const optimizedHero = await getImage({
 
     .hero {
         margin: 1rem 0;
-        /* INCREASED SIZE */
+        /* INCREASED SIZE but kept original aspect ratio */
         width: clamp(260px, 60vw, 340px);
-        aspect-ratio: 1;
+        height: auto; /* Allow height to adapt */
         border-radius: 20px;
         overflow: hidden;
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-        background: rgba(0, 0, 0, 0.2);
-        transform: translateZ(0); /* Hardware accelerate */
+        /* background: rgba(0,0,0,0.2); - Removed to avoid bg showing */
+        transform: translateZ(0);
     }
 
     .hero-img {
         display: block;
         width: 100%;
-        height: 100%;
-        object-fit: cover;
+        height: auto; /* Maintain aspect ratio */
     }
 
     .cta {

@@ -87,12 +87,15 @@
     }
 
     .title {
-        font-size: clamp(1.2rem, 1rem + 1vw, 1.6rem);
+        /* INCREASED FONT SIZE */
+        font-size: clamp(1.5rem, 1.3rem + 1.2vw, 2.2rem);
         font-weight: 400;
-        line-height: 1.4;
+        line-height: 1.3;
         text-align: center;
-        max-width: 340px;
+        max-width: 400px;
         margin: 0;
+        /* Improved text rendering */
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
 
     .timer {
@@ -113,12 +116,14 @@
         font-weight: 700;
         font-variant-numeric: tabular-nums;
         line-height: 1;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .label {
-        font-size: clamp(0.7rem, 0.65rem + 0.3vw, 0.85rem);
-        color: rgba(255, 255, 255, 0.7);
+        font-size: clamp(0.75rem, 0.7rem + 0.3vw, 0.9rem);
+        color: rgba(255, 255, 255, 0.8);
         margin-top: 0.4rem;
+        font-weight: 500;
     }
 
     .sep {
