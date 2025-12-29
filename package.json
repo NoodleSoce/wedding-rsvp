@@ -7,8 +7,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "db:generate": "wrangler d1 execute wedding-rsvp --local --file=./schema.sql",
-    "deploy": "astro build && wrangler pages deploy dist"
+    "db:local": "wrangler d1 execute wedding-rsvp --local --file=./schema.sql",
+    "pages:deploy": "astro build && wrangler pages deploy dist"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.0.1",
