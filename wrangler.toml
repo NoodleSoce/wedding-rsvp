@@ -9,7 +9,7 @@ pages_build_output_dir = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "wedding-rsvp"
-database_id = "YOUR_DATABASE_ID_HERE"
+database_id = "fffce60d-d8d4-4d20-96b5-b120693143f8"
 # ^ Replace with actual database ID after running: wrangler d1 create wedding-rsvp
 
 # Optional: Environment variables
