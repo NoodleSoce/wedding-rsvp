@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onMount, onDestroy, tick } from "svelte";
     import type { UIStrings } from "../../i18n/ui";
 
     export let t: UIStrings;
@@ -17,12 +17,101 @@
     let showSuccess = false;
     let mounted = false;
 
+    // DOM refs
+    let nameInput: HTMLInputElement;
+    let guestsInput: HTMLInputElement;
+    let formEl: HTMLFormElement;
+
     const STORAGE_KEY = "rsvp_form";
 
-    // Load saved form data on mount
-    onMount(() => {
-        mounted = true;
+    // ===============================
+    // KEYBOARD SCROLL HANDLING
+    // ===============================
+    let lastViewportHeight = 0;
+    let isKeyboardOpen = false;
 
+    function handleViewportResize() {
+        if (!window.visualViewport) return;
+
+        const currentHeight = window.visualViewport.height;
+        const heightDiff = lastViewportHeight - currentHeight;
+
+        // Keyboard opened (viewport shrunk significantly)
+        if (heightDiff > 100 && !isKeyboardOpen) {
+            isKeyboardOpen = true;
+            scrollToActiveInput();
+        }
+        // Keyboard closed (viewport grew)
+        else if (heightDiff < -100 && isKeyboardOpen) {
+            isKeyboardOpen = false;
+        }
+
+        lastViewportHeight = currentHeight;
+    }
+
+    function scrollToActiveInput() {
+        const active = document.activeElement as HTMLElement;
+        if (active === nameInput || active === guestsInput) {
+            setTimeout(() => {
+                active.scrollIntoView({ behavior: "smooth", block: "center" });
+            }, 100);
+        }
+    }
+
+    // ===============================
+    // FORM EVENTS
+    // ===============================
+    function handleInputFocus(e: FocusEvent) {
+        // Scroll to input when focused (for keyboard)
+        setTimeout(() => {
+            (e.target as HTMLElement).scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+            });
+        }, 300);
+    }
+
+    function handleGuestsFocus() {
+        // Select all text when focusing guests input
+        setTimeout(() => {
+            guestsInput?.select();
+        }, 50);
+    }
+
+    function handleGuestsInput(e: Event) {
+        const input = e.target as HTMLInputElement;
+        let value = input.value;
+
+        // Only allow single digit 0-9
+        value = value.replace(/\D/g, "");
+        if (value.length > 1) {
+            value = value.slice(-1); // Take last digit
+        }
+        if (value === "") {
+            value = "0";
+        }
+        const num = parseInt(value);
+        if (num > 9) {
+            value = "9";
+        }
+
+        guests = value;
+        input.value = value;
+        saveForm();
+    }
+
+    function handleAttendingChange(newValue: string) {
+        attending = newValue;
+        saveForm();
+
+        // Don't blur - keep focus on form if keyboard is open
+        // This prevents keyboard from closing when tapping accept/decline
+    }
+
+    // ===============================
+    // DATA PERSISTENCE
+    // ===============================
+    function loadSavedData() {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
@@ -32,12 +121,8 @@
                 guests = data.guests || "0";
             }
         } catch {}
+    }
 
-        // Clear any previous submission state
-        sessionStorage.removeItem("rsvp_submitted");
-    });
-
-    // Save form data (debounced)
     let saveTimer: ReturnType<typeof setTimeout>;
     function saveForm() {
         if (!mounted) return;
@@ -52,18 +137,14 @@
         }, 300);
     }
 
-    // Handle guests input
-    function handleGuestsInput(e: Event) {
-        const input = e.target as HTMLInputElement;
-        let value = input.value.replace(/\D/g, "");
-        if (parseInt(value) > 9) value = "9";
-        guests = value || "0";
-        saveForm();
-    }
-
-    // Handle form submission
+    // ===============================
+    // FORM SUBMISSION
+    // ===============================
     async function handleSubmit() {
         if (isSubmitting || !name.trim()) return;
+
+        // Blur active element to close keyboard
+        (document.activeElement as HTMLElement)?.blur();
 
         isSubmitting = true;
         showError = false;
@@ -80,13 +161,12 @@
         sessionStorage.setItem("rsvp_submitted", "true");
 
         try {
-            // Try local API first
+            // Try local API
             const response = await fetch("/api/rsvp", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             });
-
             if (!response.ok) throw new Error("API error");
         } catch {
             // Fallback to Google Sheets
@@ -111,29 +191,70 @@
         }, 800);
     }
 
+    // ===============================
+    // LIFECYCLE
+    // ===============================
+    onMount(() => {
+        mounted = true;
+        loadSavedData();
+        sessionStorage.removeItem("rsvp_submitted");
+
+        // Setup viewport resize listener for keyboard handling
+        if (window.visualViewport) {
+            lastViewportHeight = window.visualViewport.height;
+            window.visualViewport.addEventListener(
+                "resize",
+                handleViewportResize,
+            );
+        }
+
+        // Handle back/forward cache
+        const handlePageShow = (e: PageTransitionEvent) => {
+            if (e.persisted) {
+                isSubmitting = false;
+                showSuccess = false;
+                showError = false;
+            }
+        };
+        window.addEventListener("pageshow", handlePageShow);
+
+        return () => {
+            window.visualViewport?.removeEventListener(
+                "resize",
+                handleViewportResize,
+            );
+            window.removeEventListener("pageshow", handlePageShow);
+        };
+    });
+
     $: showGuests = attending === "yes";
     $: {
         name;
-        attending;
-        guests;
         saveForm();
     }
 </script>
 
 <div class="form-container animate-in">
-    <form on:submit|preventDefault={handleSubmit} class="card">
+    <form
+        bind:this={formEl}
+        on:submit|preventDefault={handleSubmit}
+        class="card"
+    >
         <!-- Name -->
         <div class="field">
             <label for="name" class="label">{t["rsvp.name"]}</label>
             <input
                 type="text"
                 id="name"
+                bind:this={nameInput}
                 bind:value={name}
+                on:focus={handleInputFocus}
                 class="input"
                 required
                 placeholder={t["rsvp.namePlaceholder"]}
                 autocomplete="name"
                 autocapitalize="words"
+                enterkeyhint="next"
             />
         </div>
 
@@ -141,45 +262,48 @@
         <div class="field">
             <span class="label">{t["rsvp.attending"]}</span>
             <div class="radio-group">
-                <label class="radio-option">
-                    <input type="radio" bind:group={attending} value="yes" />
-                    <span
-                        class="radio-btn"
-                        class:active={attending === "yes"}
-                        class:yes={true}
-                    >
-                        {t["rsvp.accept"]}
-                    </span>
-                </label>
-                <label class="radio-option">
-                    <input type="radio" bind:group={attending} value="no" />
-                    <span
-                        class="radio-btn"
-                        class:active={attending === "no"}
-                        class:no={true}
-                    >
-                        {t["rsvp.decline"]}
-                    </span>
-                </label>
+                <button
+                    type="button"
+                    class="radio-btn"
+                    class:active={attending === "yes"}
+                    class:yes={attending === "yes"}
+                    on:click={() => handleAttendingChange("yes")}
+                >
+                    {t["rsvp.accept"]}
+                </button>
+                <button
+                    type="button"
+                    class="radio-btn"
+                    class:active={attending === "no"}
+                    class:no={attending === "no"}
+                    on:click={() => handleAttendingChange("no")}
+                >
+                    {t["rsvp.decline"]}
+                </button>
             </div>
         </div>
 
-        <!-- Guests (animated collapse) -->
-        {#if showGuests}
-            <div class="field guests-field">
-                <label for="guests" class="label">{t["rsvp.guests"]}</label>
-                <input
-                    type="number"
-                    id="guests"
-                    value={guests}
-                    on:input={handleGuestsInput}
-                    class="input"
-                    min="0"
-                    max="9"
-                    inputmode="numeric"
-                />
+        <!-- Guests (animated) -->
+        <div class="guests-section" class:open={showGuests}>
+            <div class="guests-inner">
+                <div class="field">
+                    <label for="guests" class="label">{t["rsvp.guests"]}</label>
+                    <input
+                        type="number"
+                        id="guests"
+                        bind:this={guestsInput}
+                        value={guests}
+                        on:focus={handleGuestsFocus}
+                        on:input={handleGuestsInput}
+                        class="input guests-input"
+                        min="0"
+                        max="9"
+                        inputmode="numeric"
+                        enterkeyhint="done"
+                    />
+                </div>
             </div>
-        {/if}
+        </div>
 
         <!-- Submit -->
         <button
@@ -247,70 +371,73 @@
         gap: 0.75rem;
     }
 
-    .radio-option {
-        flex: 1;
-        cursor: pointer;
-    }
-
-    .radio-option input {
-        position: absolute;
-        opacity: 0;
-        pointer-events: none;
-    }
-
     .radio-btn {
+        flex: 1;
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 48px;
-        padding: 0.75rem;
+        min-height: 52px;
+        padding: 0.875rem;
+        font: inherit;
         font-size: 0.95rem;
         font-weight: 600;
         color: #fff;
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 12px;
-        transition: all 0.15s;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .radio-btn:active {
+        transform: scale(0.97);
     }
 
     .radio-btn.active.yes {
         background: #2e7d32;
         border-color: #2e7d32;
+        transform: scale(1);
     }
 
     .radio-btn.active.no {
         background: #c62828;
         border-color: #c62828;
+        transform: scale(1);
     }
 
-    .radio-option:active .radio-btn {
-        transform: scale(0.98);
+    /* Guests section with smooth animation */
+    .guests-section {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.25s ease;
+        margin-bottom: 0;
     }
 
-    .guests-field {
-        animation: slideDown 0.2s ease-out;
+    .guests-section.open {
+        grid-template-rows: 1fr;
     }
 
-    @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .guests-inner {
+        overflow: hidden;
+    }
+
+    .guests-input {
+        text-align: center;
+        font-size: 1.25rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
     }
 
     .submit-btn {
         margin-top: 0.5rem;
-        min-height: 52px;
+        min-height: 54px;
         font-size: 1.05rem;
     }
 
     .spinner {
-        width: 20px;
-        height: 20px;
+        width: 22px;
+        height: 22px;
         border: 2px solid rgba(255, 255, 255, 0.3);
         border-top-color: #fff;
         border-radius: 50%;
