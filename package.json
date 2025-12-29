@@ -1,18 +1,30 @@
 {
   "name": "zaidandhaya",
   "type": "module",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "db:generate": "wrangler d1 execute wedding-rsvp --local --file=./schema.sql",
+    "deploy": "astro build && wrangler pages deploy dist"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^12.0.1",
+    "@astrojs/svelte": "^7.0.1",
+    "@astrojs/tailwind": "^6.0.2",
     "@fontsource/amiri": "^5.2.8",
     "@fontsource/libre-baskerville": "^5.2.10",
-    "@types/canvas-confetti": "^1.9.0",
     "astro": "^5.16.6",
-    "canvas-confetti": "^1.9.4"
+    "canvas-confetti": "^1.9.4",
+    "svelte": "^5.12.0",
+    "tailwindcss": "^3.4.17"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241205.0",
+    "@types/canvas-confetti": "^1.9.0",
+    "sharp": "^0.33.5",
+    "wrangler": "^3.93.0"
   }
 }

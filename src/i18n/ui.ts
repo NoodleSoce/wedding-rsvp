@@ -21,6 +21,7 @@ export const ui = {
         'countdown.seconds': 'Seconds',
         'countdown.location': 'Location',
         'countdown.city': 'Dubai, UAE',
+        'countdown.openMaps': 'Tap to open in Maps',
         'rsvp.title': 'Form',
         'rsvp.subtitle': 'Please let us know if you can make it',
         'rsvp.name': 'Full Name',
@@ -50,6 +51,7 @@ export const ui = {
         'countdown.seconds': 'ثواني',
         'countdown.location': 'الموقع',
         'countdown.city': 'دبي، الإمارات العربية المتحدة',
+        'countdown.openMaps': 'اضغط لفتح الخريطة',
         'rsvp.title': 'تأكيد الحضور',
         'rsvp.subtitle': 'يرجى إعلامنا إذا كنتم ستشاركوننا الفرحة',
         'rsvp.name': 'الاسم الكامل',
@@ -65,3 +67,7 @@ export const ui = {
         'countdown.expired': 'انتهى العد',
     },
 } as const;
+
+// Type export for Svelte components
+export type UIStrings = typeof ui['en'];
+export type Lang = keyof typeof ui;

@@ -16,20 +16,19 @@ const targetPath =
       : `/ar${path}`
     : path.replace("/ar", "") || "/";
 
+// Generate AVIF with WebP fallback
 const optimizedLogo = await getImage({
   src: logoImg,
   width: 400,
   height: 133,
-  format: "webp",
+  format: "avif",
+  quality: 80,
 });
+
 const buttonText = lang === "en" ? "ع" : "EN";
 const isArabicButton = lang === "en";
 ---
 
-<!-- 
-  When showAnimation is true: header starts hidden, JS adds .animated class to trigger fade-in
-  When showAnimation is false: header is visible immediately, no animation
--->
 <header
   class:list={["hdr", { "hdr-will-animate": showAnimation }]}
   id="site-header"
@@ -74,7 +73,6 @@ const isArabicButton = lang === "en";
     const header = document.getElementById("site-header");
     if (!header) return;
     if (header.dataset.animate === "true" && !header.dataset.animated) {
-      // Small delay to ensure styles are applied, then animate
       requestAnimationFrame(() => {
         header.classList.add("animated");
         header.dataset.animated = "true";
@@ -97,7 +95,6 @@ const isArabicButton = lang === "en";
     pointer-events: none;
   }
 
-  /* When animation is expected, START HIDDEN */
   .hdr-will-animate .logo-box,
   .hdr-will-animate .lang-box {
     opacity: 0;
@@ -139,7 +136,7 @@ const isArabicButton = lang === "en";
     }
   }
 
-  /* Animation: from hidden to visible */
+  /* Native View Transition animation */
   .hdr.animated .logo-box {
     opacity: 1;
     visibility: visible;

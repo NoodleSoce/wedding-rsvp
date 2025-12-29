@@ -18,12 +18,22 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
     lang={lang}
     headerAnimation={true}
 >
-    <main class="page fade">
-        <div class="content landing">
-            <h1 class="title anim anim-1">{t["index.title"]}</h1>
-            <p class="subtitle anim anim-2">{t["index.subtitle"]}</p>
+    <main class="page animate-fade-in">
+        <div class="content landing gap-5">
+            <h1
+                class="title text-[clamp(1.5rem,1.25rem+1.25vw,2.25rem)] italic px-5 max-w-[95%] text-white text-center anim-delay-1 animate-slide-in"
+            >
+                {t["index.title"]}
+            </h1>
+            <p
+                class="subtitle text-base text-white-70 px-6 max-w-[90%] text-center anim-delay-2 animate-slide-in"
+            >
+                {t["index.subtitle"]}
+            </p>
 
-            <figure class="hero anim anim-3">
+            <figure
+                class="hero w-[clamp(240px,60vw,320px)] my-3 rounded-card overflow-hidden shadow-card contain-layout-paint anim-delay-3 animate-slide-in"
+            >
                 <Image
                     src={heroImg}
                     alt="Zaid & Haya"
@@ -33,55 +43,18 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
                     fetchpriority="high"
                     decoding="async"
                     quality={85}
+                    format="avif"
+                    class="w-full h-auto block"
                 />
             </figure>
 
-            <a href={rsvpLink} class="btn cta anim anim-4" data-astro-prefetch>
+            <a
+                href={rsvpLink}
+                class="btn cta w-[clamp(200px,55vw,280px)] text-lg anim-delay-4 animate-slide-in"
+                data-astro-prefetch
+            >
                 {t["index.cta"]}
             </a>
         </div>
     </main>
 </Layout>
-
-<style>
-    .landing {
-        gap: var(--space-5);
-    }
-
-    .title {
-        font-size: clamp(1.5rem, 1.25rem + 1.25vw, 2.25rem);
-        font-style: italic;
-        padding: 0 var(--space-5);
-        max-width: 95%;
-    }
-
-    .subtitle {
-        font-size: var(--fs-base);
-        color: var(--white-70);
-        padding: 0 var(--space-6);
-        max-width: 90%;
-    }
-
-    .hero {
-        width: clamp(240px, 60vw, 320px);
-        margin: var(--space-3) 0;
-        border-radius: var(--radius);
-        overflow: hidden;
-        box-shadow: var(--shadow);
-        /* Contain for performance */
-        contain: layout paint;
-    }
-
-    .hero :global(img) {
-        width: 100%;
-        height: auto;
-        display: block;
-        /* Async decode */
-        content-visibility: auto;
-    }
-
-    .cta {
-        width: clamp(200px, 55vw, 280px);
-        font-size: var(--fs-lg);
-    }
-</style>

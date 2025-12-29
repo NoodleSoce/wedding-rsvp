@@ -1,307 +1,228 @@
 /* ========================================
-   WEDDING RSVP - Optimized Design System
-   Mobile-first, instant responsiveness
+   WEDDING RSVP - Tailwind + Custom Design System
    ======================================== */
 
-:root {
-    /* Colors */
-    --bg: #4b0101;
-    --white: #fff;
-    --white-90: rgba(255, 255, 255, 0.9);
-    --white-70: rgba(255, 255, 255, 0.7);
-    --white-50: rgba(255, 255, 255, 0.5);
-    --white-20: rgba(255, 255, 255, 0.2);
-    --white-10: rgba(255, 255, 255, 0.1);
-    --success: #2e7d32;
-    --error: #c62828;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-    /* Typography */
-    --font: 'Libre Baskerville', 'Amiri', Georgia, serif;
-    --fs-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.85rem);
-    --fs-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
-    --fs-base: clamp(1rem, 0.9rem + 0.5vw, 1.15rem);
-    --fs-lg: clamp(1.125rem, 1rem + 0.6vw, 1.35rem);
-    --fs-xl: clamp(1.5rem, 1.25rem + 1.25vw, 2rem);
-    --fs-2xl: clamp(1.875rem, 1.5rem + 1.75vw, 2.75rem);
+/* ========================================
+   BASE LAYER
+   ======================================== */
+@layer base {
+    html {
+        height: 100%;
+        height: -webkit-fill-available;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+        overscroll-behavior: none;
+        scroll-behavior: auto;
+        background: theme('colors.primary.900');
+    }
 
-    /* Spacing */
-    --space-1: 0.25rem;
-    --space-2: 0.5rem;
-    --space-3: 0.75rem;
-    --space-4: 1rem;
-    --space-5: 1.25rem;
-    --space-6: 1.5rem;
-    --space-8: 2rem;
+    body {
+        min-height: 100%;
+        min-height: 100dvh;
+        min-height: -webkit-fill-available;
+        font-family: theme('fontFamily.serif');
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeSpeed;
+        overscroll-behavior-y: none;
+        touch-action: pan-y;
+        -webkit-overflow-scrolling: touch;
+        background: theme('colors.primary.900');
+    }
 
-    /* Layout */
-    --max-w: min(92vw, 480px);
-    --header-h: clamp(90px, 75px + 4vw, 120px);
-    --page-pad: clamp(1rem, 0.75rem + 1.25vw, 1.75rem);
+    [dir="rtl"] body {
+        font-feature-settings: "liga" 1, "calt" 1;
+        font-family: theme('fontFamily.arabic');
+    }
 
-    /* Appearance */
-    --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
-    --radius: clamp(12px, 10px + 1vw, 20px);
-    --radius-sm: clamp(8px, 6px + 0.75vw, 12px);
-    --radius-full: 100px;
-
-    /* Motion - instant feel */
-    --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
-    --duration: 0.1s;
+    h1,
+    h2 {
+        font-weight: 400;
+        line-height: 1.2;
+    }
 }
 
 /* ========================================
-   RESET & BASE
+   COMPONENTS LAYER
    ======================================== */
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+@layer components {
 
-html {
-    height: 100%;
-    height: -webkit-fill-available;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-    overscroll-behavior: none;
-    scroll-behavior: auto;
-}
-
-body {
-    min-height: 100%;
-    min-height: 100dvh;
-    min-height: -webkit-fill-available;
-    font-family: var(--font);
-    font-size: var(--fs-base);
-    font-weight: 400;
-    line-height: 1.5;
-    color: var(--white);
-    background: var(--bg);
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeSpeed;
-    overscroll-behavior-y: none;
-    touch-action: pan-y;
-    -webkit-overflow-scrolling: touch;
-}
-
-[dir="rtl"] body {
-    font-feature-settings: "liga" 1, "calt" 1;
-}
-
-h1,
-h2 {
-    font-weight: 400;
-    line-height: 1.2;
-}
-
-/* ========================================
-   PAGE LAYOUT
-   ======================================== */
-.page {
-    min-height: 100vh;
-    min-height: 100dvh;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: var(--header-h) var(--page-pad) var(--page-pad);
-    background: var(--bg);
-}
-
-@media (orientation: landscape) and (max-height: 500px) {
+    /* Page container */
     .page {
-        padding-top: calc(var(--header-h) + var(--space-4));
-        align-items: flex-start;
+        @apply min-h-screen min-h-[100dvh] w-full flex justify-center items-center;
+        padding: theme('spacing.header') theme('spacing.page-pad') theme('spacing.page-pad');
+        background: theme('colors.primary.900');
     }
-}
 
-.content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    width: 100%;
-    max-width: var(--max-w);
-    gap: var(--space-4);
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    @media (orientation: landscape) and (max-height: 500px) {
+        .page {
+            padding-top: calc(theme('spacing.header') + 1rem);
+            align-items: flex-start;
+        }
+    }
+
+    /* Content wrapper */
+    .content {
+        @apply flex flex-col items-center text-center w-full gap-4;
+        max-width: theme('maxWidth.content');
+        padding-bottom: theme('spacing.safe-bottom');
+    }
+
+    /* Glass card */
+    .card {
+        @apply w-full p-6 rounded-card shadow-card;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* Primary button */
+    .btn {
+        @apply flex justify-center items-center w-full min-h-[54px] px-6 py-4;
+        @apply font-serif font-medium text-white cursor-pointer no-underline;
+        @apply rounded-full select-none;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: background 0.1s ease, transform 0.05s ease;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn:active {
+        transform: scale(0.97);
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    @media (hover: hover) {
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+    }
+
+    .btn:disabled {
+        @apply opacity-50 pointer-events-none;
+    }
+
+    /* Form input */
+    .input {
+        @apply w-full min-h-[54px] p-4 font-serif text-[16px] text-white;
+        @apply rounded-sm-card appearance-none;
+        background: rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: border-color 0.05s ease;
+    }
+
+    .input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .input:focus {
+        @apply outline-none;
+        border-color: rgba(255, 255, 255, 0.7);
+    }
+
+    [dir="rtl"] .input {
+        @apply text-right;
+    }
+
+    [dir="rtl"] .input::placeholder {
+        @apply text-right;
+    }
+
+    .input[type="number"] {
+        @apply text-center;
+    }
 }
 
 /* ========================================
-   CARD
+   UTILITIES LAYER
    ======================================== */
-.card {
-    width: 100%;
-    padding: var(--space-6);
-    background: var(--white-10);
-    border: 1px solid var(--white-20);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+@layer utilities {
+
+    /* Animation delays */
+    .anim-delay-1 {
+        animation-delay: 0.01s;
+    }
+
+    .anim-delay-2 {
+        animation-delay: 0.02s;
+    }
+
+    .anim-delay-3 {
+        animation-delay: 0.03s;
+    }
+
+    .anim-delay-4 {
+        animation-delay: 0.04s;
+    }
+
+    /* Glass effects */
+    .glass-10 {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .glass-20 {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* White opacity utilities */
+    .text-white-90 {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .text-white-70 {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .text-white-50 {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .border-white-20 {
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .border-white-50 {
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* RTL animation support */
+    [dir="rtl"] .animate-slide-in {
+        animation-name: slideInRTL;
+    }
+
+    /* Contain utilities for performance */
+    .contain-layout {
+        contain: layout;
+    }
+
+    .contain-paint {
+        contain: paint;
+    }
+
+    .contain-layout-paint {
+        contain: layout paint;
+    }
 }
 
 /* ========================================
-   BUTTON - Instant feedback
+   VIEW TRANSITIONS
    ======================================== */
-.btn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    min-height: 54px;
-    padding: var(--space-4) var(--space-6);
-    font: inherit;
-    font-size: var(--fs-base);
-    font-weight: 500;
-    color: var(--white);
-    background: var(--white-10);
-    border: 1px solid var(--white-20);
-    border-radius: var(--radius-full);
-    cursor: pointer;
-    text-decoration: none;
-    transition: background var(--duration) ease, transform 0.05s ease;
-    -webkit-user-select: none;
-    user-select: none;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.btn:active {
-    transform: scale(0.97);
-    background: var(--white-20);
-}
-
-@media (hover: hover) {
-    .btn:hover {
-        background: var(--white-20);
-        border-color: var(--white-50);
-    }
-}
-
-.btn:disabled {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-/* ========================================
-   INPUT - Instant focus
-   ======================================== */
-.input {
-    width: 100%;
-    min-height: 54px;
-    padding: var(--space-4);
-    font: inherit;
-    font-size: 16px;
-    color: var(--white);
-    background: rgba(0, 0, 0, 0.15);
-    border: 1px solid var(--white-20);
-    border-radius: var(--radius-sm);
-    transition: border-color 0.05s ease;
-    -webkit-appearance: none;
-    appearance: none;
-}
-
-.input::placeholder {
-    color: var(--white-50);
-}
-
-.input:focus {
-    outline: none;
-    border-color: var(--white-70);
-}
-
-[dir="rtl"] .input {
-    text-align: right;
-}
-
-[dir="rtl"] .input::placeholder {
-    text-align: right;
-}
-
-.input[type="number"] {
-    text-align: center;
-}
-
-/* ========================================
-   ANIMATIONS - Snappy entrance
-   ======================================== */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateX(-8px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideInRTL {
-    from {
-        opacity: 0;
-        transform: translateX(8px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.fade {
-    animation: fadeIn 0.15s ease-out both;
-}
-
-.anim {
-    animation: slideIn 0.15s ease-out both;
-}
-
-[dir="rtl"] .anim {
-    animation-name: slideInRTL;
-}
-
-/* Very short stagger for snappy feel */
-.anim-1 {
-    animation-delay: 0.01s;
-}
-
-.anim-2 {
-    animation-delay: 0.02s;
-}
-
-.anim-3 {
-    animation-delay: 0.03s;
-}
-
-.anim-4 {
-    animation-delay: 0.04s;
-}
-
-/* Fast view transitions */
 ::view-transition-old(root),
 ::view-transition-new(root) {
     animation-duration: 0.1s;
 }
 
+/* ========================================
+   REDUCED MOTION
+   ======================================== */
 @media (prefers-reduced-motion: reduce) {
 
     *,
@@ -311,23 +232,4 @@ h2 {
         transition-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
     }
-}
-
-/* ========================================
-   UTILITIES
-   ======================================== */
-.hidden {
-    display: none !important;
-}
-
-input,
-textarea,
-select,
-button {
-    scroll-margin: 0;
-}
-
-img {
-    max-width: 100%;
-    height: auto;
 }

@@ -46,21 +46,16 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 
 		<meta property="og:title" content={fullTitle} />
 		<meta property="og:description" content={description} />
-		<meta property="og:image" content="/hero-image.webp" />
+		<meta property="og:image" content="/hero-image.avif" />
 		<meta
 			property="og:locale"
 			content={lang === "ar" ? "ar_AE" : "en_US"}
 		/>
 
-		<link rel="dns-prefetch" href="https://script.google.com" />
-		<link rel="dns-prefetch" href="https://www.google.com" />
-		<link rel="preconnect" href="https://script.google.com" crossorigin />
-
 		<ClientRouter />
 
-		<!-- CRITICAL: These styles MUST load first and lock ALL dimensions -->
+		<!-- Critical inline styles for header stability -->
 		<style is:inline>
-			/* Set background immediately */
 			html {
 				background: #4b0101;
 				height: 100%;
@@ -70,7 +65,6 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 				margin: 0;
 			}
 
-			/* FIXED container that CLIPS everything - nothing can escape */
 			.logo-box {
 				display: block;
 				width: 217px;
@@ -78,7 +72,6 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 				overflow: hidden;
 				position: relative;
 			}
-			/* Image fills container exactly */
 			.logo-box img {
 				display: block;
 				width: 100%;
@@ -88,7 +81,6 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 				top: 0;
 				left: 0;
 			}
-			/* Button with ALL styles inline */
 			.lang-box {
 				display: flex;
 				justify-content: center;
@@ -115,7 +107,6 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 				line-height: 1;
 				padding-top: 2px;
 			}
-			/* Responsive */
 			@media (min-width: 400px) {
 				.logo-box {
 					width: 241px;

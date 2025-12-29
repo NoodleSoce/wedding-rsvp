@@ -1,86 +1,196 @@
 # Zaid & Haya Wedding RSVP
 
-A beautiful, mobile-first wedding invitation and RSVP website built with Astro.
+A beautiful, performant wedding RSVP website built with:
+- **Astro** - Static site generation with islands architecture
+- **Svelte** - Reactive components for interactive elements
+- **Tailwind CSS** - Utility-first styling
+- **Cloudflare Pages** - Edge hosting (free tier)
+- **Cloudflare D1** - Serverless SQLite database (free tier)
 
-## 🎊 Features
+## ✨ Features
 
-- **Bilingual Support** - Full English and Arabic (RTL) support with automatic language detection
-- **RSVP Form** - Guests can confirm attendance and specify number of attendees
-- **Live Countdown** - Real-time countdown to the wedding day
-- **Celebratory Confetti** - Animated confetti on the countdown page (only if attending!)
-- **Smart Decline Message** - Different messaging for guests who decline
-- **Google Sheets Integration** - RSVP submissions saved directly to Google Sheets
-- **Mobile-First Design** - Optimized for mobile with keyboard-aware form handling
-- **Smooth Animations** - Page transitions and micro-interactions throughout
+- 🌐 Bilingual support (English & Arabic with RTL)
+- 📱 Mobile-first, responsive design
+- ⚡ AVIF images with fetchpriority for fast loading
+- 🎉 Confetti animation on success
+- 🗺️ Universal map link (works with any maps app)
+- 🔄 Native View Transitions API
+- 💾 Cloudflare D1 database (SQLite at the edge)
+- 🚀 Zero-config deployment to Cloudflare Pages
 
-## 📱 Pages
+## 🚀 Quick Start
 
-1. **Landing Page** (`/` or `/ar`)
-   - Welcome message and hero image
-   - Call-to-action button to RSVP
+```bash
+# Install dependencies
+npm install
 
-2. **RSVP Page** (`/rsvp` or `/ar/rsvp`)
-   - Name input
-   - Accept/Decline attendance
-   - Number of invitees (if accepting)
-   - Form data persisted in localStorage
+# Start development server
+npm run dev
 
-3. **Countdown Page** (`/countdown` or `/ar/countdown`)
-   - Live countdown timer
-   - Location with embedded Google Map
-   - Confetti celebration (for accepting guests)
-   - "We regret..." message for declining guests
+# Build for production
+npm run build
 
-## 🛠️ Tech Stack
+# Preview production build
+npm run preview
+```
 
-- **Framework**: [Astro](https://astro.build/) with View Transitions
-- **Styling**: Vanilla CSS with custom design tokens
-- **Fonts**: Libre Baskerville (English) + Amiri (Arabic)
-- **Animations**: canvas-confetti, CSS keyframes
-- **Backend**: Google Apps Script for form submissions
-- **Deployment**: Vercel
+## 📦 Deployment to Cloudflare Pages (Free!)
+
+### Step 1: Create a Cloudflare Account
+1. Go to [Cloudflare](https://cloudflare.com) and sign up
+2. Navigate to **Workers & Pages** in the dashboard
+
+### Step 2: Create D1 Database
+```bash
+# Install Wrangler CLI
+npm install -g wrangler
+
+# Login to Cloudflare
+wrangler login
+
+# Create the database
+wrangler d1 create wedding-rsvp
+
+# Copy the database_id from the output and update wrangler.toml
+```
+
+### Step 3: Update Configuration
+Edit `wrangler.toml` and replace `YOUR_DATABASE_ID_HERE` with your actual database ID.
+
+### Step 4: Initialize Database Schema
+```bash
+# Apply the schema to production
+wrangler d1 execute wedding-rsvp --remote --file=./schema.sql
+```
+
+### Step 5: Connect GitHub & Deploy
+
+**Option A: GitHub Integration (Recommended)**
+1. Push your code to GitHub
+2. In Cloudflare Dashboard → Pages → Create a project
+3. Connect your GitHub repository
+4. Configure build settings:
+   - **Build command:** `npm run build`
+   - **Build output directory:** `dist`
+   - **Node.js version:** 20
+5. Add D1 binding:
+   - Go to Settings → Functions → D1 database bindings
+   - Variable name: `DB`
+   - D1 database: `wedding-rsvp`
+6. Deploy!
+
+**Option B: Direct Deploy**
+```bash
+# Build and deploy
+npm run deploy
+```
+
+### Step 6: Custom Domain (Optional)
+1. In Pages project → Custom domains
+2. Add your domain (e.g., `wedding.yourdomain.com`)
+3. Follow DNS instructions
+
+## 📊 Viewing RSVP Responses
+
+Query your D1 database to see responses:
+
+```bash
+# View all responses
+wrangler d1 execute wedding-rsvp --remote --command="SELECT * FROM rsvp_responses ORDER BY created_at DESC"
+
+# Count attendees
+wrangler d1 execute wedding-rsvp --remote --command="SELECT attending, COUNT(*) as count, SUM(guests) as total_guests FROM rsvp_responses GROUP BY attending"
+
+# Export to CSV
+wrangler d1 execute wedding-rsvp --remote --command="SELECT name, attending, guests, created_at FROM rsvp_responses" --json > responses.json
+```
+
+## 🔧 Configuration
+
+### Customizing the Wedding Details
+
+1. **Date & Time:** Edit `src/components/CountdownPage.astro`
+   ```javascript
+   const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
+   ```
+
+2. **Location:** Edit `src/components/svelte/LocationCard.svelte`
+   ```javascript
+   const lat = 25.1972;  // Your venue latitude
+   const lng = 55.2744;  // Your venue longitude
+   const venueName = encodeURIComponent('Your Venue Name');
+   ```
+
+3. **Text/Translations:** Edit `src/i18n/ui.ts`
+
+4. **Colors:** Edit `tailwind.config.mjs` primary colors
+
+5. **Images:** Replace files in `src/assets/`
+
+## 🆚 Why Cloudflare Pages over Vercel?
+
+| Feature | Cloudflare Pages | Vercel Free |
+|---------|-----------------|-------------|
+| **Bandwidth** | Unlimited | 100 GB/month |
+| **Requests** | Unlimited | Limited |
+| **Edge Functions** | 100,000/day | 100,000/month |
+| **Database** | D1 (5GB free) | None built-in |
+| **Global CDN** | ✅ | ✅ |
+| **Custom Domains** | Unlimited | Limited |
+| **DDoS Protection** | ✅ | ✅ |
+
+## 🗄️ Database Options Comparison
+
+| Database | Free Tier | Speed | Edge Compatible |
+|----------|-----------|-------|-----------------|
+| **Cloudflare D1** ⭐ | 5GB, 5M reads/day | ⚡ Fastest | ✅ Native |
+| Turso | 9GB, 1B reads | ⚡ Fast | ✅ Yes |
+| PlanetScale | 1GB | Fast | ✅ Yes |
+| Supabase | 500MB | Good | ⚠️ Via API |
+| Google Sheets | N/A | Slow | ❌ No |
+
+**We chose D1 because:**
+- Native Cloudflare integration (no external calls)
+- SQLite = simple, reliable, fast
+- Runs at the edge (minimal latency)
+- Free tier is generous for wedding sites
+- No vendor lock-in (standard SQL)
 
 ## 📁 Project Structure
 
 ```
-src/
-├── assets/           # Images (hero, logo)
-├── components/       # Astro components
-│   ├── Header.astro
-│   ├── LandingPage.astro
-│   ├── RsvpPage.astro
-│   ├── CountdownPage.astro
-│   └── Confetti.astro
-├── i18n/             # Translations
-│   └── ui.ts
-├── layouts/          # Page layouts
-│   └── Layout.astro
-├── pages/            # Route pages
-│   ├── index.astro
-│   ├── rsvp.astro
-│   ├── countdown.astro
-│   └── ar/           # Arabic versions
-└── styles/           # Global CSS
-    └── global.css
+├── src/
+│   ├── assets/           # Images (auto-converted to AVIF)
+│   ├── components/
+│   │   ├── svelte/       # Interactive Svelte components
+│   │   ├── Header.astro
+│   │   ├── LandingPage.astro
+│   │   ├── RsvpPage.astro
+│   │   └── CountdownPage.astro
+│   ├── i18n/             # Translations
+│   ├── layouts/          # Base layout
+│   ├── pages/            # Routes
+│   │   ├── api/          # Server endpoints
+│   │   ├── ar/           # Arabic routes
+│   │   └── *.astro       # English routes
+│   └── styles/           # Global CSS
+├── astro.config.mjs      # Astro + integrations
+├── tailwind.config.mjs   # Tailwind theme
+├── wrangler.toml         # Cloudflare config
+└── schema.sql            # D1 database schema
 ```
 
-## 🎨 Design Features
+## 🔐 Security
 
-- **Elegant Color Palette**: Deep burgundy (#4b0101) with white text
-- **Glassmorphism Cards**: Frosted glass effect with backdrop blur
-- **Fluid Typography**: Responsive text sizing with `clamp()`
-- **Touch-Friendly**: Minimum 44px touch targets
-- **Keyboard Aware**: Smart scrolling when mobile keyboard opens
-- **RTL Support**: Proper right-to-left layout for Arabic
-
-## 📝 Environment
-
-The Google Apps Script endpoint is hardcoded. For your own deployment, update the `API` constant in `RsvpPage.astro`.
+- IP addresses are hashed (not stored in plain text)
+- No tracking or analytics by default
+- CORS configured for API endpoints
+- Input validation on all form fields
 
 ## 📄 License
 
-Private project - All rights reserved.
+MIT License - feel free to use for your own wedding!
 
 ---
 
-Made for Zaid & Haya's special day
+Made with ❤️ for Zaid & Haya

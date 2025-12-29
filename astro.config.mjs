@@ -1,8 +1,21 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import svelte from '@astrojs/svelte';
+import tailwind from '@astrojs/tailwind';
+import cloudflare from '@astrojs/cloudflare';
 
 // https://astro.build/config
 export default defineConfig({
+    output: 'server',
+    adapter: cloudflare({
+        platformProxy: {
+            enabled: true
+        }
+    }),
+    integrations: [
+        svelte(),
+        tailwind()
+    ],
     devToolbar: {
         enabled: false
     },
@@ -12,45 +25,38 @@ export default defineConfig({
     },
     compressHTML: true,
     build: {
-        // Inline small stylesheets for faster first paint
         inlineStylesheets: 'always',
-        // Split CSS for better caching
         assets: '_assets'
     },
     vite: {
         build: {
-            // Reduce chunk size warnings
             chunkSizeWarningLimit: 1000,
-            // Optimize rollup output
             rollupOptions: {
                 output: {
-                    // Manual chunk splitting for optimal caching
                     manualChunks: {
                         confetti: ['canvas-confetti']
                     }
                 }
             },
-            // Use esbuild for minification (built-in, faster than terser)
             minify: 'esbuild',
-            // Target modern browsers for smaller output
-            target: 'es2020',
-            // CSS code splitting
+            target: 'es2022',
             cssCodeSplit: true
         },
-        // Optimize esbuild settings
         esbuild: {
-            // Drop console in production
             drop: ['console', 'debugger'],
-            // Target modern browsers
-            target: 'es2020',
-            // Minify identifiers
+            target: 'es2022',
             minifyIdentifiers: true,
             minifySyntax: true,
             minifyWhitespace: true
         },
-        // Optimize dependencies
         optimizeDeps: {
             include: ['canvas-confetti']
+        }
+    },
+    image: {
+        // Use sharp for AVIF conversion
+        service: {
+            entrypoint: 'astro/assets/services/sharp'
         }
     }
 });
