@@ -68,6 +68,8 @@
     img {
         max-width: 100%;
         height: auto;
+        /* Prevent layout shift */
+        display: block;
     }
 
     /* Preload font rendering */
@@ -109,15 +111,19 @@
         gap: 1.25rem;
     }
 
-    /* Glass card */
+    /* Glass card - Optimized for Safari */
     .card {
         width: 100%;
         padding: 1.5rem;
         background: rgba(255, 255, 255, 0.08);
         border: 1px solid rgba(255, 255, 255, 0.15);
         border-radius: 16px;
+        /* Separate layer for backdrop filter to prevent repaints */
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
+        /* Hardware acceleration helps with stutter */
+        transform: translateZ(0);
+        will-change: transform, opacity;
     }
 
     /* Button */
@@ -142,10 +148,12 @@
         -webkit-user-select: none;
         user-select: none;
         -webkit-tap-highlight-color: transparent;
+        /* Optimization */
+        transform: translateZ(0);
     }
 
     .btn:active {
-        transform: scale(0.97);
+        transform: scale(0.97) translateZ(0);
         background: rgba(255, 255, 255, 0.15);
     }
 
@@ -211,25 +219,28 @@
    ======================================== */
 @layer utilities {
 
-    /* Fade in animation */
+    /* Fade in animation - Optimized */
     .animate-in {
-        animation: fadeIn 0.35s ease-out both;
+        /* Use both for better support */
+        animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+        /* Hint browser to optimize */
+        will-change: transform, opacity;
     }
 
     .delay-1 {
-        animation-delay: 60ms;
+        animation-delay: 80ms;
     }
 
     .delay-2 {
-        animation-delay: 120ms;
+        animation-delay: 160ms;
     }
 
     .delay-3 {
-        animation-delay: 180ms;
+        animation-delay: 240ms;
     }
 
     .delay-4 {
-        animation-delay: 240ms;
+        animation-delay: 320ms;
     }
 
     @keyframes fadeIn {
@@ -250,7 +261,9 @@
    ======================================== */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-    animation-duration: 0.15s;
+    animation-duration: 0.2s;
+    /* Smoother easing */
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ========================================
@@ -263,6 +276,7 @@
     *::after {
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }
 

@@ -4,9 +4,10 @@ import logoImg from "../assets/logo.webp";
 
 interface Props {
   lang?: "en" | "ar";
+  isLanding?: boolean;
 }
 
-const { lang = "en" } = Astro.props;
+const { lang = "en", isLanding = false } = Astro.props;
 const path = Astro.url.pathname;
 
 const targetPath =
@@ -28,7 +29,7 @@ const buttonText = lang === "en" ? "ع" : "EN";
 const isArabicBtn = lang === "en";
 ---
 
-<header class="header">
+<header class:list={["header", { "header-animate": isLanding }]}>
   <div class="header-inner">
     <a href={lang === "ar" ? "/ar" : "/"} class="logo" aria-label="Home">
       <img
@@ -90,10 +91,9 @@ const isArabicBtn = lang === "en";
   .logo {
     pointer-events: auto;
     display: block;
-    animation: fadeDown 0.4s ease-out both;
   }
 
-  /* LARGER logo on mobile */
+  /* Logo sizing */
   .logo img {
     display: block;
     width: 200px;
@@ -115,7 +115,6 @@ const isArabicBtn = lang === "en";
     }
   }
 
-  /* Landscape phones - smaller */
   @media (orientation: landscape) and (max-height: 500px) {
     .logo img {
       width: 150px;
@@ -150,7 +149,6 @@ const isArabicBtn = lang === "en";
 
     pointer-events: auto;
     transition: background 0.15s;
-    animation: fadeDownBtn 0.4s ease-out 0.1s both;
   }
 
   .lang-btn-ar {
@@ -170,10 +168,19 @@ const isArabicBtn = lang === "en";
     }
   }
 
+  /* ONLY animate on landing page */
+  .header-animate .logo {
+    animation: fadeDown 0.4s ease-out both;
+  }
+
+  .header-animate .lang-btn {
+    animation: fadeDownBtn 0.4s ease-out 0.1s both;
+  }
+
   @keyframes fadeDown {
     from {
       opacity: 0;
-      transform: translateY(-10px);
+      transform: translateY(-12px);
     }
     to {
       opacity: 1;
@@ -184,7 +191,7 @@ const isArabicBtn = lang === "en";
   @keyframes fadeDownBtn {
     from {
       opacity: 0;
-      transform: translateY(calc(-50% - 10px));
+      transform: translateY(calc(-50% - 12px));
     }
     to {
       opacity: 1;

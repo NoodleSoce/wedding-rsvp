@@ -10,9 +10,10 @@ import "@fontsource/amiri";
 interface Props {
 	title: string;
 	lang?: "en" | "ar";
+	isLanding?: boolean;
 }
 
-const { title, lang = "en" } = Astro.props;
+const { title, lang = "en", isLanding = false } = Astro.props;
 const fullTitle = `${title} | Zaid & Haya`;
 const description =
 	lang === "ar"
@@ -63,7 +64,7 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 		</style>
 	</head>
 	<body>
-		<Header lang={lang} />
+		<Header lang={lang} isLanding={isLanding} />
 		<slot />
 
 		<!-- Language detection -->
