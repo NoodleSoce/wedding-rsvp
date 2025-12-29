@@ -6,6 +6,9 @@ interface RSVPData {
     guests: number;
 }
 
+// Your existing Google Apps Script URL for spreadsheet sync
+const GOOGLE_SHEETS_API = "https://script.google.com/macros/s/AKfycbwq4PjP3sAEj2YTMTge5tZkwDx447v4T-0ySATyf3GImmpnZTaop-NGoxFj-lSyGnTl/exec";
+
 export const POST: APIRoute = async ({ request, locals }) => {
     try {
         const data: RSVPData = await request.json();
@@ -26,39 +29,78 @@ export const POST: APIRoute = async ({ request, locals }) => {
         }
 
         const guests = data.attending === 'Yes' ? Math.max(0, Math.min(9, Number(data.guests) || 0)) : 0;
+        const trimmedName = data.name.trim();
 
         // Get D1 database from runtime
         const runtime = locals.runtime;
         const db = runtime?.env?.DB;
 
-        if (db) {
-            // Insert into D1 database
-            const ipHash = request.headers.get('cf-connecting-ip')
-                ? await hashIP(request.headers.get('cf-connecting-ip')!)
-                : null;
-            const userAgent = request.headers.get('user-agent')?.substring(0, 255);
+        // Track results
+        let d1Success = false;
+        let sheetsSuccess = false;
 
-            await db.prepare(`
-                INSERT INTO rsvp_responses (name, attending, guests, ip_hash, user_agent)
-                VALUES (?, ?, ?, ?, ?)
-            `).bind(
-                data.name.trim(),
-                data.attending,
-                guests,
-                ipHash,
-                userAgent
-            ).run();
-        } else {
-            // Fallback: Log to console (for development or if D1 not configured)
-            console.log('RSVP Submission:', {
-                name: data.name.trim(),
+        // 1. Save to D1 Database (primary storage)
+        if (db) {
+            try {
+                const ipHash = request.headers.get('cf-connecting-ip')
+                    ? await hashIP(request.headers.get('cf-connecting-ip')!)
+                    : null;
+                const userAgent = request.headers.get('user-agent')?.substring(0, 255);
+
+                await db.prepare(`
+                    INSERT INTO rsvp_responses (name, attending, guests, ip_hash, user_agent)
+                    VALUES (?, ?, ?, ?, ?)
+                `).bind(
+                    trimmedName,
+                    data.attending,
+                    guests,
+                    ipHash,
+                    userAgent
+                ).run();
+
+                d1Success = true;
+            } catch (dbError) {
+                console.error('D1 database error:', dbError);
+            }
+        }
+
+        // 2. Sync to Google Sheets (backup/viewing convenience)
+        try {
+            const sheetsPayload = {
+                name: trimmedName,
                 attending: data.attending,
-                guests,
+                guests: guests,
                 timestamp: new Date().toISOString()
+            };
+
+            // Fire and don't wait (non-blocking sync)
+            await fetch(GOOGLE_SHEETS_API, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(sheetsPayload),
+            });
+
+            sheetsSuccess = true;
+        } catch (sheetsError) {
+            console.error('Google Sheets sync error:', sheetsError);
+        }
+
+        // At least one storage method should succeed
+        if (!d1Success && !sheetsSuccess) {
+            return new Response(JSON.stringify({ error: 'Failed to save RSVP' }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' }
             });
         }
 
-        return new Response(JSON.stringify({ success: true }), {
+        return new Response(JSON.stringify({
+            success: true,
+            storage: {
+                d1: d1Success,
+                sheets: sheetsSuccess
+            }
+        }), {
             status: 200,
             headers: {
                 'Content-Type': 'application/json',
