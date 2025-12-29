@@ -64,15 +64,22 @@
 
 <!-- Map provider options modal -->
 {#if showOptions}
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
     <div
         class="modal-overlay"
         on:click={closeOptions}
         on:keydown={(e) => e.key === "Escape" && closeOptions()}
         role="dialog"
         aria-modal="true"
+        aria-labelledby="modal-title"
+        tabindex="-1"
     >
+        <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
         <div class="modal-content" on:click|stopPropagation>
-            <h3 class="text-lg font-medium text-white text-center mb-4">
+            <h3
+                id="modal-title"
+                class="text-lg font-medium text-white text-center mb-4"
+            >
                 Choose Maps App
             </h3>
             <div class="flex flex-col gap-3">

@@ -21,9 +21,11 @@
     let guestsEl: HTMLInputElement;
     let submitBtn: HTMLButtonElement;
     let keyboardOpen = false;
+    let isBrowser = false;
 
     // Load saved data
     function loadSavedData() {
+        if (!isBrowser) return;
         try {
             const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
             if (saved.name) name = saved.name;
@@ -35,6 +37,7 @@
     // Save data with debounce
     let saveTimeout: ReturnType<typeof setTimeout>;
     function saveData() {
+        if (!isBrowser) return;
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {
             localStorage.setItem(
@@ -137,7 +140,7 @@
                 });
             }
 
-            localStorage.removeItem(KEY);
+            if (isBrowser) localStorage.removeItem(KEY);
 
             spinnerFadingOut = true;
 
@@ -157,6 +160,7 @@
     }
 
     onMount(() => {
+        isBrowser = true;
         loadSavedData();
         sessionStorage.removeItem("rsvp_submitted");
 
