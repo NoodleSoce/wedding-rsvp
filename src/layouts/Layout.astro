@@ -54,12 +54,63 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 
 		<ClientRouter />
 
-		<!-- Critical styles to prevent flash -->
+		<!-- CRITICAL CSS: Inlined to prevent flash of unstyled content -->
 		<style is:inline>
+			/* Base Reset */
 			html,
 			body {
 				background: #4b0101;
 				margin: 0;
+				height: 100%;
+				/* Prevent text hiding while font loads */
+				font-family: "Libre Baskerville", "Amiri", serif;
+			}
+
+			/* Critical Header Styles for Instant Paint */
+			.header {
+				position: fixed;
+				top: 0;
+				left: 0;
+				right: 0;
+				z-index: 100;
+				padding: 1rem;
+				pointer-events: none;
+				/* Force GPU */
+				transform: translateZ(0);
+			}
+			.header-inner {
+				max-width: 500px;
+				margin: 0 auto;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				position: relative;
+				padding: 0 3rem;
+			}
+			.logo {
+				display: block;
+				width: 220px;
+				height: 73px;
+				pointer-events: auto;
+			}
+			.logo img {
+				display: block;
+				width: 100%;
+				height: 100%;
+				object-fit: contain;
+			}
+			/* Media queries for logo size */
+			@media (min-width: 400px) {
+				.logo {
+					width: 240px;
+					height: 80px;
+				}
+			}
+			@media (min-width: 600px) {
+				.logo {
+					width: 260px;
+					height: 87px;
+				}
 			}
 		</style>
 	</head>

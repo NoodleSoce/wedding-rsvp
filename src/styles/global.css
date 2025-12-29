@@ -22,6 +22,18 @@
    BASE STYLES
    ======================================== */
 @layer base {
+
+    /* Ensure fonts swap immediately */
+    @font-face {
+        font-family: 'Libre Baskerville';
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'Amiri';
+        font-display: swap;
+    }
+
     html {
         height: 100%;
         background: var(--bg);
@@ -70,11 +82,6 @@
         height: auto;
         /* Prevent layout shift */
         display: block;
-    }
-
-    /* Preload font rendering */
-    @font-face {
-        font-display: swap;
     }
 }
 
