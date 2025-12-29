@@ -23,15 +23,21 @@
    ======================================== */
 @layer base {
 
-    /* Ensure fonts swap immediately */
+    /* 
+       Fix FOUT (Flash of Unstyled Text) 
+       Using 'block' hides text for a short period (3s max) until font loads,
+       preventing the jarring layout shift/visual change of swapping fonts.
+    */
     @font-face {
         font-family: 'Libre Baskerville';
-        font-display: swap;
+        font-display: block;
+        src: local('Libre Baskerville');
     }
 
     @font-face {
         font-family: 'Amiri';
-        font-display: swap;
+        font-display: block;
+        src: local('Amiri');
     }
 
     html {
@@ -46,7 +52,6 @@
     body {
         min-height: 100dvh;
         font-family: 'Libre Baskerville', 'Amiri', Georgia, serif;
-        /* Slightly larger base font */
         font-size: clamp(1rem, 0.95rem + 0.25vw, 1.1rem);
         line-height: 1.5;
         color: var(--white);
@@ -69,18 +74,20 @@
     }
 
     h1,
-    h2 {
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
         font-weight: 400;
         line-height: 1.3;
         margin: 0;
-        /* Optimized heading rendering */
         text-rendering: optimizeLegibility;
     }
 
     img {
         max-width: 100%;
         height: auto;
-        /* Prevent layout shift */
         display: block;
     }
 }
@@ -100,10 +107,12 @@
         padding: var(--header-h) 1rem 2rem;
     }
 
+    /* Landscape Fix: Ensure content isn't under header */
     @media (orientation: landscape) and (max-height: 500px) {
         .page {
             justify-content: flex-start;
-            padding-top: calc(var(--header-h) + 0.5rem);
+            padding-top: 80px;
+            /* Explicit space for absolute header */
         }
     }
 
@@ -116,19 +125,18 @@
         align-items: center;
         text-align: center;
         gap: 1.25rem;
+        transform: translateZ(0);
     }
 
-    /* Glass card - Optimized for Safari */
+    /* Glass card */
     .card {
         width: 100%;
         padding: 1.5rem;
         background: rgba(255, 255, 255, 0.08);
         border: 1px solid rgba(255, 255, 255, 0.15);
         border-radius: 16px;
-        /* Separate layer for backdrop filter to prevent repaints */
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        /* Hardware acceleration helps with stutter */
         transform: translateZ(0);
         will-change: transform, opacity;
     }
@@ -142,7 +150,6 @@
         min-height: 52px;
         padding: 0.875rem 1.5rem;
         font: inherit;
-        /* Larger button text */
         font-size: 1.05rem;
         font-weight: 500;
         color: var(--white);
@@ -155,7 +162,6 @@
         -webkit-user-select: none;
         user-select: none;
         -webkit-tap-highlight-color: transparent;
-        /* Optimization */
         transform: translateZ(0);
     }
 
@@ -182,7 +188,6 @@
         padding: 0.875rem 1rem;
         font: inherit;
         font-size: 16px;
-        /* Prevents iOS zoom */
         color: var(--white);
         background: rgba(0, 0, 0, 0.2);
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -225,12 +230,8 @@
    ANIMATIONS
    ======================================== */
 @layer utilities {
-
-    /* Fade in animation - Optimized */
     .animate-in {
-        /* Use both for better support */
         animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-        /* Hint browser to optimize */
         will-change: transform, opacity;
     }
 
@@ -263,19 +264,12 @@
     }
 }
 
-/* ========================================
-   VIEW TRANSITIONS
-   ======================================== */
 ::view-transition-old(root),
 ::view-transition-new(root) {
     animation-duration: 0.2s;
-    /* Smoother easing */
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ========================================
-   REDUCED MOTION
-   ======================================== */
 @media (prefers-reduced-motion: reduce) {
 
     *,
@@ -287,9 +281,6 @@
     }
 }
 
-/* ========================================
-   SCROLLBAR
-   ======================================== */
 ::-webkit-scrollbar {
     width: 6px;
 }
@@ -301,8 +292,4 @@
 ::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
 }

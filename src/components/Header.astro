@@ -9,7 +9,6 @@ interface Props {
 
 const { lang = "en", isLanding = false } = Astro.props;
 const path = Astro.url.pathname;
-
 const targetPath =
   lang === "en"
     ? path === "/"
@@ -29,31 +28,29 @@ const isArabicBtn = lang === "en";
 ---
 
 <header class:list={["header", { "header-animate": isLanding }]}>
-  <div class="header-inner">
-    <!-- Logo centered absolutely -->
-    <a href={lang === "ar" ? "/ar" : "/"} class="logo-link" aria-label="Home">
-      <img
-        src={logo.src}
-        alt="Zaid & Haya"
-        width="220"
-        height="73"
-        loading="eager"
-        fetchpriority="high"
-        decoding="sync"
-        class="logo-img"
-      />
-    </a>
+  <!-- Logo Container -->
+  <a href={lang === "ar" ? "/ar" : "/"} class="logo-link" aria-label="Home">
+    <img
+      src={logo.src}
+      alt="Zaid & Haya"
+      class="logo-img"
+      width="220"
+      height="73"
+      decoding="sync"
+      loading="eager"
+      fetchpriority="high"
+    />
+  </a>
 
-    <!-- Language button absolute right with symmetric spacing -->
-    <a
-      href={targetPath}
-      class:list={["lang-btn", { "lang-btn-ar": isArabicBtn }]}
-      data-astro-prefetch
-      aria-label={lang === "en" ? "Switch to Arabic" : "Switch to English"}
-    >
-      {buttonText}
-    </a>
-  </div>
+  <!-- Language Button - Positioned absolutely relative to header, ignoring inner width -->
+  <a
+    href={targetPath}
+    class:list={["lang-btn", { "lang-btn-ar": isArabicBtn }]}
+    data-astro-prefetch
+    aria-label={lang === "en" ? "Switch to Arabic" : "Switch to English"}
+  >
+    {buttonText}
+  </a>
 </header>
 
 <script>
@@ -79,77 +76,44 @@ const isArabicBtn = lang === "en";
     left: 0;
     right: 0;
     z-index: 100;
-    padding: 1rem;
+    height: 100px; /* Explicit height */
     pointer-events: none;
     transform: translateZ(0);
-    /* Ensure spacing exists even before CSS loads fully to prevent shift */
-    height: 100px;
+    /* Ensure consistent box model */
+    box-sizing: border-box;
   }
 
-  .header-inner {
-    max-width: 500px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    /* Padding ensures language button isn't too close to edge on small screens */
-    padding: 0 1rem;
-    height: 100%;
-  }
-
+  /* Logo - Centered Absolutely */
   .logo-link {
     pointer-events: auto;
     display: block;
-    /* Strict dimensions to prevent flash */
-    width: 220px;
-    height: 73px;
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
+    /* Strict Base Dimensions */
+    width: 220px;
+    height: 73px;
+    z-index: 2;
   }
 
+  /* Logo Image - Strict Pixel Sizing to Prevent Flash */
   .logo-img {
     display: block;
-    /* Force exact dimensions */
-    width: 100% !important;
-    height: 100% !important;
+    width: 220px; /* Pixel value, NOT PERCENTAGE */
+    height: 73px;
     object-fit: contain;
     image-rendering: -webkit-optimize-contrast;
   }
 
-  /* Responsive Sizing */
-  @media (min-width: 400px) {
-    .logo-link {
-      width: 240px;
-      height: 80px;
-    }
-  }
-  @media (min-width: 600px) {
-    .logo-link {
-      width: 260px;
-      height: 87px;
-    }
-  }
-  @media (orientation: landscape) and (max-height: 500px) {
-    .logo-link {
-      width: 160px;
-      height: 53px;
-    }
-    .header {
-      padding: 0.5rem 1rem;
-      height: 70px;
-    }
-  }
-
+  /* Language Button - Fixed to corner */
   .lang-btn {
     pointer-events: auto;
     position: absolute;
-    /* Symmetric spacing: Right aligned with same padding as container would have */
-    right: 1rem;
+    right: 1.5rem; /* Fixed distance from screen edge */
     top: 50%;
     transform: translateY(-50%);
+    z-index: 3;
 
     display: flex;
     align-items: center;
@@ -169,7 +133,6 @@ const isArabicBtn = lang === "en";
 
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    transition: background 0.15s;
   }
 
   .lang-btn-ar {
@@ -179,21 +142,51 @@ const isArabicBtn = lang === "en";
     padding-top: 2px;
   }
 
-  .lang-btn:active {
-    background: rgba(255, 255, 255, 0.2);
-  }
+  /* =========================================
+       RESPONSIVE SIZING
+       ========================================= */
 
-  @media (hover: hover) {
-    .lang-btn:hover {
-      background: rgba(255, 255, 255, 0.2);
+  /* Small screens (> 400px) */
+  @media (min-width: 400px) {
+    .logo-link,
+    .logo-img {
+      width: 240px;
+      height: 80px;
     }
   }
 
-  /* Animation - Landing Only */
+  /* Desktops (> 600px) */
+  @media (min-width: 600px) {
+    .logo-link,
+    .logo-img {
+      width: 260px;
+      height: 87px;
+    }
+  }
+
+  /* LANDSCAPE MOBILE FIX */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .header {
+      /* Scroll away with content in landscape */
+      position: absolute;
+      height: 70px;
+    }
+
+    .logo-link,
+    .logo-img {
+      width: 160px;
+      height: 53px;
+    }
+
+    .lang-btn {
+      right: 2rem; /* More space on sides in landscape */
+    }
+  }
+
+  /* Animation */
   .header-animate .logo-link {
     animation: fadeDown 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
-
   .header-animate .lang-btn {
     animation: fadeDownBtn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s both;
   }
@@ -208,7 +201,6 @@ const isArabicBtn = lang === "en";
       transform: translate(-50%, -50%);
     }
   }
-
   @keyframes fadeDownBtn {
     from {
       opacity: 0;
