@@ -54,19 +54,44 @@ const dir = lang === "ar" ? "rtl" : "ltr";
 
 		<ClientRouter />
 
-		<!-- Preload critical fonts prevents FOUT/FOIT -->
-		<!-- Note: Font source paths handled by Vite/Astro, implicit preloading usually works well -->
-		<!-- Enforcing styles early -->
+		<!-- CRITICAL CSS: Fixes logo flash by enforcing dimensions before body load -->
 		<style is:inline>
 			html {
 				background: #4b0101;
-				height: 100%;
-				/* Prevent text hiding while font loads */
 				font-family: "Libre Baskerville", "Amiri", serif;
 			}
-			body {
-				margin: 0;
-				min-height: 100%;
+
+			/* Enforce logo dimensions IMMEDIATELY */
+			.logo-img {
+				width: 220px !important;
+				height: 73px !important;
+				max-width: none !important; /* Prevent 'width: 100%' flash */
+			}
+			.logo-link {
+				width: 220px !important;
+				height: 73px !important;
+			}
+
+			@media (min-width: 400px) {
+				.logo-img,
+				.logo-link {
+					width: 240px !important;
+					height: 80px !important;
+				}
+			}
+			@media (min-width: 600px) {
+				.logo-img,
+				.logo-link {
+					width: 260px !important;
+					height: 87px !important;
+				}
+			}
+			@media (orientation: landscape) and (max-height: 500px) {
+				.logo-img,
+				.logo-link {
+					width: 160px !important;
+					height: 53px !important;
+				}
 			}
 		</style>
 	</head>

@@ -39,10 +39,20 @@ const isArabicBtn = lang === "en";
       decoding="sync"
       loading="eager"
       fetchpriority="high"
+      *
+      Inline
+      styles
+      for
+      extra
+      safety
+      against
+      FOUC
+      *
+      style="width: 220px; height: 73px;"
     />
   </a>
 
-  <!-- Language Button - Positioned absolutely relative to header, ignoring inner width -->
+  <!-- Language Button -->
   <a
     href={targetPath}
     class:list={["lang-btn", { "lang-btn-ar": isArabicBtn }]}
@@ -76,10 +86,9 @@ const isArabicBtn = lang === "en";
     left: 0;
     right: 0;
     z-index: 100;
-    height: 100px; /* Explicit height */
+    height: 100px;
     pointer-events: none;
     transform: translateZ(0);
-    /* Ensure consistent box model */
     box-sizing: border-box;
   }
 
@@ -91,26 +100,28 @@ const isArabicBtn = lang === "en";
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    /* Strict Base Dimensions */
     width: 220px;
     height: 73px;
     z-index: 2;
+    contain: layout size;
   }
 
-  /* Logo Image - Strict Pixel Sizing to Prevent Flash */
+  /* Logo Image - Strict Pixel Sizing */
   .logo-img {
     display: block;
-    width: 220px; /* Pixel value, NOT PERCENTAGE */
+    width: 220px;
     height: 73px;
     object-fit: contain;
     image-rendering: -webkit-optimize-contrast;
+    /* Override global max-width: 100% to prevent collapse */
+    max-width: none;
   }
 
   /* Language Button - Fixed to corner */
   .lang-btn {
     pointer-events: auto;
     position: absolute;
-    right: 1.5rem; /* Fixed distance from screen edge */
+    right: 1.5rem;
     top: 50%;
     transform: translateY(-50%);
     z-index: 3;
@@ -167,7 +178,6 @@ const isArabicBtn = lang === "en";
   /* LANDSCAPE MOBILE FIX */
   @media (orientation: landscape) and (max-height: 500px) {
     .header {
-      /* Scroll away with content in landscape */
       position: absolute;
       height: 70px;
     }
@@ -179,7 +189,7 @@ const isArabicBtn = lang === "en";
     }
 
     .lang-btn {
-      right: 2rem; /* More space on sides in landscape */
+      right: 2rem;
     }
   }
 
