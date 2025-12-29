@@ -15,40 +15,12 @@ const apiEndpoint =
 ---
 
 <Layout title={lang === "ar" ? "تأكيد الحضور" : "RSVP"} lang={lang}>
-    <main class="rsvp-page animate-fade-in" id="rsvp-page">
-        <div
-            class="form-wrap w-full max-w-content flex justify-center items-center"
-        >
-            <RsvpForm
-                client:load
-                t={t}
-                redirectUrl={redirectUrl}
-                apiEndpoint={apiEndpoint}
-            />
-        </div>
+    <main class="page">
+        <RsvpForm
+            client:load
+            t={t}
+            redirectUrl={redirectUrl}
+            apiEndpoint={apiEndpoint}
+        />
     </main>
 </Layout>
-
-<style>
-    .rsvp-page {
-        min-height: 100vh;
-        min-height: 100dvh;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: clamp(90px, 75px + 4vw, 120px)
-            clamp(1rem, 0.75rem + 1.25vw, 1.75rem)
-            clamp(1rem, 0.75rem + 1.25vw, 1.75rem);
-        background: #4b0101;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    @media (orientation: landscape) and (max-height: 500px) {
-        .rsvp-page {
-            align-items: flex-start;
-            padding-top: calc(clamp(90px, 75px + 4vw, 120px) + 0.5rem);
-        }
-    }
-</style>

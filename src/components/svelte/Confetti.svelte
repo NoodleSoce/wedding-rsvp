@@ -2,71 +2,48 @@
     import confetti from "canvas-confetti";
     import { onMount, onDestroy } from "svelte";
 
-    let hasPlayed = false;
-    let intervalId: ReturnType<typeof setInterval> | undefined;
+    let intervalId: ReturnType<typeof setInterval>;
 
-    function run() {
-        if (hasPlayed) return;
-
-        // Check declined status
-        if (
-            typeof sessionStorage !== "undefined" &&
-            sessionStorage.getItem("rsvp_declined") === "true"
-        ) {
+    onMount(() => {
+        // Don't run if declined or reduced motion
+        if (sessionStorage.getItem("rsvp_declined") === "true") return;
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
             return;
-        }
 
-        // Reduced motion check
-        if (
-            typeof window !== "undefined" &&
-            window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ) {
-            return;
-        }
-
-        hasPlayed = true;
-        const duration = 4000;
+        const duration = 3000;
         const end = Date.now() + duration;
 
         function burst() {
-            const now = Date.now();
-            if (now > end) {
-                if (intervalId) clearInterval(intervalId);
+            if (Date.now() > end) {
+                clearInterval(intervalId);
                 return;
             }
 
             confetti({
-                particleCount: 10,
-                spread: 70,
-                startVelocity: 12,
-                ticks: 80,
-                gravity: 0.6,
-                scalar: 1.1,
+                particleCount: 8,
+                spread: 60,
+                startVelocity: 15,
+                ticks: 60,
+                gravity: 0.8,
+                scalar: 1,
                 origin: {
-                    x: 0.1 + Math.random() * 0.8,
-                    y: 0.1 + Math.random() * 0.3,
+                    x: 0.2 + Math.random() * 0.6,
+                    y: 0.2 + Math.random() * 0.2,
                 },
                 zIndex: 0,
                 disableForReducedMotion: true,
             });
         }
 
-        burst();
-        intervalId = setInterval(burst, 280);
-    }
-
-    onMount(() => {
-        // Small delay to let page render
-        requestAnimationFrame(() => {
-            setTimeout(run, 100);
-        });
+        // Start after a short delay
+        setTimeout(() => {
+            burst();
+            intervalId = setInterval(burst, 250);
+        }, 200);
     });
 
     onDestroy(() => {
-        if (intervalId) {
-            clearInterval(intervalId);
-            intervalId = undefined;
-        }
+        if (intervalId) clearInterval(intervalId);
         confetti.reset();
     });
 </script>

@@ -1,5 +1,6 @@
 /* ========================================
-   WEDDING RSVP - Tailwind + Custom Design System
+   WEDDING RSVP - Clean Design System
+   Mobile-first, performant, simple
    ======================================== */
 
 @tailwind base;
@@ -7,208 +8,209 @@
 @tailwind utilities;
 
 /* ========================================
-   BASE LAYER
+   CSS VARIABLES
+   ======================================== */
+:root {
+    --bg: #4b0101;
+    --white: #fff;
+    --success: #2e7d32;
+    --error: #c62828;
+    --header-h: clamp(80px, 70px + 3vw, 100px);
+}
+
+/* ========================================
+   BASE STYLES
    ======================================== */
 @layer base {
     html {
         height: 100%;
-        height: -webkit-fill-available;
+        background: var(--bg);
+        scroll-behavior: smooth;
         -webkit-tap-highlight-color: transparent;
-        -webkit-text-size-adjust: 100%;
-        text-size-adjust: 100%;
-        overscroll-behavior: none;
-        scroll-behavior: auto;
-        background: theme('colors.primary.900');
     }
 
     body {
-        min-height: 100%;
         min-height: 100dvh;
-        min-height: -webkit-fill-available;
-        font-family: theme('fontFamily.serif');
+        font-family: 'Libre Baskerville', 'Amiri', Georgia, serif;
+        color: var(--white);
+        background: var(--bg);
         -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        text-rendering: optimizeSpeed;
-        overscroll-behavior-y: none;
-        touch-action: pan-y;
-        -webkit-overflow-scrolling: touch;
-        background: theme('colors.primary.900');
+        overflow-x: hidden;
     }
 
     [dir="rtl"] body {
-        font-feature-settings: "liga" 1, "calt" 1;
-        font-family: theme('fontFamily.arabic');
-    }
-
-    h1,
-    h2 {
-        font-weight: 400;
-        line-height: 1.2;
+        font-family: 'Amiri', 'Libre Baskerville', Georgia, serif;
     }
 }
 
 /* ========================================
-   COMPONENTS LAYER
+   COMPONENTS
    ======================================== */
 @layer components {
 
-    /* Page container */
+    /* Page wrapper */
     .page {
-        @apply min-h-screen min-h-[100dvh] w-full flex justify-center items-center;
-        padding: theme('spacing.header') theme('spacing.page-pad') theme('spacing.page-pad');
-        background: theme('colors.primary.900');
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: var(--header-h) 1rem 2rem;
     }
 
-    @media (orientation: landscape) and (max-height: 500px) {
-        .page {
-            padding-top: calc(theme('spacing.header') + 1rem);
-            align-items: flex-start;
-        }
-    }
-
-    /* Content wrapper */
+    /* Content container */
     .content {
-        @apply flex flex-col items-center text-center w-full gap-4;
-        max-width: theme('maxWidth.content');
-        padding-bottom: theme('spacing.safe-bottom');
+        width: 100%;
+        max-width: 420px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1.25rem;
     }
 
     /* Glass card */
     .card {
-        @apply w-full p-6 rounded-card shadow-card;
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        width: 100%;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 16px;
+        backdrop-filter: blur(12px);
     }
 
-    /* Primary button */
+    /* Button */
     .btn {
-        @apply flex justify-center items-center w-full min-h-[54px] px-6 py-4;
-        @apply font-serif font-medium text-white cursor-pointer no-underline;
-        @apply rounded-full select-none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 52px;
+        padding: 0.875rem 1.5rem;
+        font: inherit;
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--white);
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: background 0.1s ease, transform 0.05s ease;
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: transparent;
+        border-radius: 999px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: transform 0.1s, background 0.1s;
+        -webkit-user-select: none;
+        user-select: none;
     }
 
     .btn:active {
-        transform: scale(0.97);
-        background: rgba(255, 255, 255, 0.2);
+        transform: scale(0.98);
+        background: rgba(255, 255, 255, 0.15);
     }
 
     @media (hover: hover) {
         .btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
         }
     }
 
     .btn:disabled {
-        @apply opacity-50 pointer-events-none;
+        opacity: 0.5;
+        pointer-events: none;
     }
 
     /* Form input */
     .input {
-        @apply w-full min-h-[54px] p-4 font-serif text-[16px] text-white;
-        @apply rounded-sm-card appearance-none;
-        background: rgba(0, 0, 0, 0.15);
+        width: 100%;
+        min-height: 52px;
+        padding: 0.875rem 1rem;
+        font: inherit;
+        font-size: 16px;
+        /* Prevents iOS zoom */
+        color: var(--white);
+        background: rgba(0, 0, 0, 0.2);
         border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: border-color 0.05s ease;
+        border-radius: 12px;
+        outline: none;
+        transition: border-color 0.15s;
     }
 
     .input::placeholder {
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(255, 255, 255, 0.4);
     }
 
     .input:focus {
-        @apply outline-none;
-        border-color: rgba(255, 255, 255, 0.7);
+        border-color: rgba(255, 255, 255, 0.5);
     }
 
     [dir="rtl"] .input {
-        @apply text-right;
-    }
-
-    [dir="rtl"] .input::placeholder {
-        @apply text-right;
+        text-align: right;
     }
 
     .input[type="number"] {
-        @apply text-center;
+        text-align: center;
     }
 }
 
 /* ========================================
-   UTILITIES LAYER
+   ANIMATIONS - Simple & Performant
    ======================================== */
 @layer utilities {
 
-    /* Animation delays */
-    .anim-delay-1 {
-        animation-delay: 0.01s;
+    /* Fade in animation */
+    .animate-in {
+        animation: fadeIn 0.3s ease-out both;
     }
 
-    .anim-delay-2 {
-        animation-delay: 0.02s;
+    .delay-1 {
+        animation-delay: 50ms;
     }
 
-    .anim-delay-3 {
-        animation-delay: 0.03s;
+    .delay-2 {
+        animation-delay: 100ms;
     }
 
-    .anim-delay-4 {
-        animation-delay: 0.04s;
+    .delay-3 {
+        animation-delay: 150ms;
     }
 
-    /* Glass effects */
-    .glass-10 {
-        background: rgba(255, 255, 255, 0.1);
+    .delay-4 {
+        animation-delay: 200ms;
     }
 
-    .glass-20 {
-        background: rgba(255, 255, 255, 0.2);
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     /* White opacity utilities */
-    .text-white-90 {
+    .text-white\/90 {
         color: rgba(255, 255, 255, 0.9);
     }
 
-    .text-white-70 {
+    .text-white\/70 {
         color: rgba(255, 255, 255, 0.7);
     }
 
-    .text-white-50 {
+    .text-white\/50 {
         color: rgba(255, 255, 255, 0.5);
     }
 
-    .border-white-20 {
+    .bg-white\/10 {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .bg-white\/20 {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .border-white\/20 {
         border-color: rgba(255, 255, 255, 0.2);
-    }
-
-    .border-white-50 {
-        border-color: rgba(255, 255, 255, 0.5);
-    }
-
-    /* RTL animation support */
-    [dir="rtl"] .animate-slide-in {
-        animation-name: slideInRTL;
-    }
-
-    /* Contain utilities for performance */
-    .contain-layout {
-        contain: layout;
-    }
-
-    .contain-paint {
-        contain: paint;
-    }
-
-    .contain-layout-paint {
-        contain: layout paint;
     }
 }
 
@@ -217,7 +219,7 @@
    ======================================== */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-    animation-duration: 0.1s;
+    animation-duration: 0.2s;
 }
 
 /* ========================================
@@ -230,6 +232,21 @@
     *::after {
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
     }
+}
+
+/* ========================================
+   SCROLLBAR
+   ======================================== */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
 }

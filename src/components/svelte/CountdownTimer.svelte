@@ -5,43 +5,40 @@
     export let t: UIStrings;
     export let targetDate: number;
 
-    let declined = false;
-    let days = "--";
-    let hours = "--";
-    let minutes = "--";
-    let seconds = "--";
+    let days = "00";
+    let hours = "00";
+    let minutes = "00";
+    let seconds = "00";
     let expired = false;
-    let timer: ReturnType<typeof setInterval> | undefined;
+    let declined = false;
+    let timer: ReturnType<typeof setInterval>;
 
-    // Constants for performance
     const DAY = 86400000;
     const HOUR = 3600000;
     const MIN = 60000;
-    const SEC = 1000;
 
-    function tick() {
+    function update() {
         const diff = targetDate - Date.now();
 
         if (diff <= 0) {
             expired = true;
-            if (timer) clearInterval(timer);
+            days = hours = minutes = seconds = "00";
+            clearInterval(timer);
             return;
         }
 
-        days = String((diff / DAY) | 0).padStart(2, "0");
-        hours = String(((diff % DAY) / HOUR) | 0).padStart(2, "0");
-        minutes = String(((diff % HOUR) / MIN) | 0).padStart(2, "0");
-        seconds = String(((diff % MIN) / SEC) | 0).padStart(2, "0");
+        days = String(Math.floor(diff / DAY)).padStart(2, "0");
+        hours = String(Math.floor((diff % DAY) / HOUR)).padStart(2, "0");
+        minutes = String(Math.floor((diff % HOUR) / MIN)).padStart(2, "0");
+        seconds = String(Math.floor((diff % MIN) / 1000)).padStart(2, "0");
     }
 
     onMount(() => {
-        // Check declined status from sessionStorage
-        if (typeof sessionStorage !== "undefined") {
-            declined = sessionStorage.getItem("rsvp_declined") === "true";
-        }
+        // Check if user declined
+        declined = sessionStorage.getItem("rsvp_declined") === "true";
 
-        tick();
-        timer = setInterval(tick, 1000);
+        update();
+        timer = setInterval(update, 1000);
     });
 
     onDestroy(() => {
@@ -51,85 +48,88 @@
     $: title = declined ? t["countdown.titleDeclined"] : t["countdown.title"];
 </script>
 
-<div class="flex flex-col items-center gap-5 animate-fade-in">
-    <h1
-        class="text-xl font-light max-w-[min(90%,380px)] leading-tight px-4 text-center text-white anim-delay-1 animate-slide-in"
-    >
-        {title}
-    </h1>
+<div class="timer-wrapper">
+    <h1 class="title animate-in">{title}</h1>
 
     {#if expired}
-        <div
-            class="timer anim-delay-2 animate-slide-in"
-            role="timer"
-            aria-live="polite"
-        >
-            <span class="text-xl font-semibold text-white"
-                >{t["countdown.expired"]}</span
-            >
-        </div>
+        <div class="expired animate-in delay-1">{t["countdown.expired"]}</div>
     {:else}
-        <div
-            class="timer flex items-center gap-3 contain-layout anim-delay-2 animate-slide-in"
-            role="timer"
-            aria-live="polite"
-        >
-            <div
-                class="unit flex flex-col items-center min-w-[clamp(40px,10vw,56px)]"
-            >
-                <span
-                    class="text-[clamp(1.5rem,1.2rem+1.5vw,2.25rem)] font-bold tabular-nums leading-none text-white"
-                    >{days}</span
-                >
-                <small class="text-sm text-white-70 mt-2"
-                    >{t["countdown.days"]}</small
-                >
+        <div class="timer animate-in delay-1" role="timer" aria-live="polite">
+            <div class="unit">
+                <span class="value">{days}</span>
+                <span class="label">{t["countdown.days"]}</span>
             </div>
-            <span
-                class="sep text-[clamp(1.25rem,1rem+1vw,1.75rem)] font-bold text-white-70 mb-6"
-                aria-hidden="true">:</span
-            >
-            <div
-                class="unit flex flex-col items-center min-w-[clamp(40px,10vw,56px)]"
-            >
-                <span
-                    class="text-[clamp(1.5rem,1.2rem+1.5vw,2.25rem)] font-bold tabular-nums leading-none text-white"
-                    >{hours}</span
-                >
-                <small class="text-sm text-white-70 mt-2"
-                    >{t["countdown.hours"]}</small
-                >
+            <span class="sep">:</span>
+            <div class="unit">
+                <span class="value">{hours}</span>
+                <span class="label">{t["countdown.hours"]}</span>
             </div>
-            <span
-                class="sep text-[clamp(1.25rem,1rem+1vw,1.75rem)] font-bold text-white-70 mb-6"
-                aria-hidden="true">:</span
-            >
-            <div
-                class="unit flex flex-col items-center min-w-[clamp(40px,10vw,56px)]"
-            >
-                <span
-                    class="text-[clamp(1.5rem,1.2rem+1.5vw,2.25rem)] font-bold tabular-nums leading-none text-white"
-                    >{minutes}</span
-                >
-                <small class="text-sm text-white-70 mt-2"
-                    >{t["countdown.minutes"]}</small
-                >
+            <span class="sep">:</span>
+            <div class="unit">
+                <span class="value">{minutes}</span>
+                <span class="label">{t["countdown.minutes"]}</span>
             </div>
-            <span
-                class="sep text-[clamp(1.25rem,1rem+1vw,1.75rem)] font-bold text-white-70 mb-6"
-                aria-hidden="true">:</span
-            >
-            <div
-                class="unit flex flex-col items-center min-w-[clamp(40px,10vw,56px)]"
-            >
-                <span
-                    class="text-[clamp(1.5rem,1.2rem+1.5vw,2.25rem)] font-bold tabular-nums leading-none text-white"
-                    >{seconds}</span
-                >
-                <small class="text-sm text-white-70 mt-2"
-                    >{t["countdown.seconds"]}</small
-                >
+            <span class="sep">:</span>
+            <div class="unit">
+                <span class="value">{seconds}</span>
+                <span class="label">{t["countdown.seconds"]}</span>
             </div>
         </div>
     {/if}
 </div>
+
+<style>
+    .timer-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .title {
+        font-size: clamp(1.2rem, 1rem + 1vw, 1.6rem);
+        font-weight: 400;
+        line-height: 1.4;
+        text-align: center;
+        max-width: 340px;
+        margin: 0;
+    }
+
+    .timer {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .unit {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: clamp(44px, 12vw, 60px);
+    }
+
+    .value {
+        font-size: clamp(1.6rem, 1.4rem + 1vw, 2.2rem);
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        line-height: 1;
+    }
+
+    .label {
+        font-size: clamp(0.7rem, 0.65rem + 0.3vw, 0.85rem);
+        color: rgba(255, 255, 255, 0.7);
+        margin-top: 0.4rem;
+    }
+
+    .sep {
+        font-size: clamp(1.2rem, 1rem + 0.5vw, 1.6rem);
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.6);
+        padding-bottom: 1.5rem;
+    }
+
+    .expired {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+</style>

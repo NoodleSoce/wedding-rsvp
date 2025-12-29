@@ -6,406 +6,315 @@
     export let redirectUrl: string;
     export let apiEndpoint: string;
 
-    const KEY = "rsvp";
-
+    // Form state
     let name = "";
     let attending = "yes";
     let guests = "0";
+
+    // UI state
     let isSubmitting = false;
     let showError = false;
-    let showLoading = false;
-    let showCheckmark = false;
-    let spinnerFadingOut = false;
+    let showSuccess = false;
+    let mounted = false;
 
-    let nameEl: HTMLInputElement;
-    let guestsEl: HTMLInputElement;
-    let submitBtn: HTMLButtonElement;
-    let keyboardOpen = false;
-    let isBrowser = false;
+    const STORAGE_KEY = "rsvp_form";
 
-    // Load saved data
-    function loadSavedData() {
-        if (!isBrowser) return;
+    // Load saved form data on mount
+    onMount(() => {
+        mounted = true;
+
         try {
-            const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
-            if (saved.name) name = saved.name;
-            if (saved.guests) guests = saved.guests;
-            if (saved.attending) attending = saved.attending;
-        } catch {}
-    }
-
-    // Save data with debounce
-    let saveTimeout: ReturnType<typeof setTimeout>;
-    function saveData() {
-        if (!isBrowser) return;
-        clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(() => {
-            localStorage.setItem(
-                KEY,
-                JSON.stringify({ name, attending, guests }),
-            );
-        }, 200);
-    }
-
-    // Scroll form into view on mobile keyboard
-    function scrollToShowForm() {
-        setTimeout(() => {
-            submitBtn?.scrollIntoView({ behavior: "auto", block: "end" });
-        }, 50);
-    }
-
-    function handleNameFocus() {
-        keyboardOpen = true;
-        scrollToShowForm();
-    }
-
-    function handleGuestsFocus() {
-        keyboardOpen = true;
-        scrollToShowForm();
-        setTimeout(() => guestsEl?.select(), 50);
-    }
-
-    function handleBlur() {
-        setTimeout(() => {
-            const active = document.activeElement as HTMLElement;
-            const isInForm =
-                active?.closest("form") || active?.closest(".radio-label");
-            if (!isInForm) {
-                keyboardOpen = false;
-                window.scrollTo({ top: 0, behavior: "smooth" });
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const data = JSON.parse(saved);
+                name = data.name || "";
+                attending = data.attending || "yes";
+                guests = data.guests || "0";
             }
-        }, 100);
+        } catch {}
+
+        // Clear any previous submission state
+        sessionStorage.removeItem("rsvp_submitted");
+    });
+
+    // Save form data (debounced)
+    let saveTimer: ReturnType<typeof setTimeout>;
+    function saveForm() {
+        if (!mounted) return;
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => {
+            try {
+                localStorage.setItem(
+                    STORAGE_KEY,
+                    JSON.stringify({ name, attending, guests }),
+                );
+            } catch {}
+        }, 300);
     }
 
-    function handleGuestsInput() {
-        let v = guests.replace(/\D/g, "");
-        if (v.length > 1) v = v.slice(-1);
-        guests = v || "0";
-        saveData();
+    // Handle guests input
+    function handleGuestsInput(e: Event) {
+        const input = e.target as HTMLInputElement;
+        let value = input.value.replace(/\D/g, "");
+        if (parseInt(value) > 9) value = "9";
+        guests = value || "0";
+        saveForm();
     }
 
-    function handleAttendingChange() {
-        saveData();
-        if (keyboardOpen) nameEl?.focus();
-    }
+    // Handle form submission
+    async function handleSubmit() {
+        if (isSubmitting || !name.trim()) return;
 
-    async function handleSubmit(e: Event) {
-        e.preventDefault();
-
-        if (isSubmitting) return;
         isSubmitting = true;
-
-        (document.activeElement as HTMLElement)?.blur();
-        keyboardOpen = false;
-
-        showLoading = true;
-        spinnerFadingOut = false;
-        showCheckmark = false;
         showError = false;
 
         const isAttending = attending === "yes";
+        const payload = {
+            name: name.trim(),
+            attending: isAttending ? "Yes" : "No",
+            guests: isAttending ? parseInt(guests) || 0 : 0,
+        };
 
-        // Store decline status for countdown page
-        if (typeof sessionStorage !== "undefined") {
-            sessionStorage.setItem(
-                "rsvp_declined",
-                isAttending ? "false" : "true",
-            );
-            sessionStorage.setItem("rsvp_submitted", "true");
-        }
+        // Store status for countdown page
+        sessionStorage.setItem("rsvp_declined", isAttending ? "false" : "true");
+        sessionStorage.setItem("rsvp_submitted", "true");
 
         try {
-            // Try local D1 API first, fallback to Google Sheets
-            const localApiUrl = "/api/rsvp";
-            const payload = {
-                name: name.trim(),
-                attending: isAttending ? "Yes" : "No",
-                guests: isAttending ? +guests : 0,
-            };
+            // Try local API first
+            const response = await fetch("/api/rsvp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
 
+            if (!response.ok) throw new Error("API error");
+        } catch {
+            // Fallback to Google Sheets
             try {
-                const response = await fetch(localApiUrl, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload),
-                });
-
-                if (!response.ok) throw new Error("API error");
-            } catch {
-                // Fallback to Google Sheets API
                 await fetch(apiEndpoint, {
                     method: "POST",
                     mode: "no-cors",
                     body: JSON.stringify(payload),
                 });
-            }
-
-            if (isBrowser) localStorage.removeItem(KEY);
-
-            spinnerFadingOut = true;
-
-            setTimeout(() => {
-                showCheckmark = true;
-            }, 300);
-
-            // Navigate after animation
-            setTimeout(() => {
-                window.location.replace(redirectUrl);
-            }, 900);
-        } catch {
-            isSubmitting = false;
-            showLoading = false;
-            showError = true;
+            } catch {}
         }
+
+        // Clear saved form
+        try {
+            localStorage.removeItem(STORAGE_KEY);
+        } catch {}
+
+        // Show success and redirect
+        showSuccess = true;
+        setTimeout(() => {
+            window.location.replace(redirectUrl);
+        }, 800);
     }
 
-    onMount(() => {
-        isBrowser = true;
-        loadSavedData();
-        sessionStorage.removeItem("rsvp_submitted");
-
-        // Handle back/forward cache
-        const handlePageShow = (e: PageTransitionEvent) => {
-            if (e.persisted) {
-                isSubmitting = false;
-                showLoading = false;
-                showCheckmark = false;
-                spinnerFadingOut = false;
-                showError = false;
-                sessionStorage.removeItem("rsvp_submitted");
-            }
-        };
-
-        // Handle visual viewport resize (keyboard)
-        let lastHeight = window.visualViewport?.height || window.innerHeight;
-        const handleResize = () => {
-            const currentHeight = window.visualViewport!.height;
-            if (currentHeight > lastHeight + 100) {
-                const active = document.activeElement as HTMLElement;
-                if (active === nameEl || active === guestsEl) {
-                    active.blur();
-                    keyboardOpen = false;
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                }
-            }
-            lastHeight = currentHeight;
-        };
-
-        window.addEventListener("pageshow", handlePageShow);
-        window.visualViewport?.addEventListener("resize", handleResize, {
-            passive: true,
-        });
-
-        return () => {
-            window.removeEventListener("pageshow", handlePageShow);
-            window.visualViewport?.removeEventListener("resize", handleResize);
-        };
-    });
-
-    $: showGuestsSection = attending === "yes";
+    $: showGuests = attending === "yes";
     $: {
         name;
-        saveData();
+        attending;
+        guests;
+        saveForm();
     }
 </script>
 
-<div class="w-full max-w-content">
-    <div class="card">
-        <form on:submit={handleSubmit}>
-            <!-- Name field -->
-            <div class="mb-5">
-                <label
-                    class="block text-base font-medium text-white-90 mb-2 text-start"
-                    for="name"
-                >
-                    {t["rsvp.name"]}
+<div class="form-container animate-in">
+    <form on:submit|preventDefault={handleSubmit} class="card">
+        <!-- Name -->
+        <div class="field">
+            <label for="name" class="label">{t["rsvp.name"]}</label>
+            <input
+                type="text"
+                id="name"
+                bind:value={name}
+                class="input"
+                required
+                placeholder={t["rsvp.namePlaceholder"]}
+                autocomplete="name"
+                autocapitalize="words"
+            />
+        </div>
+
+        <!-- Attending -->
+        <div class="field">
+            <span class="label">{t["rsvp.attending"]}</span>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" bind:group={attending} value="yes" />
+                    <span
+                        class="radio-btn"
+                        class:active={attending === "yes"}
+                        class:yes={true}
+                    >
+                        {t["rsvp.accept"]}
+                    </span>
                 </label>
+                <label class="radio-option">
+                    <input type="radio" bind:group={attending} value="no" />
+                    <span
+                        class="radio-btn"
+                        class:active={attending === "no"}
+                        class:no={true}
+                    >
+                        {t["rsvp.decline"]}
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Guests (animated collapse) -->
+        {#if showGuests}
+            <div class="field guests-field">
+                <label for="guests" class="label">{t["rsvp.guests"]}</label>
                 <input
-                    type="text"
-                    id="name"
-                    bind:this={nameEl}
-                    bind:value={name}
+                    type="number"
+                    id="guests"
+                    value={guests}
+                    on:input={handleGuestsInput}
                     class="input"
-                    required
-                    placeholder={t["rsvp.namePlaceholder"]}
-                    autocomplete="name"
-                    autocapitalize="words"
-                    enterkeyhint="next"
-                    on:focus={handleNameFocus}
-                    on:blur={handleBlur}
+                    min="0"
+                    max="9"
+                    inputmode="numeric"
                 />
             </div>
+        {/if}
 
-            <!-- Attending toggle -->
-            <div class="mb-5">
-                <span
-                    class="block text-base font-medium text-white-90 mb-2 text-start"
-                >
-                    {t["rsvp.attending"]}
-                </span>
-                <div class="flex gap-3" role="radiogroup">
-                    <label class="flex-1 cursor-pointer radio-label">
-                        <input
-                            type="radio"
-                            name="attending"
-                            value="yes"
-                            bind:group={attending}
-                            on:change={handleAttendingChange}
-                            class="absolute opacity-0 pointer-events-none"
-                        />
-                        <span
-                            class="radio-btn flex justify-center items-center min-h-[52px] p-4 text-base font-semibold text-white rounded-sm-card transition-all duration-150
-                            {attending === 'yes'
-                                ? 'bg-success border-success'
-                                : 'glass-10 border-white-20'} border"
-                        >
-                            {t["rsvp.accept"]}
-                        </span>
-                    </label>
-                    <label class="flex-1 cursor-pointer radio-label">
-                        <input
-                            type="radio"
-                            name="attending"
-                            value="no"
-                            bind:group={attending}
-                            on:change={handleAttendingChange}
-                            class="absolute opacity-0 pointer-events-none"
-                        />
-                        <span
-                            class="radio-btn flex justify-center items-center min-h-[52px] p-4 text-base font-semibold text-white rounded-sm-card transition-all duration-150
-                            {attending === 'no'
-                                ? 'bg-error border-error'
-                                : 'glass-10 border-white-20'} border"
-                        >
-                            {t["rsvp.decline"]}
-                        </span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Guests section (animated) -->
-            <div class="guests-section {showGuestsSection ? 'open' : ''}">
-                <div class="mb-5 overflow-hidden">
-                    <label
-                        class="block text-base font-medium text-white-90 mb-2 text-start"
-                        for="guests"
-                    >
-                        {t["rsvp.guests"]}
-                    </label>
-                    <input
-                        type="number"
-                        id="guests"
-                        bind:this={guestsEl}
-                        bind:value={guests}
-                        class="input"
-                        min="0"
-                        max="9"
-                        inputmode="numeric"
-                        enterkeyhint="done"
-                        on:focus={handleGuestsFocus}
-                        on:blur={handleBlur}
-                        on:input={handleGuestsInput}
-                    />
-                </div>
-            </div>
-
-            <!-- Submit -->
-            <button
-                type="submit"
-                bind:this={submitBtn}
-                class="btn mt-2 text-lg font-medium"
-                disabled={isSubmitting}
-            >
+        <!-- Submit -->
+        <button
+            type="submit"
+            class="btn submit-btn"
+            disabled={isSubmitting || !name.trim()}
+        >
+            {#if isSubmitting}
+                <span class="spinner"></span>
+            {:else}
                 {t["rsvp.submit"]}
-            </button>
-
-            {#if showError}
-                <p class="text-center text-[#f99] text-base mt-4">
-                    {t["rsvp.error"]}
-                </p>
             {/if}
-        </form>
-    </div>
+        </button>
+
+        {#if showError}
+            <p class="error">{t["rsvp.error"]}</p>
+        {/if}
+    </form>
 </div>
 
-<!-- Loading overlay -->
-{#if showLoading}
-    <div class="loading-overlay visible">
-        <div class="flex justify-center items-center">
-            {#if !showCheckmark}
-                <div class="spinner {spinnerFadingOut ? 'fade-out' : ''}"></div>
-            {:else}
-                <svg
-                    class="checkmark animate"
-                    viewBox="0 0 52 52"
-                    aria-hidden="true"
-                >
-                    <circle
-                        class="checkmark-circle"
-                        cx="26"
-                        cy="26"
-                        r="24"
-                        fill="none"
-                    ></circle>
-                    <path
-                        class="checkmark-check"
-                        fill="none"
-                        d="M14 27l8 8 16-16"
-                    ></path>
-                </svg>
-            {/if}
-        </div>
+<!-- Success overlay -->
+{#if showSuccess}
+    <div class="success-overlay">
+        <svg class="checkmark" viewBox="0 0 52 52">
+            <circle
+                cx="26"
+                cy="26"
+                r="24"
+                fill="none"
+                stroke="#4ade80"
+                stroke-width="2"
+            />
+            <path
+                d="M14 27l8 8 16-16"
+                fill="none"
+                stroke="#4ade80"
+                stroke-width="3"
+                stroke-linecap="round"
+            />
+        </svg>
     </div>
 {/if}
 
 <style>
-    .guests-section {
-        display: grid;
-        grid-template-rows: 0fr;
-        transition: grid-template-rows 0.2s ease;
+    .form-container {
+        width: 100%;
+        max-width: 420px;
     }
 
-    .guests-section.open {
-        grid-template-rows: 1fr;
+    .field {
+        margin-bottom: 1.25rem;
     }
 
-    .guests-section > * {
-        overflow: hidden;
+    .label {
+        display: block;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0.5rem;
+        text-align: start;
     }
 
-    .loading-overlay {
-        position: fixed;
-        inset: 0;
+    .radio-group {
         display: flex;
-        justify-content: center;
-        align-items: center;
-        background: rgba(75, 1, 1, 0.96);
-        z-index: 1000;
-        opacity: 0;
-        visibility: hidden;
-        transition:
-            opacity 0.2s ease,
-            visibility 0.2s ease;
+        gap: 0.75rem;
     }
 
-    .loading-overlay.visible {
-        opacity: 1;
-        visibility: visible;
+    .radio-option {
+        flex: 1;
+        cursor: pointer;
+    }
+
+    .radio-option input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .radio-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        padding: 0.75rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        transition: all 0.15s;
+    }
+
+    .radio-btn.active.yes {
+        background: #2e7d32;
+        border-color: #2e7d32;
+    }
+
+    .radio-btn.active.no {
+        background: #c62828;
+        border-color: #c62828;
+    }
+
+    .radio-option:active .radio-btn {
+        transform: scale(0.98);
+    }
+
+    .guests-field {
+        animation: slideDown 0.2s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .submit-btn {
+        margin-top: 0.5rem;
+        min-height: 52px;
+        font-size: 1.05rem;
     }
 
     .spinner {
-        width: 52px;
-        height: 52px;
-        border: 3px solid rgba(255, 255, 255, 0.2);
-        border-top-color: white;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
         border-radius: 50%;
-        animation: spin 0.7s linear infinite;
-        transition: opacity 0.3s ease;
-        flex-shrink: 0;
-    }
-
-    .spinner.fade-out {
-        opacity: 0;
+        animation: spin 0.6s linear infinite;
     }
 
     @keyframes spin {
@@ -414,59 +323,71 @@
         }
     }
 
-    .checkmark {
-        width: 52px;
-        height: 52px;
-        flex-shrink: 0;
+    .error {
+        text-align: center;
+        color: #ff9999;
+        font-size: 0.9rem;
+        margin-top: 1rem;
     }
 
-    .checkmark-circle {
-        stroke: #4ade80;
-        stroke-width: 2;
+    .success-overlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(75, 1, 1, 0.95);
+        z-index: 1000;
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .checkmark {
+        width: 64px;
+        height: 64px;
+        animation: scaleIn 0.3s ease-out;
+    }
+
+    .checkmark circle {
         stroke-dasharray: 151;
         stroke-dashoffset: 151;
+        animation: drawCircle 0.4s ease-out forwards;
     }
 
-    .checkmark-check {
-        stroke: #4ade80;
-        stroke-width: 3;
-        stroke-linecap: round;
-        stroke-linejoin: round;
+    .checkmark path {
         stroke-dasharray: 36;
         stroke-dashoffset: 36;
+        animation: drawCheck 0.3s ease-out 0.2s forwards;
     }
 
-    .checkmark.animate .checkmark-circle {
-        animation: checkCircle 0.5s ease forwards;
+    @keyframes scaleIn {
+        from {
+            transform: scale(0.8);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
     }
 
-    .checkmark.animate .checkmark-check {
-        animation: checkMark 0.3s ease forwards;
-        animation-delay: 0.2s;
-    }
-
-    @keyframes checkCircle {
+    @keyframes drawCircle {
         to {
             stroke-dashoffset: 0;
         }
     }
 
-    @keyframes checkMark {
+    @keyframes drawCheck {
         to {
             stroke-dashoffset: 0;
         }
-    }
-
-    .bg-success {
-        background-color: #2e7d32;
-    }
-    .border-success {
-        border-color: #2e7d32;
-    }
-    .bg-error {
-        background-color: #c62828;
-    }
-    .border-error {
-        border-color: #c62828;
     }
 </style>

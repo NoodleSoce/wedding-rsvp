@@ -13,44 +13,34 @@ const t = ui[lang];
 const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
 ---
 
-<Layout
-    title={lang === "ar" ? "الرئيسية" : "Welcome"}
-    lang={lang}
-    headerAnimation={true}
->
-    <main class="page animate-fade-in">
-        <div class="content landing gap-5">
-            <h1
-                class="title text-[clamp(1.5rem,1.25rem+1.25vw,2.25rem)] italic px-5 max-w-[95%] text-white text-center anim-delay-1 animate-slide-in"
-            >
+<Layout title={lang === "ar" ? "الرئيسية" : "Welcome"} lang={lang}>
+    <main class="page">
+        <div class="content">
+            <h1 class="title animate-in">
                 {t["index.title"]}
             </h1>
-            <p
-                class="subtitle text-base text-white-70 px-6 max-w-[90%] text-center anim-delay-2 animate-slide-in"
-            >
+
+            <p class="subtitle animate-in delay-1">
                 {t["index.subtitle"]}
             </p>
 
-            <figure
-                class="hero w-[clamp(240px,60vw,320px)] my-3 rounded-card overflow-hidden shadow-card contain-layout-paint anim-delay-3 animate-slide-in"
-            >
+            <figure class="hero animate-in delay-2">
                 <Image
                     src={heroImg}
                     alt="Zaid & Haya"
-                    width={600}
-                    densities={[1.5, 2]}
+                    width={500}
+                    height={500}
+                    format="avif"
+                    quality={80}
                     loading="eager"
                     fetchpriority="high"
-                    decoding="async"
-                    quality={85}
-                    format="avif"
-                    class="w-full h-auto block"
+                    class="hero-img"
                 />
             </figure>
 
             <a
                 href={rsvpLink}
-                class="btn cta w-[clamp(200px,55vw,280px)] text-lg anim-delay-4 animate-slide-in"
+                class="btn cta animate-in delay-3"
                 data-astro-prefetch
             >
                 {t["index.cta"]}
@@ -58,3 +48,50 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
         </div>
     </main>
 </Layout>
+
+<style>
+    .title {
+        font-size: clamp(1.4rem, 1.2rem + 1vw, 1.9rem);
+        font-style: italic;
+        font-weight: 400;
+        line-height: 1.4;
+        max-width: 90%;
+        margin: 0;
+    }
+
+    .subtitle {
+        font-size: clamp(0.95rem, 0.85rem + 0.5vw, 1.1rem);
+        color: rgba(255, 255, 255, 0.7);
+        margin: 0;
+    }
+
+    .hero {
+        margin: 0.5rem 0;
+        width: clamp(200px, 50vw, 280px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-img {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+
+    .cta {
+        width: clamp(180px, 50vw, 240px);
+        font-size: 1.05rem;
+    }
+
+    /* Tablet and desktop */
+    @media (min-width: 768px) {
+        .content {
+            gap: 1.5rem;
+        }
+
+        .hero {
+            width: 300px;
+        }
+    }
+</style>

@@ -4,11 +4,12 @@ import logoImg from "../assets/logo.webp";
 
 interface Props {
   lang?: "en" | "ar";
-  showAnimation?: boolean;
 }
 
-const { lang = "en", showAnimation = false } = Astro.props;
+const { lang = "en" } = Astro.props;
 const path = Astro.url.pathname;
+
+// Toggle language path
 const targetPath =
   lang === "en"
     ? path === "/"
@@ -16,36 +17,36 @@ const targetPath =
       : `/ar${path}`
     : path.replace("/ar", "") || "/";
 
-// Generate AVIF with WebP fallback
-const optimizedLogo = await getImage({
+// Optimized logo
+const logo = await getImage({
   src: logoImg,
-  width: 400,
-  height: 133,
+  width: 360,
+  height: 120,
   format: "avif",
-  quality: 80,
+  quality: 85,
 });
 
 const buttonText = lang === "en" ? "ع" : "EN";
-const isArabicButton = lang === "en";
+const isArabicBtn = lang === "en";
 ---
 
-<header
-  class:list={["hdr", { "hdr-will-animate": showAnimation }]}
-  id="site-header"
-  data-animate={showAnimation ? "true" : "false"}
->
-  <div class="hdr-inner">
-    <div class="logo-box">
+<header class="header">
+  <div class="header-inner">
+    <a href={lang === "ar" ? "/ar" : "/"} class="logo" aria-label="Home">
       <img
-        src={optimizedLogo.src}
-        alt="Z & H"
+        src={logo.src}
+        alt="Zaid & Haya"
+        width="180"
+        height="60"
         fetchpriority="high"
-        decoding="sync"
+        decoding="async"
       />
-    </div>
+    </a>
+
     <a
       href={targetPath}
-      class:list={["lang-box", { "is-ar": isArabicButton }]}
+      class="lang-btn"
+      class:list={{ "lang-btn-ar": isArabicBtn }}
       data-astro-prefetch
       aria-label={lang === "en" ? "Switch to Arabic" : "Switch to English"}
     >
@@ -55,119 +56,120 @@ const isArabicButton = lang === "en";
 </header>
 
 <script>
+  // Save language preference on click
   document.addEventListener(
     "click",
     (e) => {
-      const btn = (e.target as HTMLElement).closest(".lang-box");
+      const btn = (e.target as HTMLElement).closest(".lang-btn");
       if (btn) {
         localStorage.setItem(
           "preferred_lang",
-          btn.classList.contains("is-ar") ? "ar" : "en",
+          btn.classList.contains("lang-btn-ar") ? "ar" : "en",
         );
       }
     },
     { passive: true },
   );
-
-  function initHeaderAnimation() {
-    const header = document.getElementById("site-header");
-    if (!header) return;
-    if (header.dataset.animate === "true" && !header.dataset.animated) {
-      requestAnimationFrame(() => {
-        header.classList.add("animated");
-        header.dataset.animated = "true";
-      });
-    }
-  }
-
-  initHeaderAnimation();
-  document.addEventListener("astro:page-load", initHeaderAnimation);
 </script>
 
 <style>
-  .hdr {
-    position: absolute;
+  .header {
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    padding: 1rem;
     z-index: 100;
+    padding: 1rem;
     pointer-events: none;
   }
 
-  .hdr-will-animate .logo-box,
-  .hdr-will-animate .lang-box {
-    opacity: 0;
-    visibility: hidden;
-  }
-
-  .hdr-inner {
-    max-width: 600px;
+  .header-inner {
+    max-width: 500px;
     margin: 0 auto;
     display: flex;
-    justify-content: center;
     align-items: center;
-    pointer-events: auto;
-    direction: ltr;
+    justify-content: center;
     position: relative;
-    padding: 0 1rem;
   }
 
-  .lang-box {
-    transition: background 0.12s ease;
+  .logo {
     pointer-events: auto;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
+    display: block;
+    animation: fadeIn 0.4s ease-out both;
   }
 
-  .lang-box:active {
+  .logo img {
+    display: block;
+    height: auto;
+    width: clamp(140px, 35vw, 180px);
+  }
+
+  .lang-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+
+    font-family: "Libre Baskerville", serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #fff;
+    text-decoration: none;
+
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+
+    pointer-events: auto;
+    transition: background 0.15s;
+    animation: fadeIn 0.4s ease-out 0.1s both;
+  }
+
+  .lang-btn-ar {
+    font-family: "Amiri", serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+  }
+
+  .lang-btn:active {
     background: rgba(255, 255, 255, 0.2);
   }
 
   @media (hover: hover) {
-    .lang-box:hover {
+    .lang-btn:hover {
       background: rgba(255, 255, 255, 0.2);
     }
   }
 
-  @media (orientation: landscape) and (max-height: 500px) {
-    .hdr {
-      padding: 0.75rem 1rem;
-    }
-  }
-
-  /* Native View Transition animation */
-  .hdr.animated .logo-box {
-    opacity: 1;
-    visibility: visible;
-    animation: fadeSlideDown 0.35s ease-out both;
-  }
-
-  .hdr.animated .lang-box {
-    opacity: 1;
-    visibility: visible;
-    animation: fadeSlideDownBtn 0.35s ease-out 0.1s both;
-  }
-
-  @keyframes fadeSlideDown {
+  @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(-12px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes fadeSlideDownBtn {
-    from {
-      opacity: 0;
-      transform: translateY(calc(-50% - 12px));
+      transform: translateY(-8px);
     }
     to {
       opacity: 1;
       transform: translateY(-50%);
+    }
+  }
+
+  .logo {
+    animation: fadeInLogo 0.4s ease-out both;
+  }
+
+  @keyframes fadeInLogo {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 </style>

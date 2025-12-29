@@ -11,20 +11,17 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = ui[lang];
-// Pre-compute target date at build time
+
+// Wedding date - March 21, 2026 at 7:00 PM GST
 const targetDate = new Date("2026-03-21T19:00:00+04:00").getTime();
 ---
 
 <Layout title={lang === "ar" ? "العد التنازلي" : "Countdown"} lang={lang}>
-    <!-- Confetti runs client-side, respects declined status from sessionStorage -->
     <Confetti client:load />
 
-    <main class="page animate-fade-in" id="countdown-page">
-        <div class="content countdown gap-5">
-            <!-- Countdown Timer - Svelte component with reactive updates -->
+    <main class="page">
+        <div class="content">
             <CountdownTimer client:load t={t} targetDate={targetDate} />
-
-            <!-- Location Card - Universal map link (no iframe) -->
             <LocationCard client:visible t={t} />
         </div>
     </main>
