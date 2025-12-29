@@ -17,12 +17,12 @@ const targetPath =
       : `/ar${path}`
     : path.replace("/ar", "") || "/";
 
+// High quality AVIF optimization for logo
 const logo = await getImage({
   src: logoImg,
-  width: 400,
-  height: 133,
+  width: 600, // High density for retina displays
   format: "avif",
-  quality: 85,
+  quality: 90,
 });
 
 const buttonText = lang === "en" ? "ع" : "EN";
@@ -35,6 +35,8 @@ const isArabicBtn = lang === "en";
       <img
         src={logo.src}
         alt="Zaid & Haya"
+        width="200"
+        height="67"
         fetchpriority="high"
         decoding="async"
       />
@@ -76,6 +78,9 @@ const isArabicBtn = lang === "en";
     z-index: 100;
     padding: 1rem;
     pointer-events: none;
+    /* Hardware acceleration */
+    transform: translateZ(0);
+    will-change: transform;
   }
 
   .header-inner {
@@ -91,14 +96,18 @@ const isArabicBtn = lang === "en";
   .logo {
     pointer-events: auto;
     display: block;
+    /* Prevent layout shift */
+    contain: layout;
   }
 
-  /* Logo sizing */
+  /* Logo sizing - Crisp rendering */
   .logo img {
     display: block;
     width: 200px;
     height: 67px;
     object-fit: contain;
+    /* Optimized rendering */
+    image-rendering: -webkit-optimize-contrast;
   }
 
   @media (min-width: 400px) {
@@ -115,6 +124,7 @@ const isArabicBtn = lang === "en";
     }
   }
 
+  /* Landscape phones */
   @media (orientation: landscape) and (max-height: 500px) {
     .logo img {
       width: 150px;
@@ -149,6 +159,9 @@ const isArabicBtn = lang === "en";
 
     pointer-events: auto;
     transition: background 0.15s;
+    /* Optimization */
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
   }
 
   .lang-btn-ar {
@@ -170,11 +183,11 @@ const isArabicBtn = lang === "en";
 
   /* ONLY animate on landing page */
   .header-animate .logo {
-    animation: fadeDown 0.4s ease-out both;
+    animation: fadeDown 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
 
   .header-animate .lang-btn {
-    animation: fadeDownBtn 0.4s ease-out 0.1s both;
+    animation: fadeDownBtn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s both;
   }
 
   @keyframes fadeDown {

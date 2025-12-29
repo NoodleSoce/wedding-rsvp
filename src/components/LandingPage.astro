@@ -1,6 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { Image } from "astro:assets";
+import { Image, getImage } from "astro:assets";
 import heroImg from "../assets/hero-image.webp";
 import { ui } from "../i18n/ui";
 
@@ -11,6 +11,14 @@ interface Props {
 const { lang } = Astro.props;
 const t = ui[lang];
 const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
+
+// Pre-optimize image for LCP
+const optimizedHero = await getImage({
+    src: heroImg,
+    width: 800, // Higher resolution source
+    format: "avif",
+    quality: 85,
+});
 ---
 
 <Layout
@@ -29,15 +37,15 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
             </p>
 
             <figure class="hero animate-in delay-2">
-                <Image
-                    src={heroImg}
+                <img
+                    src={optimizedHero.src}
+                    srcset={`${optimizedHero.src} 1x, ${optimizedHero.src} 2x`}
                     alt="Zaid & Haya"
-                    width={500}
-                    height={500}
-                    format="avif"
-                    quality={80}
+                    width="400"
+                    height="400"
                     loading="eager"
                     fetchpriority="high"
+                    decoding="async"
                     class="hero-img"
                 />
             </figure>
@@ -55,47 +63,56 @@ const rsvpLink = lang === "ar" ? "/ar/rsvp" : "/rsvp";
 
 <style>
     .title {
-        font-size: clamp(1.4rem, 1.2rem + 1vw, 1.9rem);
+        font-size: clamp(1.4rem, 1.2rem + 1vw, 2rem);
         font-style: italic;
         font-weight: 400;
         line-height: 1.4;
         max-width: 90%;
         margin: 0;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
 
     .subtitle {
-        font-size: clamp(0.95rem, 0.85rem + 0.5vw, 1.1rem);
-        color: rgba(255, 255, 255, 0.7);
+        font-size: clamp(0.95rem, 0.85rem + 0.5vw, 1.15rem);
+        color: rgba(255, 255, 255, 0.8);
         margin: 0;
+        text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
     }
 
     .hero {
-        margin: 0.5rem 0;
-        width: clamp(200px, 50vw, 280px);
-        border-radius: 16px;
+        margin: 1rem 0;
+        /* INCREASED SIZE */
+        width: clamp(260px, 60vw, 340px);
+        aspect-ratio: 1;
+        border-radius: 20px;
         overflow: hidden;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        background: rgba(0, 0, 0, 0.2);
+        transform: translateZ(0); /* Hardware accelerate */
     }
 
     .hero-img {
         display: block;
         width: 100%;
-        height: auto;
+        height: 100%;
+        object-fit: cover;
     }
 
     .cta {
-        width: clamp(180px, 50vw, 240px);
-        font-size: 1.05rem;
+        width: clamp(200px, 60vw, 260px);
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
 
     /* Tablet and desktop */
     @media (min-width: 768px) {
         .content {
-            gap: 1.5rem;
+            gap: 2rem;
         }
 
         .hero {
-            width: 300px;
+            width: 380px;
         }
     }
 </style>
