@@ -25,8 +25,7 @@
 
     /* 
        Fix FOUT (Flash of Unstyled Text) 
-       Using 'block' hides text for a short period (3s max) until font loads,
-       preventing the jarring layout shift/visual change of swapping fonts.
+       Using 'block' hides text for a short period (3s max) until font loads.
     */
     @font-face {
         font-family: 'Libre Baskerville';
@@ -47,6 +46,15 @@
         -webkit-tap-highlight-color: transparent;
         -webkit-text-size-adjust: 100%;
         text-size-adjust: 100%;
+
+        /* 
+           PREVENT LAYOUT SHIFT (HEADER RESIZE) 
+           Reserve space for scrollbar always to prevent header jumping 
+           when navigating between short/long pages 
+        */
+        scrollbar-gutter: stable;
+        overflow-y: scroll;
+        /* Force scrolling context */
     }
 
     body {
@@ -107,12 +115,11 @@
         padding: var(--header-h) 1rem 2rem;
     }
 
-    /* Landscape Fix: Ensure content isn't under header */
+    /* Landscape Fix */
     @media (orientation: landscape) and (max-height: 500px) {
         .page {
             justify-content: flex-start;
             padding-top: 80px;
-            /* Explicit space for absolute header */
         }
     }
 
