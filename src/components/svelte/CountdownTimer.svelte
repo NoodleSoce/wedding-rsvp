@@ -87,14 +87,13 @@
     }
 
     .title {
-        /* INCREASED FONT SIZE */
-        font-size: clamp(1.5rem, 1.3rem + 1.2vw, 2.2rem);
+        /* Slightly smaller to fit better */
+        font-size: clamp(1.4rem, 1.25rem + 1vw, 2rem);
         font-weight: 400;
         line-height: 1.3;
         text-align: center;
         max-width: 400px;
         margin: 0;
-        /* Improved text rendering */
         text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
 

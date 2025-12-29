@@ -17,10 +17,9 @@ const targetPath =
       : `/ar${path}`
     : path.replace("/ar", "") || "/";
 
-// High quality AVIF optimization for logo
 const logo = await getImage({
   src: logoImg,
-  width: 600, // High density for retina displays
+  width: 600,
   format: "avif",
   quality: 90,
 });
@@ -35,10 +34,11 @@ const isArabicBtn = lang === "en";
       <img
         src={logo.src}
         alt="Zaid & Haya"
-        width="200"
-        height="67"
+        width="220"
+        height="73"
+        loading="eager"
         fetchpriority="high"
-        decoding="async"
+        decoding="sync"
       />
     </a>
 
@@ -78,9 +78,7 @@ const isArabicBtn = lang === "en";
     z-index: 100;
     padding: 1rem;
     pointer-events: none;
-    /* Hardware acceleration */
-    transform: translateZ(0);
-    will-change: transform;
+    transform: translateZ(0); /* Hardware accelerate */
   }
 
   .header-inner {
@@ -96,39 +94,44 @@ const isArabicBtn = lang === "en";
   .logo {
     pointer-events: auto;
     display: block;
-    /* Prevent layout shift */
-    contain: layout;
+    /* Prevent CLS during load */
+    width: 220px;
+    height: 73px;
+    contain: strict;
   }
 
-  /* Logo sizing - Crisp rendering */
+  /* Strict Image Sizing prevents giant flash */
   .logo img {
     display: block;
-    width: 200px;
-    height: 67px;
-    object-fit: contain;
-    /* Optimized rendering */
+    /* Use max-width/height to allow shrinking on small screens */
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    margin: 0 auto;
     image-rendering: -webkit-optimize-contrast;
   }
 
+  /* Larger Logo Sizing */
   @media (min-width: 400px) {
-    .logo img {
-      width: 220px;
-      height: 73px;
-    }
-  }
-
-  @media (min-width: 600px) {
-    .logo img {
+    .logo {
       width: 240px;
       height: 80px;
     }
   }
 
+  @media (min-width: 600px) {
+    .logo {
+      width: 260px;
+      height: 87px;
+    }
+  }
+
   /* Landscape phones */
   @media (orientation: landscape) and (max-height: 500px) {
-    .logo img {
-      width: 150px;
-      height: 50px;
+    .logo {
+      width: 160px;
+      height: 53px;
     }
     .header {
       padding: 0.75rem 1rem;
@@ -140,26 +143,21 @@ const isArabicBtn = lang === "en";
     right: 0;
     top: 50%;
     transform: translateY(-50%);
-
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
-
     font-family: "Libre Baskerville", serif;
     font-size: 0.85rem;
     font-weight: 600;
     color: #fff;
     text-decoration: none;
-
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 50%;
-
     pointer-events: auto;
     transition: background 0.15s;
-    /* Optimization */
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
   }
@@ -181,7 +179,7 @@ const isArabicBtn = lang === "en";
     }
   }
 
-  /* ONLY animate on landing page */
+  /* Animation only for landing */
   .header-animate .logo {
     animation: fadeDown 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
