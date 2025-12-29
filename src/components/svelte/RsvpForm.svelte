@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
+    import { navigate } from "astro:transitions/client";
     import type { UIStrings } from "../../i18n/ui";
 
     export let t: UIStrings;
@@ -186,10 +187,11 @@
             localStorage.removeItem(STORAGE_KEY);
         } catch {}
 
-        // Show success and redirect
+        // Show success and redirect using SOFT NAVIGATION
         showSuccess = true;
         setTimeout(() => {
-            window.location.replace(redirectUrl);
+            // Use Astro's client-side router for smooth transition without reload
+            navigate(redirectUrl);
         }, 800);
     }
 
