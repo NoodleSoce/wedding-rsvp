@@ -93,33 +93,33 @@ const isArabicBtn = lang === "en";
     animation: fadeDown 0.4s ease-out both;
   }
 
-  /* Fixed logo sizing */
+  /* LARGER logo on mobile */
   .logo img {
     display: block;
-    width: 180px;
-    height: 60px;
+    width: 200px;
+    height: 67px;
     object-fit: contain;
   }
 
   @media (min-width: 400px) {
-    .logo img {
-      width: 200px;
-      height: 67px;
-    }
-  }
-
-  @media (min-width: 600px) {
     .logo img {
       width: 220px;
       height: 73px;
     }
   }
 
-  /* Landscape phones */
+  @media (min-width: 600px) {
+    .logo img {
+      width: 240px;
+      height: 80px;
+    }
+  }
+
+  /* Landscape phones - smaller */
   @media (orientation: landscape) and (max-height: 500px) {
     .logo img {
-      width: 140px;
-      height: 47px;
+      width: 150px;
+      height: 50px;
     }
     .header {
       padding: 0.75rem 1rem;
@@ -150,7 +150,7 @@ const isArabicBtn = lang === "en";
 
     pointer-events: auto;
     transition: background 0.15s;
-    animation: fadeDown 0.4s ease-out 0.1s both;
+    animation: fadeDownBtn 0.4s ease-out 0.1s both;
   }
 
   .lang-btn-ar {
@@ -179,11 +179,6 @@ const isArabicBtn = lang === "en";
       opacity: 1;
       transform: translateY(0);
     }
-  }
-
-  /* Keep transform for lang-btn */
-  .lang-btn {
-    animation: fadeDownBtn 0.4s ease-out 0.1s both;
   }
 
   @keyframes fadeDownBtn {

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount, onDestroy, tick } from "svelte";
+    import { onMount, onDestroy } from "svelte";
     import type { UIStrings } from "../../i18n/ui";
 
     export let t: UIStrings;
@@ -21,6 +21,7 @@
     let nameInput: HTMLInputElement;
     let guestsInput: HTMLInputElement;
     let formEl: HTMLFormElement;
+    let submitBtn: HTMLButtonElement;
 
     const STORAGE_KEY = "rsvp_form";
 
@@ -39,7 +40,7 @@
         // Keyboard opened (viewport shrunk significantly)
         if (heightDiff > 100 && !isKeyboardOpen) {
             isKeyboardOpen = true;
-            scrollToActiveInput();
+            scrollToFormBottom();
         }
         // Keyboard closed (viewport grew)
         else if (heightDiff < -100 && isKeyboardOpen) {
@@ -49,25 +50,20 @@
         lastViewportHeight = currentHeight;
     }
 
-    function scrollToActiveInput() {
-        const active = document.activeElement as HTMLElement;
-        if (active === nameInput || active === guestsInput) {
-            setTimeout(() => {
-                active.scrollIntoView({ behavior: "smooth", block: "center" });
-            }, 100);
-        }
+    function scrollToFormBottom() {
+        // Scroll to show the submit button at the bottom of viewport
+        setTimeout(() => {
+            submitBtn?.scrollIntoView({ behavior: "smooth", block: "end" });
+        }, 150);
     }
 
     // ===============================
     // FORM EVENTS
     // ===============================
-    function handleInputFocus(e: FocusEvent) {
-        // Scroll to input when focused (for keyboard)
+    function handleInputFocus() {
+        // Scroll to bottom of form when input focused
         setTimeout(() => {
-            (e.target as HTMLElement).scrollIntoView({
-                behavior: "smooth",
-                block: "center",
-            });
+            scrollToFormBottom();
         }, 300);
     }
 
@@ -75,6 +71,7 @@
         // Select all text when focusing guests input
         setTimeout(() => {
             guestsInput?.select();
+            scrollToFormBottom();
         }, 50);
     }
 
@@ -104,8 +101,13 @@
         attending = newValue;
         saveForm();
 
-        // Don't blur - keep focus on form if keyboard is open
-        // This prevents keyboard from closing when tapping accept/decline
+        // Keep keyboard open - refocus on the last active input
+        if (isKeyboardOpen) {
+            // Refocus name input to keep keyboard open
+            setTimeout(() => {
+                nameInput?.focus();
+            }, 10);
+        }
     }
 
     // ===============================
@@ -308,6 +310,7 @@
         <!-- Submit -->
         <button
             type="submit"
+            bind:this={submitBtn}
             class="btn submit-btn"
             disabled={isSubmitting || !name.trim()}
         >
@@ -357,9 +360,10 @@
         margin-bottom: 1.25rem;
     }
 
+    /* LARGER label font */
     .label {
         display: block;
-        font-size: 0.95rem;
+        font-size: 1.05rem;
         font-weight: 500;
         color: rgba(255, 255, 255, 0.9);
         margin-bottom: 0.5rem;
@@ -379,7 +383,7 @@
         min-height: 52px;
         padding: 0.875rem;
         font: inherit;
-        font-size: 0.95rem;
+        font-size: 1rem;
         font-weight: 600;
         color: #fff;
         background: rgba(255, 255, 255, 0.1);
@@ -432,7 +436,7 @@
     .submit-btn {
         margin-top: 0.5rem;
         min-height: 54px;
-        font-size: 1.05rem;
+        font-size: 1.1rem;
     }
 
     .spinner {
@@ -453,7 +457,7 @@
     .error {
         text-align: center;
         color: #ff9999;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
         margin-top: 1rem;
     }
 
